@@ -82,9 +82,10 @@ test("stockage : sauvegarde / chargement, copie de secours, instantanés quotidi
 
 test("stockage : copie principale abîmée → rien n'est perdu (copie de secours + instantané)", () => {
   const ls = fakeLS();
-  const s = randState(rng); s.tro["t_calc:3"] = "2026-11-02";
+  const s = randState(rng); s.tro["t_calc:3"] = "2026-11-02"; delete s.tro["t_calc:4"];
   saveState(s, ls, "2026-11-13");
   const s2 = norm(s); s2.tro["t_calc:4"] = "2026-11-13"; saveState(s2, ls, "2026-11-13");
+  saveState(s2, ls, "2026-11-13"); // la copie de secours est celle d'avant la dernière sauvegarde
   ls.setItem(KEY, "{pas du json"); // corruption
   const back = loadState(ls);
   assert.deepEqual(missingFrom(back, s), []);

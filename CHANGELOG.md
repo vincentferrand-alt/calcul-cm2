@@ -2,6 +2,12 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.10.0 — Nouveau bestiaire, boutique d'accessoires, écran d'ouverture
+- Nouvelles créatures, dans cet ordre : 🐉 dragon (Additions, la première), 🐱 chat (Soustractions), belette, 🦊 renard, 🐯 tigre, kitsune à 4 queues, 🐺 loup, kitsune à 9 queues (Astuces). Chacune garde son œuf et ses 4 évolutions avec une histoire à chaque forme. Les identifiants de sauvegarde sont inchangés : les œufs et stades déjà obtenus restent (le dessin change, pas la progression).
+- Boutique 🛍️ : les étoiles gagnées s'échangent contre 13 accessoires (chapeaux, lunettes, cou/cape). On habille chaque créature éclose ; l'accessoire se voit dans l'album, sur l'accueil et à l'ouverture. Solde = étoiles gagnées − prix des accessoires possédés ; un achat n'est jamais perdu (union à la fusion, synchronisé comme le reste). Nouveau trophée « Garde-robe ».
+- Choix : un seul accessoire par emplacement ; « le plus récent gagne » entre deux appareils pour ce que porte une créature. Limite connue : si deux appareils achètent chacun un objet avec les mêmes étoiles, le solde est ramené à 0 (jamais négatif).
+- Test corrigé : le test de copie de secours dépendait du hasard du générateur.
+
 ## 0.9.1 — Synchronisation activée
 - Projet Firebase « calcul-cm2-famille » branché (clé web restreinte au site de l'appli côté Google Cloud ; la protection des données, ce sont les règles firestore.rules).
 - Petit nuage ☁️ sur l'accueil : ✓ synchro à jour, … en cours, ⚠️ problème (appui = Réglages avec la cause). Caché tant que la synchro n'est pas disponible.

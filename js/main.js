@@ -10,6 +10,8 @@ import { trophiesScreen } from "./ui/trophees.js";
 import { profilScreen } from "./ui/profil.js";
 import { albumScreen } from "./ui/album.js";
 import { reglagesScreen } from "./ui/reglages.js";
+import { boutiqueScreen } from "./ui/boutique.js";
+import { showSplash } from "./ui/splash.js";
 import { startSyncing, setSyncHook } from "./syncer.js";
 import { creatureById, STAGE_NAMES } from "./creatures.js";
 import { refreshState } from "./game.js";
@@ -19,7 +21,7 @@ import { trophyLabel } from "./trophies.js";
 
 const app = document.getElementById("app");
 
-const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, reglages: reglagesScreen, profil: profilScreen };
+const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, reglages: reglagesScreen, boutique: boutiqueScreen, profil: profilScreen };
 let current = null, shown = null; // shown = nom de l'écran réellement affiché
 
 const wanted = () => {
@@ -51,9 +53,11 @@ function announce(news) {
   if (news.trophies.length > 2) toast(`${news.trophies.length} nouveaux trophées t'attendent !`);
   else news.trophies.forEach((t) => toast("Nouveau trophée : " + trophyLabel(t.line, t.tier)));
   if (news.creatures.length > 2) toast("Tes créatures ont grandi ! Va voir dans « Créatures ».", { icon: "🥚" });
-  else news.creatures.forEach((e) => toast(`${creatureById(e.id).name} : ${STAGE_NAMES[e.to]} !`, { icon: "🥚" }));
+  else news.creatures.forEach((e) => toast(`${creatureById(e.id).name} : ${creatureById(e.id).forms[e.to - 1]} !`, { icon: "🥚" }));
 }
-announce(fresh);
+// Écran d'ouverture : une fois par ouverture de l'appli, seulement si on arrive sur l'accueil (pas en rouvrant un écran précis).
+const opening = !!store.profile && shown === "";
+if (opening) showSplash(() => announce(fresh)); else announce(fresh);
 // Synchronisation (si elle est activée) : quand l'autre appareil a apporté du nouveau, on redessine l'accueil / l'album / les trophées (jamais en pleine partie).
 setSyncHook((news) => { if (["", "album", "trophees", "reglages"].includes(shown)) render(); announce(news); });
 startSyncing();

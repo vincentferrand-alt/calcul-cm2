@@ -1,17 +1,45 @@
 // Créatures originales à collectionner (dessinées en SVG, aucune licence) : une par famille de calcul.
+// Les identifiants (add, sub, mul…) sont ceux des familles et ne changent JAMAIS : c'est la clé des sauvegardes.
 // Elles éclosent à 10 bonnes réponses dans leur famille, puis évoluent en 4 stades.
+import { dressing } from "./accessories.js";
+
 export const STAGE_XP = [0, 10, 50, 150, 350]; // bonnes réponses de la famille pour atteindre le stade 0..4
 export const STAGE_NAMES = ["Œuf", "Bébé", "Jeune", "Adulte", "Légendaire"];
 
+// forms : nom de l'espèce à chaque stade ; story : l'histoire de chaque évolution (stades 1 à 4).
 export const CREATURES = [
-  { id: "add", name: "Pomplo", fam: "add", desc: "Un oiseau-soleil joyeux qui additionne tout ce qu'il trouve.", c1: "#ffe27a", c2: "#ffc233", c3: "#c78a00", belly: "#fff4c9", acc: "#ff8a3d", spot: "#ff9f43" },
-  { id: "sub", name: "Frimo", fam: "sub", desc: "Un petit manchot des glaces, champion pour retirer et rendre.", c1: "#8fe0fa", c2: "#37b4e0", c3: "#146f94", belly: "#f1fbff", acc: "#ffb84a", spot: "#bff0ff" },
-  { id: "mul", name: "Kroko", fam: "mul", desc: "Un dragonnet vert qui multiplie ses écailles chaque jour.", c1: "#7fe0a8", c2: "#34b073", c3: "#166a43", belly: "#e8fbe9", acc: "#ffcc4d", spot: "#a6f0c4" },
-  { id: "dbl", name: "Duplo", fam: "dbl", desc: "Un renard à deux queues : il double et triple tout !", c1: "#ffb06d", c2: "#f0802c", c3: "#a24b10", belly: "#fff1e0", acc: "#fff", spot: "#ffd0a0" },
-  { id: "frac", name: "Parto", fam: "frac", desc: "Une boule de gelée violette qui partage tout en parts égales.", c1: "#b6a9ff", c2: "#8068ee", c3: "#4a3bb0", belly: "#ece8ff", acc: "#ffd84a", spot: "#d3cbff" },
-  { id: "comp", name: "Complo", fam: "comp", desc: "Un hibou turquoise qui trouve toujours ce qui manque.", c1: "#7eeadf", c2: "#25b9ad", c3: "#0d6c64", belly: "#e3fbf8", acc: "#ffb84a", spot: "#a5f3ea" },
-  { id: "div", name: "Piko", fam: "div", desc: "Un hérisson roux qui partage ses pommes équitablement.", c1: "#e8a07e", c2: "#c8683f", c3: "#7d3a1c", belly: "#ffe9d6", acc: "#5a3320", spot: "#f0b99a" },
-  { id: "trick", name: "Astro", fam: "trick", desc: "Un chat magicien des étoiles, plein de raccourcis secrets.", c1: "#8f9bff", c2: "#5663e6", c3: "#2a3396", belly: "#e8ebff", acc: "#ffd84a", spot: "#b6bdff" },
+  { id: "add", name: "Braise", species: "Dragon", fam: "add", c1: "#ff9a6b", c2: "#e8512f", c3: "#8c2412", belly: "#ffe3b0", acc: "#ffd84a", spot: "#ffd84a",
+    forms: ["Dragonneau", "Jeune dragon", "Dragon", "Dragon d'or"],
+    desc: "Un dragon au grand cœur : chaque addition fait jaillir une flamme.",
+    story: ["Une petite flamme, un grand bâillement : Braise le dragonneau est né !", "Ses ailes poussent et il sait déjà planer d'un coussin à l'autre.", "Braise est un vrai dragon : ses flammes réchauffent tous les calculs.", "Dragon d'or ! Son feu ne brûle pas, il fait briller tout ce qu'il touche."] },
+  { id: "sub", name: "Mistral", species: "Chat", fam: "sub", c1: "#b6e8fb", c2: "#4cb6e6", c3: "#1b5f88", belly: "#f4fcff", acc: "#ffd84a", spot: "#d7f3ff",
+    forms: ["Chaton des neiges", "Chat des neiges", "Chat des glaces", "Chat des étoiles"],
+    desc: "Un chat des neiges silencieux, expert pour retirer ce qui est en trop.",
+    story: ["Mistral, un chaton des neiges, ronronne déjà sur tes soustractions.", "Il bondit sur les calculs comme sur une souris de glace.", "Chat des glaces, il retire tout ce qui est en trop, sans un bruit.", "Chat des étoiles : une étoile brille sur son front."] },
+  { id: "mul", name: "Filou", species: "Belette", fam: "mul", c1: "#e3c196", c2: "#b9803f", c3: "#6b4423", belly: "#fff1da", acc: "#2d2118", spot: "#d9b47e",
+    forms: ["Belette", "Belette agile", "Belette rusée", "Hermine blanche"],
+    desc: "Une belette qui se faufile partout et connaît ses tables par cœur.",
+    story: ["Filou la belette se faufile partout et trouve le chemin le plus court.", "Il connaît déjà ses tables par cœur, même celles de 7 et de 8 !", "Filou a une queue au bout noir et plus d'un tour dans son sac.", "L'hiver est venu : Filou devient une hermine blanche comme la neige."] },
+  { id: "dbl", name: "Roux", species: "Renard", fam: "dbl", c1: "#ffb978", c2: "#f0832f", c3: "#9c4510", belly: "#fff3e3", acc: "#fff", spot: "#ffd3a6",
+    forms: ["Renardeau", "Renard", "Renard rusé", "Renard solaire"],
+    desc: "Un renard malin qui double et triple tout ce qu'il touche.",
+    story: ["Roux le renardeau est né, la queue en panache et l'œil malin.", "Il double chaque idée : un malin, deux malins !", "Un renard rusé, qui double et triple sans jamais se tromper.", "Le bout de sa queue s'enflamme : un esprit renard se réveille…"] },
+  { id: "frac", name: "Rayure", species: "Tigre", fam: "frac", c1: "#f6f4ff", c2: "#cfc8f7", c3: "#4a3bb0", belly: "#ffffff", acc: "#ffd84a", spot: "#d9d3fa",
+    forms: ["Tigreau blanc", "Jeune tigre", "Tigre blanc", "Tigre de la lune"],
+    desc: "Un tigre blanc aux rayures violettes qui partage en parts bien égales.",
+    story: ["Un bébé tigre blanc aux rayures violettes : Rayure est né !", "Il partage tout en parts bien égales, c'est le tigre le plus juste.", "Rayure grandit et ses rayures violettes brillent de plus en plus.", "Tigre de la lune : il rugit, et tous les nombres se rangent en parts égales !"] },
+  { id: "comp", name: "Yuzu", species: "Kitsune à 4 queues", fam: "comp", c1: "#fff0c2", c2: "#f5c24d", c3: "#a06a08", belly: "#fffaf0", acc: "#2ec4b6", spot: "#8be8de",
+    forms: ["Petit kitsune (1 queue)", "Kitsune à 2 queues", "Kitsune à 3 queues", "Kitsune à 4 queues"],
+    desc: "Un renard-esprit qui trouve toujours ce qui manque, une queue de plus à chaque stade.",
+    story: ["Yuzu, un petit renard-esprit, apparaît avec une seule queue.", "Une deuxième queue pousse ! Il sait toujours ce qui manque.", "Trois queues : une flamme bleue danse au bout de chacune.", "Quatre queues ! Yuzu complète tout, il trouve à coup sûr ce qui manque."] },
+  { id: "div", name: "Luno", species: "Loup", fam: "div", c1: "#d3dbe8", c2: "#8c9cb6", c3: "#424f66", belly: "#f1f4f9", acc: "#ffd84a", spot: "#b7c3d6",
+    forms: ["Louveteau", "Jeune loup", "Loup gris", "Loup de la pleine lune"],
+    desc: "Un loup qui partage tout en parts égales pour que toute la meute en ait.",
+    story: ["Luno, un louveteau, hurle à la lune sa toute première division.", "Il partage le butin en parts égales pour toute la meute.", "Un loup gris à la fourrure argentée veille sur les nombres.", "Loup de la pleine lune : toute la meute compte sur lui !"] },
+  { id: "trick", name: "Aurore", species: "Kitsune à 9 queues", fam: "trick", c1: "#ffffff", c2: "#e4e7ff", c3: "#4a57d6", belly: "#ffffff", acc: "#ffd84a", spot: "#c9cfff",
+    forms: ["Kitsune à 3 queues", "Kitsune à 5 queues", "Kitsune à 7 queues", "Kitsune à 9 queues"],
+    desc: "Le grand esprit-renard des raccourcis : neuf queues pour neuf astuces.",
+    story: ["Aurore, esprit-renard, apparaît avec trois queues scintillantes.", "Cinq queues, cinq astuces de plus dans son sac.", "Sept queues : les raccourcis des grands n'ont plus de secret.", "Neuf queues ! Aurore est le grand kitsune des astuces."] },
 ];
 export const creatureById = (id) => CREATURES.find((c) => c.id === id);
 
@@ -52,79 +80,128 @@ export function featured(s) {
 }
 
 // ---------- dessin ----------
+const f1 = (n) => Number(n.toFixed(1));
 const star = (cx, cy, r, fill, extra = "") => {
-  const pts = Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + (i * Math.PI) / 5, rr = i % 2 ? r * 0.45 : r; return `${(cx + rr * Math.cos(a)).toFixed(1)},${(cy + rr * Math.sin(a)).toFixed(1)}`; }).join(" ");
+  const pts = Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + (i * Math.PI) / 5, rr = i % 2 ? r * 0.45 : r; return `${f1(cx + rr * Math.cos(a))},${f1(cy + rr * Math.sin(a))}`; }).join(" ");
   return `<polygon points="${pts}" fill="${fill}" ${extra}/>`;
 };
 const spark = (x, y, r, d) => `<g class="spark" style="animation-delay:${d}s"><path d="M${x} ${y - r}L${x + r * 0.28} ${y - r * 0.28}L${x + r} ${y}L${x + r * 0.28} ${y + r * 0.28}L${x} ${y + r}L${x - r * 0.28} ${y + r * 0.28}L${x - r} ${y}L${x - r * 0.28} ${y - r * 0.28}Z" fill="#fff6b0" stroke="#ffd84a" stroke-width="1.5"/></g>`;
-const tri = (x1, y1, x2, y2, x3, y3, fill, stroke) => `<path d="M${x1} ${y1}L${x2} ${y2}L${x3} ${y3}Z" fill="${fill}" stroke="${stroke}" stroke-width="3" stroke-linejoin="round"/>`;
+const P = (d, fill, stroke, sw = 3, extra = "") => `<path d="${d}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round" stroke-linecap="round" ${extra}/>`;
+const E = (cx, cy, rx, ry, fill, stroke = "none", sw = 3, rot = 0) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"${rot ? ` transform="rotate(${rot} ${cx} ${cy})"` : ""}/>`;
+const tri = (x1, y1, x2, y2, x3, y3, fill, stroke) => P(`M${x1} ${y1}L${x2} ${y2}L${x3} ${y3}Z`, fill, stroke);
+// Oreille pointue : base centrée en (x, y), s = taille, lean = inclinaison (vers l'extérieur si > 0)
+const ear = (x, y, s, lean, c, inner) => tri(f1(x - 14 * s), y, f1(x + lean * s), f1(y - 36 * s), f1(x + 14 * s), y, c.c2, c.c3) + tri(f1(x - 7 * s), f1(y - 2), f1(x + lean * 0.7 * s), f1(y - 24 * s), f1(x + 7 * s), f1(y - 2), inner, inner);
+const stripes = (list, color, w = 4) => list.map(([x1, y1, x2, y2]) => `<path d="M${x1} ${y1}Q${(x1 + x2) / 2 + 3} ${(y1 + y2) / 2} ${x2} ${y2}" stroke="${color}" stroke-width="${w}" stroke-linecap="round" fill="none"/>`).join("");
 
-function face(c, st, owl) {
-  const r = owl ? 13 : st === 1 ? 12 : st === 2 ? 10.5 : 9.5;
-  const eye = (x) => `${owl ? `<circle cx="${x}" cy="108" r="19" fill="${c.belly}" stroke="${c.c3}" stroke-width="3"/>` : ""}<circle cx="${x}" cy="108" r="${r}" fill="#fff"/><circle cx="${x + 1.5}" cy="109.5" r="${r * 0.58}" fill="#1c2340"/><circle cx="${x + 3.5}" cy="106" r="${r * 0.2}" fill="#fff"/>`;
-  return `${eye(80)}${eye(120)}<circle cx="68" cy="131" r="7" fill="#ffc48a" opacity=".55"/><circle cx="132" cy="131" r="7" fill="#ffc48a" opacity=".55"/>${owl ? "" : `<path d="M91 130Q100 139 109 130" fill="none" stroke="#1c2340" stroke-width="3.5" stroke-linecap="round"/>`}`;
+// Queues de renard en éventail (derrière le corps) : n queues, dégradé du pelage vers le bout coloré.
+function foxTails(n, c, tip, big = 1) {
+  const span = n === 1 ? 0 : n === 2 ? 36 : n === 3 ? 50 : n === 4 ? 58 : 68;
+  const angles = n === 1 ? [56] : Array.from({ length: n }, (_, i) => -span + (2 * span * i) / (n - 1));
+  return [...angles].sort((a, b) => Math.abs(b) - Math.abs(a)).map((a) => {
+    const r = (a * Math.PI) / 180, L = n === 1 ? 60 : n <= 4 ? 80 : 76, cx = f1(100 + Math.sin(r) * L), cy = f1(172 - Math.cos(r) * L * 0.85 + 6);
+    const rx = f1((n >= 7 ? 11 : n >= 5 ? 12 : 15) * big), ry = f1((n >= 7 ? 34 : n >= 5 ? 36 : 38) * big);
+    return `<g transform="rotate(${f1(a)} ${cx} ${cy})">${E(cx, cy, rx, ry, c.c2, c.c3, 3)}${E(cx, f1(cy - ry * 0.55), f1(rx * 0.86), f1(ry * 0.42), tip, "none")}</g>`;
+  }).join("");
 }
 
-// Éléments propres à chaque créature : { back, front, body? }
+function face(c, st, o = {}) {
+  const r = st === 1 ? 12 : st === 2 ? 10.5 : 9.5;
+  const eye = (x) => `<circle cx="${x}" cy="108" r="${r}" fill="#fff"/><circle cx="${x + 1.5}" cy="109.5" r="${f1(r * 0.58)}" fill="#1c2340"/><circle cx="${x + 3.5}" cy="106" r="${f1(r * 0.2)}" fill="#fff"/>`;
+  const nose = o.nose === false ? "" : `<ellipse cx="100" cy="123" rx="5" ry="3.5" fill="${o.noseColor || "#1c2340"}"/>`;
+  return `${eye(80)}${eye(120)}<circle cx="66" cy="130" r="7" fill="#ffc48a" opacity=".5"/><circle cx="134" cy="130" r="7" fill="#ffc48a" opacity=".5"/>${nose}<path d="M91 130Q100 139 109 130" fill="none" stroke="#1c2340" stroke-width="3.2" stroke-linecap="round"/>`;
+}
+
+// Palette par stade (la belette devient une hermine blanche au dernier stade).
+function palette(c, st) {
+  if (c.id === "mul" && st >= 4) return { ...c, c1: "#ffffff", c2: "#f3f6fb", c3: "#5b6b82", belly: "#ffffff" };
+  return c;
+}
+
+// Éléments propres à chaque espèce : back (derrière le corps) et front (devant le corps, sous le visage).
 function features(c, st) {
-  const big = st >= 3, k = st >= 2;
+  const k = st >= 2, big = st >= 3, top = st >= 4;
+  const bellyOval = (rx = 36, ry = 30, cy = 154) => E(100, cy, rx, ry, c.belly);
   switch (c.id) {
-    case "add": return {
-      back: `<ellipse cx="42" cy="135" rx="${big ? 18 : 13}" ry="${big ? 30 : 22}" transform="rotate(-18 42 135)" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/><ellipse cx="158" cy="135" rx="${big ? 18 : 13}" ry="${big ? 30 : 22}" transform="rotate(18 158 135)" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/>`,
-      front: `<ellipse cx="100" cy="158" rx="34" ry="26" fill="${c.belly}"/><path d="M93 123L107 123L100 136Z" fill="${c.acc}" stroke="${c.c3}" stroke-width="2.5" stroke-linejoin="round"/>
-        <path d="M100 72Q92 ${k ? 44 : 54} 98 ${k ? 38 : 50}Q106 ${k ? 52 : 58} 100 72Z" fill="${c.acc}" stroke="${c.c3}" stroke-width="2.5"/>${k ? `<path d="M88 76Q76 54 80 48Q92 58 88 76Z" fill="${c.c2}" stroke="${c.c3}" stroke-width="2.5"/><path d="M112 76Q124 54 120 48Q108 58 112 76Z" fill="${c.c2}" stroke="${c.c3}" stroke-width="2.5"/>` : ""}` };
-    case "sub": return {
-      back: `<ellipse cx="40" cy="140" rx="12" ry="${big ? 30 : 24}" transform="rotate(14 40 140)" fill="${c.c3}"/><ellipse cx="160" cy="140" rx="12" ry="${big ? 30 : 24}" transform="rotate(-14 160 140)" fill="${c.c3}"/>`,
-      front: `<ellipse cx="100" cy="150" rx="40" ry="36" fill="${c.belly}"/><path d="M92 123L108 123L100 136Z" fill="${c.acc}" stroke="${c.c3}" stroke-width="2.5" stroke-linejoin="round"/>
-        ${tri(84, 78, 92, k ? 44 : 58, 100, 74, "#d9f6ff", c.c3)}${k ? tri(100, 74, 108, 44, 116, 78, "#d9f6ff", c.c3) : ""}` };
-    case "mul": return {
-      back: `<path d="M150 160Q196 170 190 124Q180 150 150 146Z" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/>${big ? `<path d="M52 110Q10 70 24 54Q50 66 62 96Z" fill="${c.acc}" stroke="${c.c3}" stroke-width="3"/><path d="M148 110Q190 70 176 54Q150 66 138 96Z" fill="${c.acc}" stroke="${c.c3}" stroke-width="3"/>` : ""}`,
-      front: `<ellipse cx="100" cy="152" rx="36" ry="32" fill="${c.belly}"/>${k ? `<path d="M76 146h48M80 158h40M86 170h28" stroke="${c.c1}" stroke-width="3" stroke-linecap="round"/>` : ""}
-        ${tri(78, 76, 70, 52, 90, 72, c.belly, c.c3)}${tri(122, 76, 130, 52, 110, 72, c.belly, c.c3)}${tri(94, 72, 100, k ? 50 : 60, 106, 72, c.c3, c.c3)}<circle cx="94" cy="127" r="2" fill="${c.c3}"/><circle cx="106" cy="127" r="2" fill="${c.c3}"/>` };
-    case "dbl": return {
-      back: `<path d="M58 160Q6 150 12 96Q40 112 62 140Z" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/><path d="M20 110Q14 104 12 96Q22 98 28 104Z" fill="#fff"/><path d="M142 160Q194 150 188 96Q160 112 138 140Z" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/><path d="M180 110Q186 104 188 96Q178 98 172 104Z" fill="#fff"/>${big ? `<path d="M64 170Q16 190 8 150Q36 150 62 156Z" fill="${c.c1}" stroke="${c.c3}" stroke-width="3"/>` : ""}`,
-      front: `${tri(66, 86, 62, 50, 92, 72, c.c2, c.c3)}${tri(134, 86, 138, 50, 108, 72, c.c2, c.c3)}${tri(70, 78, 68, 60, 84, 72, c.belly, c.belly)}${tri(130, 78, 132, 60, 116, 72, c.belly, c.belly)}
-        <ellipse cx="100" cy="142" rx="28" ry="20" fill="${c.belly}"/><ellipse cx="100" cy="128" rx="5" ry="3.5" fill="#1c2340"/>` };
-    case "frac": return {
-      back: k ? `<path d="M84 70Q76 44 66 40" stroke="${c.c3}" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="66" cy="40" r="6" fill="${c.acc}" stroke="${c.c3}" stroke-width="2.5"/><path d="M116 70Q124 44 134 40" stroke="${c.c3}" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="134" cy="40" r="6" fill="${c.acc}" stroke="${c.c3}" stroke-width="2.5"/>` : "",
-      front: `<path d="M100 150L100 176A56 56 0 0 0 148 150Z" fill="${c.belly}" opacity=".9"/><path d="M100 150L148 150A56 56 0 0 0 100 94Z" fill="${c.c1}" opacity=".55"/><path d="M100 150L52 150M100 150L100 94" stroke="${c.c3}" stroke-width="2" opacity=".5"/>
-        ${big ? `<ellipse cx="46" cy="152" rx="9" ry="12" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/><ellipse cx="154" cy="152" rx="9" ry="12" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/>` : ""}` };
-    case "comp": return {
-      back: `<ellipse cx="38" cy="140" rx="14" ry="${big ? 34 : 26}" transform="rotate(10 38 140)" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/><ellipse cx="162" cy="140" rx="14" ry="${big ? 34 : 26}" transform="rotate(-10 162 140)" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/>`,
-      front: `<ellipse cx="100" cy="158" rx="34" ry="26" fill="${c.belly}"/><path d="M84 150Q100 160 116 150M86 162Q100 172 114 162" fill="none" stroke="${c.c1}" stroke-width="3" stroke-linecap="round"/>
-        ${tri(66, 80, 62, 46, 90, 70, c.c2, c.c3)}${tri(134, 80, 138, 46, 110, 70, c.c2, c.c3)}<path d="M93 128L107 128L100 142Z" fill="${c.acc}" stroke="${c.c3}" stroke-width="2.5" stroke-linejoin="round"/>
-        ${big ? `<circle cx="80" cy="108" r="24" fill="none" stroke="${c.c3}" stroke-width="3" opacity=".6"/><circle cx="120" cy="108" r="24" fill="none" stroke="${c.c3}" stroke-width="3" opacity=".6"/>` : ""}` };
-    case "div": {
-      const nsp = k ? 13 : 9, spikes = Array.from({ length: nsp }, (_, i) => { const t = -165 + (i * 150) / (nsp - 1), r = (t * Math.PI) / 180, x = 100 + 54 * Math.cos(r), y = 128 + 54 * Math.sin(r), x2 = 100 + (big ? 86 : 78) * Math.cos(r), y2 = 128 + (big ? 86 : 78) * Math.sin(r), w = 9, nx = -Math.sin(r) * w, ny = Math.cos(r) * w; return `<path d="M${(x + nx).toFixed(1)} ${(y + ny).toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}L${(x - nx).toFixed(1)} ${(y - ny).toFixed(1)}Z" fill="${c.c3}"/>`; }).join("");
-      return { back: spikes, front: `<ellipse cx="100" cy="146" rx="38" ry="34" fill="${c.belly}"/><circle cx="76" cy="76" r="9" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/><circle cx="124" cy="76" r="9" fill="${c.c2}" stroke="${c.c3}" stroke-width="3"/><ellipse cx="100" cy="124" rx="7" ry="5" fill="#2a160d"/>` };
+    case "add": { // Dragon
+      const wing = (s) => { const x = 100 + s * 54;
+        return P(`M${x} 128Q${100 + s * (big ? 92 : 84)} ${big ? 66 : 84} ${100 + s * (big ? 84 : 78)} ${big ? 46 : 70}Q${100 + s * 66} ${big ? 84 : 94} ${100 + s * 52} 100Z`, c.c1, c.c3) + `<path d="M${x} 120Q${100 + s * 74} 90 ${100 + s * (big ? 82 : 76)} ${big ? 52 : 74}" stroke="${c.c3}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`; };
+      return {
+        back: (k ? wing(-1) + wing(1) : "") + P(`M148 168Q184 176 180 136`, "none", c.c2, 13) + P(`M148 168Q184 176 180 136`, "none", c.c3, 2.5, 'opacity=".5"') + tri(171, 140, 180, 114, 190, 140, c.acc, c.c3),
+        front: bellyOval() + `<path d="M80 146h40M82 158h36M86 170h28" stroke="${c.c1}" stroke-width="3" stroke-linecap="round"/>`
+          + tri(76, 82, 66, f1(big ? 40 : 52), 90, 76, c.belly, c.c3) + tri(124, 82, 134, f1(big ? 40 : 52), 110, 76, c.belly, c.c3)
+          + (top ? P("M100 70Q86 44 100 26Q114 44 100 70Z", "#ffb02e", c.c3, 2.5) + P("M100 64Q94 48 100 38Q106 48 100 64Z", "#ffe27a", "none", 0) : "")
+          + `<circle cx="93" cy="124" r="2.2" fill="${c.c3}"/><circle cx="107" cy="124" r="2.2" fill="${c.c3}"/>`, nose: false };
     }
-    case "trick": return {
-      back: `<path d="M148 168Q196 168 186 120" fill="none" stroke="${c.c2}" stroke-width="12" stroke-linecap="round"/><path d="M148 168Q196 168 186 120" fill="none" stroke="${c.c3}" stroke-width="3" stroke-linecap="round" opacity=".5"/>${star(186, 112, 11, c.acc, `stroke="${c.c3}" stroke-width="2"`)}`,
-      front: `<ellipse cx="100" cy="154" rx="34" ry="28" fill="${c.belly}"/>${tri(64, 88, 62, 54, 92, 74, c.c2, c.c3)}${tri(136, 88, 138, 54, 108, 74, c.c2, c.c3)}
-        ${star(100, 86, k ? 10 : 8, c.acc, `stroke="${c.c3}" stroke-width="2"`)}<path d="M62 126L40 120M62 134L40 138M138 126L160 120M138 134L160 138" stroke="${c.c3}" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="100" cy="125" rx="4.5" ry="3" fill="${c.c3}"/>
-        ${big ? `<path d="M66 78L100 8L134 78Z" fill="${c.c3}" stroke="#1c2340" stroke-width="3" stroke-linejoin="round"/><path d="M68 72Q100 84 132 72" fill="none" stroke="${c.acc}" stroke-width="6"/>${star(100, 40, 9, c.acc)}<path d="M150 158L176 112" stroke="#8a5a2b" stroke-width="5" stroke-linecap="round"/>${star(178, 108, 12, c.acc, `stroke="${c.c3}" stroke-width="2"`)}` : ""}` };
+    case "sub": // Chat des neiges
+      return {
+        back: P(`M52 170Q8 160 14 110Q22 96 32 112Q26 140 56 150Z`, c.c2, c.c3) + (big ? stripes([[22, 118, 30, 132], [24, 134, 34, 146]], c.c3, 3) : ""),
+        front: bellyOval(34, 28) + ear(70, 84, 1, -4, c, c.belly) + ear(130, 84, 1, 4, c, c.belly)
+          + stripes([[100, 76, 100, 88], [90, 78, 92, 88], [110, 78, 108, 88]], c.c3, 3.5)
+          + (k ? `<path d="M52 126L30 118M52 134L30 140M148 126L170 118M148 134L170 140" stroke="${c.c3}" stroke-width="2.5" stroke-linecap="round"/>` : "")
+          + (top ? star(100, 72, 8, c.acc, `stroke="${c.c3}" stroke-width="2"`) : ""), nose: true };
+    case "mul": { // Belette
+      return {
+        back: P(`M146 172Q196 180 190 120Q182 112 174 126Q180 156 144 158Z`, c.c2, c.c3) + (k ? tri(180, 128, 186, 112, 192, 128, top ? c.c3 : "#2d2118", top ? c.c3 : "#2d2118") : ""),
+        front: bellyOval(30, 34, 150) + E(68, 80, 9, 9, c.c2, c.c3) + E(132, 80, 9, 9, c.c2, c.c3) + E(68, 81, 4, 4, c.belly) + E(132, 81, 4, 4, c.belly)
+          + (k ? `<path d="M56 128L36 124M56 136L36 142M144 128L164 124M144 136L164 142" stroke="${c.c3}" stroke-width="2.2" stroke-linecap="round"/>` : "")
+          + (big ? `<path d="M88 168Q100 176 112 168" stroke="${c.c3}" stroke-width="3" fill="none" stroke-linecap="round"/>` : ""), nose: true };
+    }
+    case "dbl": // Renard
+      return {
+        back: foxTails(1, c, top ? "#ffb02e" : c.belly, big ? 1.08 : 1),
+        front: bellyOval(32, 28) + ear(68, 84, 1.15, -6, c, c.belly) + ear(132, 84, 1.15, 6, c, c.belly)
+          + P("M52 126Q60 140 76 132Q70 144 54 144Z", c.belly, "none", 0) + P("M148 126Q140 140 124 132Q130 144 146 144Z", c.belly, "none", 0)
+          + (big ? star(100, 84, 6, c.acc, `stroke="${c.c3}" stroke-width="1.5"`) : ""), nose: true };
+    case "frac": { // Tigre blanc
+      const sw = c.c3;
+      return {
+        back: P(`M148 170Q200 176 192 124Q184 118 178 130Q184 160 146 160Z`, c.c2, c.c3) + stripes([[180, 134, 188, 134], [178, 146, 187, 148]], sw, 4),
+        front: bellyOval(34, 28) + E(68, 82, 14, 13, c.c2, c.c3) + E(132, 82, 14, 13, c.c2, c.c3) + E(68, 83, 7, 7, c.belly) + E(132, 83, 7, 7, c.belly)
+          + stripes([[100, 70, 100, 90], [88, 72, 90, 88], [112, 72, 110, 88], [48, 112, 62, 114], [46, 124, 60, 124], [152, 112, 138, 114], [154, 124, 140, 124], [70, 150, 82, 156], [130, 150, 118, 156]], sw, 4.5)
+          + (big ? `<path d="M93 132l2 7 3-5 2 5 2-7" fill="#fff" stroke="${sw}" stroke-width="1.5" stroke-linejoin="round"/>` : "")
+          + (top ? star(100, 66, 7, c.acc, `stroke="${sw}" stroke-width="1.5"`) : ""), nose: true, noseColor: "#4a3bb0" };
+    }
+    case "comp": // Kitsune à 4 queues (1, 2, 3, 4 selon le stade)
+      return {
+        back: foxTails(st, c, c.acc, 1),
+        front: bellyOval(32, 28) + ear(68, 84, 1.15, -6, c, c.belly) + ear(132, 84, 1.15, 6, c, c.belly)
+          + `<path d="M100 74l-5 12h10z" fill="${c.acc}" stroke="${c.c3}" stroke-width="1.5" stroke-linejoin="round"/>`
+          + (big ? `<path d="M64 120q-10 6-8 16M136 120q10 6 8 16" stroke="${c.acc}" stroke-width="3" fill="none" stroke-linecap="round"/>` : "")
+          + (top ? `<g class="spark">${P("M30 70Q22 58 30 46Q38 58 30 70Z", c.acc, "none", 0)}</g><g class="spark" style="animation-delay:.5s">${P("M172 78Q164 66 172 54Q180 66 172 78Z", c.acc, "none", 0)}</g>` : ""), nose: true };
+    case "div": { // Loup
+      const ruff = k ? P("M44 128l10-8 2 12 10-8 2 12 8-6M156 128l-10-8-2 12-10-8-2 12-8-6", "none", c.c3, 3) : "";
+      return {
+        back: (top ? E(100, 124, 84, 84, "#fff7c9", "none", 0).replace('fill="#fff7c9"', 'fill="#fff7c9" opacity=".32"') : "") + P(`M148 172Q202 176 190 118Q180 124 178 136Q176 160 146 160Z`, c.c2, c.c3),
+        front: bellyOval(32, 28) + ear(66, 86, 1.25, -2, c, c.belly) + ear(134, 86, 1.25, 2, c, c.belly) + ruff
+          + E(100, 128, 24, 17, c.belly, c.c3, 2.5)
+          + (top ? `<path d="M100 66a9 9 0 1 0 6 14a7 7 0 1 1-6-14z" fill="${c.acc}" stroke="${c.c3}" stroke-width="1.5"/>` : ""), nose: true, wolf: true };
+    }
+    case "trick": // Kitsune à 9 queues (3, 5, 7, 9)
+      return {
+        back: (top ? E(100, 126, 88, 88, "#c9cfff", "none", 0).replace('fill="#c9cfff"', 'fill="#c9cfff" opacity=".3"') : "") + foxTails([0, 3, 5, 7, 9][st], c, c.acc, 1),
+        front: bellyOval(34, 28) + ear(66, 84, 1.2, -6, c, "#cfd4ff") + ear(134, 84, 1.2, 6, c, "#cfd4ff")
+          + star(100, 80, k ? 9 : 7, c.acc, `stroke="${c.c3}" stroke-width="1.8"`)
+          + `<path d="M64 122q8 6 14 4M136 122q-8 6-14 4" stroke="${c.c3}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
+          + (top ? `<ellipse cx="100" cy="52" rx="30" ry="8" fill="none" stroke="#ffd84a" stroke-width="5"/>` : ""), nose: true };
     default: return { back: "", front: "" };
   }
 }
 
 const SCALE = [0, 0.7, 0.86, 0.98, 1.02];
 
-export function creatureSVG(id, stage, uid = "c") {
-  const c = creatureById(id);
-  if (stage <= 0) return eggSVG({ a: c.c1, b: c.c2, spot: c.spot, uid: `${uid}-${id}` });
-  const st = Math.min(4, stage), f = features(c, st), g = `${uid}-${id}-b`;
-  const owl = id === "comp";
-  const aura = st >= 4 ? `<circle cx="100" cy="125" r="92" fill="url(#${uid}-${id}-a)" class="aura"/>` : "";
-  const halo = st >= 4 ? `<ellipse cx="100" cy="46" rx="30" ry="9" fill="none" stroke="#ffd84a" stroke-width="6"/><ellipse cx="100" cy="46" rx="30" ry="9" fill="none" stroke="#fff6b0" stroke-width="2"/>` : "";
+export function creatureSVG(id, stage, uid = "c", worn = null) {
+  const base = creatureById(id), dress = dressing(worn);
+  if (stage <= 0) return eggSVG({ a: base.c1, b: base.c2, spot: base.spot, uid: `${uid}-${id}` });
+  const st = Math.min(4, stage), c = palette(base, st), f = features(c, st), g = `${uid}-${id}-b`;
+  const aura = st >= 4 && c.id !== "div" && c.id !== "trick" ? `<circle cx="100" cy="125" r="92" fill="url(#${uid}-${id}-a)" class="aura"/>` : "";
   const sparks = st >= 4 ? spark(30, 56, 9, 0) + spark(172, 70, 7, 0.6) + spark(24, 150, 6, 1.1) + spark(178, 160, 8, 0.3) : "";
-  const body = id === "frac" ? `<path d="M44 150Q40 80 100 76Q160 80 156 150Q154 188 100 190Q46 188 44 150Z" fill="url(#${g})" stroke="${c.c3}" stroke-width="4"/>`
-    : `<ellipse cx="100" cy="132" rx="${id === "div" ? 52 : 56}" ry="${id === "div" ? 54 : 58}" fill="url(#${g})" stroke="${c.c3}" stroke-width="4"/>`;
-  const feet = id === "frac" ? "" : `<ellipse cx="76" cy="190" rx="16" ry="8" fill="${c.c3}"/><ellipse cx="124" cy="190" rx="16" ry="8" fill="${c.c3}"/>`;
-  return `<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.name}, stade ${STAGE_NAMES[st]}">
+  const body = `<ellipse cx="100" cy="132" rx="56" ry="58" fill="url(#${g})" stroke="${c.c3}" stroke-width="4"/>`;
+  const feet = `<ellipse cx="76" cy="190" rx="16" ry="8" fill="${c.c3}"/><ellipse cx="124" cy="190" rx="16" ry="8" fill="${c.c3}"/>`;
+  return `<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${base.name}, ${base.forms[st - 1]}">
   <defs><radialGradient id="${g}" cx="38%" cy="30%" r="85%"><stop offset="0" stop-color="${c.c1}"/><stop offset="1" stop-color="${c.c2}"/></radialGradient>
   <radialGradient id="${uid}-${id}-a"><stop offset="0" stop-color="#fff2a8" stop-opacity=".75"/><stop offset="1" stop-color="#ffd84a" stop-opacity="0"/></radialGradient></defs>
-  <ellipse cx="100" cy="204" rx="${48 * SCALE[st] + 14}" ry="8" fill="#000" opacity=".16"/>
-  <g transform="translate(100 196) scale(${SCALE[st]}) translate(-100 -196)">${aura}${f.back}${feet}${body}${f.front}${face(c, st, owl)}${halo}${sparks}</g>
+  <ellipse cx="100" cy="204" rx="${f1(48 * SCALE[st] + 14)}" ry="8" fill="#000" opacity=".16"/>
+  <g transform="translate(100 196) scale(${SCALE[st]}) translate(-100 -196)">${aura}${f.back}${dress.back}${feet}${body}${f.front}${face(c, st, f)}${dress.front}${sparks}</g>
 </svg>`;
 }
 

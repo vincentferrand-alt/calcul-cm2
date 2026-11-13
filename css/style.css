@@ -334,3 +334,45 @@ body::before { /* étoiles discrètes */
 .card .btn[disabled] { opacity: .6; }
 
 .pill.cloud { border: 0; font: inherit; cursor: pointer; color: inherit; }
+
+.creature-story { max-width: 18em; margin: 4px auto 0 !important; font-size: .9rem; font-weight: 700; color: var(--ink-soft); }
+.creature-new { display: block; width: auto; text-align: center; }
+.creature-new .creature-art { width: 150px; margin: 0 auto; }
+
+/* v0.10 — boutique */
+.big-pill { font-size: 1.05rem; font-weight: 900; }
+.shop-card { display: flex; flex-direction: column; align-items: center; gap: 8px; background: linear-gradient(#ffffff, #eaf6ff); }
+.shop-preview { width: 62%; max-width: 230px; text-align: center; }
+.shop-preview .creature-art { animation: wobble 3.4s ease-in-out infinite; transform-origin: 50% 95%; }
+.shop-who { font-weight: 900; color: var(--ink); margin-top: 2px; }
+.shop-empty { font-size: 3rem; } .shop-empty p { font-size: .95rem; font-weight: 700; color: var(--ink-soft); }
+.shop-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.chip { width: 52px; height: 52px; padding: 2px; border-radius: 16px; border: 3px solid #d5e2f5; background: #fff; cursor: pointer; }
+.chip.on { border-color: var(--sun); background: #fff7dc; }
+.chip .creature-art { width: 100%; }
+.items { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.item { background: #fff; border-radius: 20px; padding: 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; color: var(--ink); }
+.item.has { outline: 3px solid var(--ok); }
+.item-ic { width: 84px; height: 72px; display: grid; place-items: center; background: #eaf6ff; border-radius: 14px; }
+.item-ic svg { width: 100%; height: 100%; }
+.item-name { font-weight: 800; font-size: .92rem; min-height: 2.4em; display: grid; place-items: center; }
+.item .btn { width: 100%; }
+.item-note { color: var(--ok-d); font-weight: 800; }
+.btn.ghost-dark { background: #e6edf8; color: #5b6b8a; box-shadow: none; opacity: 1; font-size: .85rem; }
+.menu-grid .btn:nth-child(5) { grid-column: 1 / -1; }
+
+/* v0.10 — écran d'ouverture */
+.splash { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; text-align: center; color: #fff;
+  background: radial-gradient(circle at 50% 38%, #2a79d6 0%, #164a99 55%, #0d2d63 100%); animation: splash-in .5s ease both; cursor: pointer; }
+.splash.out { opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+.splash-title { font-weight: 900; letter-spacing: .06em; font-size: 1.1rem; color: var(--sun); text-transform: uppercase; }
+.splash-art { width: min(64vw, 260px); animation: splash-pop .9s cubic-bezier(.3,1.5,.5,1) both .15s, wobble 3.4s ease-in-out infinite 1s; transform-origin: 50% 95%; }
+.splash-hello { margin: 4px 0 0; font-size: 1.9rem; font-weight: 900; }
+.splash-line { margin: 0; font-size: 1.1rem; font-weight: 700; color: #dff3ff; max-width: 22em; }
+.splash-tap { position: absolute; bottom: 8vh; font-weight: 800; color: #bfe3ff; animation: pulse 1.6s ease-in-out infinite; }
+.splash-stars i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .7; animation: splash-twinkle 2.4s ease-in-out infinite; }
+@keyframes splash-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes splash-pop { from { transform: scale(.3) translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes splash-twinkle { 0%, 100% { opacity: .15; transform: scale(.7); } 50% { opacity: .9; transform: scale(1.3); } }
+@keyframes pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .splash, .splash-art, .splash-tap, .splash-stars i { animation: none; } }

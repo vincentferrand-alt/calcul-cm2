@@ -2,6 +2,7 @@
 // IDENTIFIANTS STABLES : "t_xxx:palier" ne sont jamais renommés ni supprimés (tests/trophy-ids.json le vérifie).
 // On peut AJOUTER des lignes ou des paliers ; on ne change jamais ce qui existe.
 import { FAMILIES } from "./generator.js";
+import { ownedCount } from "./shop.js";
 
 export const TIER_NAMES = ["Bronze", "Argent", "Or", "Platine", "Diamant"];
 export const TIER_COLORS = ["#cd7f32", "#c3cad5", "#ffc933", "#8fd6e6", "#6fb7ff"];
@@ -21,6 +22,7 @@ export const LINES = [
   { id: "t_missions", name: "Missions", emoji: "🧭", tiers: [3, 15, 50, 150], value: (s) => s.c.missions, desc: (n) => `Accomplir ${n} missions` },
   { id: "t_stars", name: "Étoiles", emoji: "⭐", tiers: [10, 50, 150, 400], value: (s) => s.c.stars, desc: (n) => `Gagner ${n} étoiles` },
   { id: "t_hatch", name: "Éclosions", emoji: "🥚", tiers: [1, 4, 8], value: (s) => cre(s, 1), desc: (n) => `Faire éclore ${n} créature${n > 1 ? "s" : ""}` },
+  { id: "t_shop", name: "Garde-robe", emoji: "👒", tiers: [1, 4, 8, 12], value: (s) => ownedCount(s), desc: (n) => `Avoir ${n} accessoire${n > 1 ? "s" : ""} dans ta garde-robe` },
   { id: "t_legend", name: "Légendes", emoji: "👑", tiers: [1, 3, 8], value: (s) => cre(s, 4), desc: (n) => `Amener ${n} créature${n > 1 ? "s" : ""} au dernier stade` },
   ...FAMILIES.map((f) => ({ id: "t_fam_" + f.id, name: f.name, emoji: f.short, tiers: [20, 80, 250, 700], value: (s) => (s.fam[f.id] ? s.fam[f.id].xp : 0), desc: (n) => `Réussir ${n} calculs de ${f.name.toLowerCase()}` })),
 ];

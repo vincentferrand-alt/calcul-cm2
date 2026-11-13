@@ -136,7 +136,7 @@ export function playScreen({ go }) {
     const run = ok ? S.run + 1 : 0;
     store.update((s) => { res = afterAnswer(s, { prob, ok, hinted: S.hinted, review: !!prob.review, run, date, mode: opts.mode, adapt: opts.adapt !== false }); });
     const ev = res.ev; S.tro.push(...res.trophies); S.mis.push(...res.missions); S.cre.push(...res.creatures);
-    res.creatures.forEach((e) => { sfx.hatch(); confetti(); toast(e.from === 0 ? `${creatureById(e.id).name} est né !` : `${creatureById(e.id).name} évolue : ${STAGE_NAMES[e.to]} !`, { icon: "🥚", sound: false }); });
+    res.creatures.forEach((e) => { sfx.hatch(); confetti(); toast(e.from === 0 ? `${creatureById(e.id).name} est né !` : `${creatureById(e.id).name} évolue : ${creatureById(e.id).forms[e.to - 1]} !`, { icon: "🥚", sound: false }); });
     if (ev.levelUp) S.up.push(ev.levelUp);
     if (ev.mastered) S.mastered++;
     if (!prob.retry) { S.n++; if (ok) S.ok++; }

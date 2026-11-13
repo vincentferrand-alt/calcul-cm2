@@ -57,5 +57,6 @@ export function homeScreen({ go }) {
       h("button", { class: "btn big", onclick: () => go("apprendre") }, "💡 Apprendre"),
       h("button", { class: "btn big", onclick: () => go("exercices") }, "🎯 Exercices"),
       h("button", { class: "btn big light", onclick: () => go("album") }, "🥚 Créatures"),
-      h("button", { class: "btn big light", onclick: () => go("trophees") }, "🏆 Trophées")))) };
+      h("button", { class: "btn big light", onclick: () => go("trophees") }, "🏆 Trophées"),
+      h("button", { class: "btn big light", onclick: () => go("boutique") }, "🛍️ Boutique")))) };
 }

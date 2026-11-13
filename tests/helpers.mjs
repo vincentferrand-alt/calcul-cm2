@@ -69,6 +69,9 @@ export function randState(rng) {
   s.rec["time:mix"] = R(40); s.rec["time:add"] = R(30);
   s.m.done = Array.from({ length: R(5) }, (_, i) => `m-${i}`);
   s.m.active = Array.from({ length: 3 }, (_, i) => ({ id: `m-${20 + i * 10 + R(3)}`, tpl: "fam", params: { fam: "add" }, target: 10, progress: R(10), done: false }));
+  s.shop = { owned: {}, worn: {} };
+  for (const it of ["crown", "shades", "scarf"]) if (rng() < 0.5) s.shop.owned[it] = `2026-11-0${1 + R(9)}`;
+  if (rng() < 0.5) s.shop.worn.add = { head: { id: rng() < 0.5 ? "crown" : null, t: 1000 + R(1000) } };
   if (rng() < 0.5) s.futureKey = { n: R(9), list: [R(3), 3 + R(3)] }; // clé inconnue d'une version future
   return s;
 }

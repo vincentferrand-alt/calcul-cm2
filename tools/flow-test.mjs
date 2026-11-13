@@ -22,7 +22,7 @@ await page.waitForSelector(".home-hero", { timeout: 3000 });
 await page.screenshot({ path: `${out}/flow-1-home.png` });
 // 2. défi du jour : on répond (saisie) à tout, puis « Retour » ramène à l'accueil
 await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("ccm2:settings") || "{}"); s.answer = "qcm"; localStorage.setItem("ccm2:settings", JSON.stringify(s)); });
-await page.reload(); await page.waitForSelector(".home-hero");
+await page.reload(); await page.waitForSelector(".splash"); await page.locator(".splash").click(); await page.waitForSelector(".splash", { state: "detached" }); await page.waitForSelector(".home-hero");
 await tap("text=C'est parti");
 await page.waitForSelector(".choice");
 await page.waitForTimeout(12500); // hésitation : le coup de pouce doit apparaître

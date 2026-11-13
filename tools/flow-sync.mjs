@@ -32,7 +32,7 @@ async function device(label, size, fixture) {
   await ctx.route("**/js/firebase-config.js", (r) => r.fulfill({ status: 200, contentType: "text/javascript", body: 'export const FIREBASE = { apiKey: "test-key", projectId: "test-proj" };' }));
   await ctx.route("https://firestore.googleapis.com/**", firestore);
   const page = await ctx.newPage(); const errors = []; page.on("pageerror", (e) => errors.push(e.message));
-  await page.goto(`http://localhost:${srv.address().port}/`); await page.waitForSelector(".home-hero");
+  await page.goto(`http://localhost:${srv.address().port}/`); await page.waitForSelector(".home-hero"); await page.locator(".splash").click({ timeout: 2000 }).catch(() => {}); await page.waitForSelector(".splash", { state: "detached" });
   return { page, errors, label };
 }
 const trophies = (page) => page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem("ccm2:state")).tro).length);
