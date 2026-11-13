@@ -3,7 +3,10 @@ import { store } from "../store.js";
 import { sfx } from "../audio.js";
 import { toKey } from "../dates.js";
 import { build, choices, famById, fmt } from "../generator.js";
-import { buildSession, recordAnswer, endSession } from "../progress.js";
+import { buildSession } from "../progress.js";
+import { afterAnswer, afterSession } from "../game.js";
+import { trophyLabel } from "../trophies.js";
+import { missionText } from "../missions.js";
 import { keypad } from "./keypad.js";
 
 export const lvlStars = (l) => "★".repeat(l) + "☆".repeat(3 - l);
@@ -33,7 +36,7 @@ export function playScreen({ go }) {
   const date = toKey();
   const list = buildSession(store.state, opts, Math.random, date);
   const total = list.length;
-  const S = { i: 0, n: 0, ok: 0, run: 0, best: 0, input: "", locked: false, up: [], mastered: 0, timer: null };
+  const S = { i: 0, n: 0, ok: 0, run: 0, best: 0, input: "", locked: false, up: [], mastered: 0, timer: null, tro: [], mis: [] };
   const root = h("main", { class: "screen play" });
   const fam0 = opts.families !== "mix" && opts.families && opts.families.length === 1 ? famById(opts.families[0]) : null;
 
@@ -87,8 +90,10 @@ export function playScreen({ go }) {
   function answer(value, el) {
     if (S.locked) return; S.locked = true;
     const prob = list[S.i], ok = value === prob.a;
-    let ev;
-    store.update((s) => { ev = recordAnswer(s, prob, ok, { date, mode: opts.mode, review: !!prob.review, adapt: opts.adapt !== false }); });
+    let res;
+    const run = ok ? S.run + 1 : 0;
+    store.update((s) => { res = afterAnswer(s, { prob, ok, review: !!prob.review, run, date, mode: opts.mode, adapt: opts.adapt !== false }); });
+    const ev = res.ev; S.tro.push(...res.trophies); S.mis.push(...res.missions);
     if (ev.levelUp) S.up.push(ev.levelUp);
     if (ev.mastered) S.mastered++;
     if (!prob.retry) { S.n++; if (ok) S.ok++; }
@@ -124,13 +129,15 @@ export function playScreen({ go }) {
 
   function finish() {
     S.done = true;
-    let r; store.update((s) => { r = endSession(s, { ok: S.ok, total: S.n }); });
+    let r; store.update((s) => { r = afterSession(s, { ok: S.ok, total: S.n, mode: opts.mode, daily: !!opts.daily, date }); });
+    S.tro.push(...r.trophies); S.mis.push(...r.missions);
     sfx.level();
     results(r);
   }
 
   function results(r) {
     const titres = ["", "Bravo d'avoir joué !", "Très bien !", "Magnifique !"];
+    const titre = opts.daily ? "Défi du jour terminé !" : titres[r.stars] || "Bravo !";
     const stars = h("div", { class: "stars" }, [1, 2, 3].map((n) => h("span", { class: "star" + (n <= r.stars ? " on" : ""), style: { animationDelay: 0.3 + n * 0.25 + "s" } }, "★")));
     [1, 2, 3].forEach((n) => { if (n <= r.stars) setTimeout(() => sfx.star(n), 300 + n * 250); });
     const notes = [];
@@ -138,11 +145,14 @@ export function playScreen({ go }) {
     if (S.mastered) notes.push(`✨ ${S.mastered} calcul${S.mastered > 1 ? "s" : ""} devenu${S.mastered > 1 ? "s" : ""} facile${S.mastered > 1 ? "s" : ""} !`);
     if (S.best >= 3) notes.push(`🔥 Meilleure série : ${S.best} bonnes réponses d'affilée`);
     if (r.perfect) notes.push("💯 Zéro faute !");
+    if (opts.daily && r.streak) notes.push(`🔥 Série : ${r.streak.current} jour${r.streak.current > 1 ? "s" : ""}`);
     root.replaceChildren(h("div", { class: "screen-body result" },
-      h("h1", { class: "result-title" }, titres[r.stars] || "Bravo !"),
+      h("h1", { class: "result-title" }, titre),
       stars,
       h("div", { class: "card center" }, h("div", { class: "big-num" }, `${S.ok} / ${S.n}`), h("p", {}, "bonnes réponses du premier coup")),
       notes.length ? h("div", { class: "card" }, notes.map((n) => h("p", { class: "note" }, n))) : null,
+      S.tro.length ? h("div", { class: "card" }, h("h2", {}, "🏆 Nouveau" + (S.tro.length > 1 ? "x" : "") + " trophée" + (S.tro.length > 1 ? "s" : "") + " !"), S.tro.map((t) => h("p", { class: "note" }, trophyLabel(t.line, t.tier)))) : null,
+      S.mis.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), S.mis.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
       h("button", { class: "btn green big", onclick: () => go("jouer", true) }, "Rejouer (nouveaux calculs)"),
       h("button", { class: "btn ghost big", onclick: () => go(opts.back || "exercices") }, "Retour")));
   }

@@ -8,6 +8,7 @@ const srv = http.createServer((req, res) => { let p = decodeURIComponent(req.url
 const browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", args: ["--no-sandbox"] });
 const page = await (await browser.newContext({ viewport: { width: +w, height: +hh }, deviceScaleFactor: 2, serviceWorkers: "block" })).newPage();
 const errors = []; page.on("pageerror", (e) => errors.push(e.message));
+await page.addInitScript(() => { if (!localStorage.getItem("ccm2:profile")) localStorage.setItem("ccm2:profile", JSON.stringify({ name: "Camille", id: null })); });
 await page.goto(`http://localhost:${srv.address().port}/#/exercices`); await page.waitForTimeout(300);
 await page.click("text=4 choix"); await page.click("text=Mélange"); await page.waitForTimeout(400);
 for (let i = 0; i < 60; i++) {

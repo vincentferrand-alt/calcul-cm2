@@ -2,6 +2,13 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.6.0 — Récompenses : défi du jour, série, missions, trophées
+- Écran d'accueil : défi du jour (thème différent chaque jour, ~20 calculs, aucun chrono ; on peut le rejouer avec de nouveaux calculs), série de jours avec joker (1 joker au départ, +1 tous les 7 jours, 2 max : un jour manqué ne casse pas tout), 3 missions toujours renouvelées, étoiles.
+- Missions : remplacées dès qu'elles sont terminées par une nouvelle tirée d'une réserve variée (famille, enchaînement, mode, série parfaite, fiche à découvrir, calculs à rattraper, défi du jour).
+- Trophées à paliers (bronze → diamant) : 13 lignes + 1 par famille. Identifiants figés dans tests/trophy-ids.json : un test échoue si l'un disparaît. Un trophée gagné ne se retire jamais, même si un compteur baissait.
+- Écran prénom + code secret (une fois par appareil, stockés seulement sur l'appareil ; le code est transformé en empreinte SHA-256 pour la synchro).
+- Choix : la série de jours est calculée à partir des jours joués (donc fusionnable sans conflit entre téléphone et iMac).
+
 ## 0.5.0 — Apprendre
 - 17 fiches (une par astuce, couvrant tous les types de calcul) : principe court, exemple décomposé pas à pas (onglets pour plusieurs exemples), mini-exemple interactif où elle trouve elle-même chaque étape, bouton « Je m'entraîne » qui lance des exercices de ce type.
 - Les exemples sont de vrais calculs du générateur (testés). Une fiche est marquée « lue » dès qu'elle a été travaillée ; le niveau adaptatif n'est pas modifié par l'entraînement d'une fiche.

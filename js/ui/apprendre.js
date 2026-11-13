@@ -4,7 +4,10 @@ import { sfx } from "../audio.js";
 import { toKey } from "../dates.js";
 import { FAMILIES, famById, build, generate, shuffle, fmt } from "../generator.js";
 import { FICHES, ficheById } from "../learn.js";
-import { markLearn } from "../progress.js";
+import { afterLearn } from "../game.js";
+import { trophyLabel } from "../trophies.js";
+import { missionText } from "../missions.js";
+import { toast } from "./notify.js";
 import { session } from "./play.js";
 import { topbar } from "./common.js";
 
@@ -36,7 +39,11 @@ export function ficheScreen({ go, args }) {
   if (!f) { go("apprendre"); return { el: h("div") }; }
   const fam = famById(f.fam);
   const date = toKey();
-  const learned = () => store.update((st) => { if (markLearn(st, f.id, date)) sfx.trophy(); });
+  const learned = () => {
+    let r; store.update((st) => { r = afterLearn(st, f.id, date); });
+    r.trophies.forEach((t) => toast("Nouveau trophée : " + trophyLabel(t.line, t.tier)));
+    r.missions.forEach((m) => toast("Mission accomplie : " + missionText(m, date), { icon: "🧭", sound: false }));
+  };
   const root = h("main", { class: "screen", style: { "--fam": fam.color, "--fam-ink": fam.ink } });
 
   // --- exemple pas à pas (écrit à l'avance)
