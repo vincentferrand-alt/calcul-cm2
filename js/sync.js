@@ -13,10 +13,14 @@ export const stable = (x) => JSON.stringify(x, (k, v) => (v && typeof v === "obj
 const docUrl = (cfg, id) => `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(cfg.projectId)}/databases/(default)/documents/${COLLECTION}/${id}`;
 
 // Messages clairs (pour l'écran Réglages) : on dit ce qui ne va pas sans jargon inutile.
+// Vrai message Firestore : base absente → « The database (default) does not exist for project … » ;
+// document pas encore créé → « Document "projects/…/databases/(default)/documents/profils/… " not found. » (contient aussi « database » !)
+const noDatabase = (msg) => /does not exist|datastore\/setup|create a database/i.test(msg) && !/^\s*Document\b/i.test(msg);
+const errMsg = (body) => (body && body.error && body.error.message) || "";
 export function explain(status, body) {
   const msg = (body && body.error && body.error.message) || "";
   if (status === 0) return "Pas de connexion pour le moment (la synchro reprendra toute seule).";
-  if (status === 404 && /database/i.test(msg)) return "La base Firestore n'existe pas encore : il faut la créer dans la console Firebase.";
+  if (status === 404 && noDatabase(msg)) return "La base Firestore n'existe pas encore : il faut la créer dans la console Firebase.";
   if (status === 403 && /disabled|not been used|API has not/i.test(msg)) return "L'API Firestore n'est pas activée pour ce projet Firebase.";
   if (status === 403) return "Accès refusé : vérifie les règles Firestore et la clé (docs/firebase.md).";
   if (status === 400 && /API key/i.test(msg)) return "La clé Firebase est refusée : vérifie apiKey et projectId.";
@@ -44,7 +48,7 @@ export async function syncOnce({ id, local, cfg, fetchFn = (...a) => globalThis.
     if (got.status === 200) {
       try { remote = migrate(JSON.parse(got.body.fields.data.stringValue)); updateTime = got.body.updateTime; }
       catch { return { ok: false, code: "remote-unreadable", message: "La copie en ligne est illisible : rien n'a été modifié (ni ici, ni en ligne)." }; }
-    } else if (!(got.status === 404 && !(got.body && /database/i.test((got.body.error || {}).message || "")))) {
+    } else if (!(got.status === 404 && !noDatabase(errMsg(got.body)))) {
       return { ok: false, code: "http-" + got.status, message: explain(got.status, got.body) };
     }
     const merged = remote ? merge(mine, remote) : mine;

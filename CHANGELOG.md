@@ -2,6 +2,9 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.10.1 — Correctif synchronisation
+- Bug : le vrai Firestore répond « Document "…/databases/(default)/…" not found » quand le profil n'existe pas encore ; le mot « database » faisait croire que la base elle-même n'existait pas, et la première synchro s'arrêtait à tort. Reconnaissance corrigée (la vraie absence de base dit « does not exist »), tests alignés sur les vrais messages de Firestore.
+
 ## 0.10.0 — Nouveau bestiaire, boutique d'accessoires, écran d'ouverture
 - Nouvelles créatures, dans cet ordre : 🐉 dragon (Additions, la première), 🐱 chat (Soustractions), belette, 🦊 renard, 🐯 tigre, kitsune à 4 queues, 🐺 loup, kitsune à 9 queues (Astuces). Chacune garde son œuf et ses 4 évolutions avec une histoire à chaque forme. Les identifiants de sauvegarde sont inchangés : les œufs et stades déjà obtenus restent (le dessin change, pas la progression).
 - Boutique 🛍️ : les étoiles gagnées s'échangent contre 13 accessoires (chapeaux, lunettes, cou/cape). On habille chaque créature éclose ; l'accessoire se voit dans l'album, sur l'accueil et à l'ouverture. Solde = étoiles gagnées − prix des accessoires possédés ; un achat n'est jamais perdu (union à la fusion, synchronisé comme le reste). Nouveau trophée « Garde-robe ».

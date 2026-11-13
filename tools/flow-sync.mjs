@@ -18,7 +18,7 @@ async function firestore(route) {
   calls.push(req.method());
   const id = u.pathname.split("/").pop(), d = docs.get(id);
   const json = (status, body) => route.fulfill({ status, headers: { ...cors, "content-type": "application/json" }, body: JSON.stringify(body) });
-  if (req.method() === "GET") return d ? json(200, { fields: { data: { stringValue: d.data } }, updateTime: d.t }) : json(404, { error: { status: "NOT_FOUND", message: "not found" } });
+  if (req.method() === "GET") return d ? json(200, { fields: { data: { stringValue: d.data } }, updateTime: d.t }) : json(404, { error: { status: "NOT_FOUND", message: "Document \"projects/p/databases/(default)/documents/profils/abc\" not found." } });
   const pre = u.searchParams.get("currentDocument.updateTime"), mustNew = u.searchParams.get("currentDocument.exists") === "false";
   if ((mustNew && d) || (pre && (!d || d.t !== pre))) return json(400, { error: { status: "FAILED_PRECONDITION", message: "p" } });
   docs.set(id, { data: JSON.parse(req.postData()).fields.data.stringValue, t: `2026-11-13T22:30:${String(clock++).padStart(2, "0")}Z` });

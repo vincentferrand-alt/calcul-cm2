@@ -20,7 +20,7 @@ function fakeFirestore() {
       const reply = (status, body) => ({ status, json: async () => body });
       if (f.hooks.failWith) return reply(f.hooks.failWith.status, f.hooks.failWith.body);
       const d = docs.get(id);
-      if (method === "GET") return d ? reply(200, { name: u.pathname, fields: { data: { stringValue: d.data } }, updateTime: d.t }) : reply(404, { error: { code: 404, status: "NOT_FOUND", message: "Document not found." } });
+      if (method === "GET") return d ? reply(200, { name: u.pathname, fields: { data: { stringValue: d.data } }, updateTime: d.t }) : reply(404, { error: { code: 404, status: "NOT_FOUND", message: "Document \"projects/p/databases/(default)/documents/profils/abc\" not found." } });
       if (f.hooks.beforePatch) { const h = f.hooks.beforePatch; f.hooks.beforePatch = null; h(); }
       const cur = docs.get(id);
       const pre = u.searchParams.get("currentDocument.updateTime"), mustNotExist = u.searchParams.get("currentDocument.exists") === "false";
@@ -85,7 +85,7 @@ test("hors ligne ou erreur serveur : message clair, aucune perte, rien d'écrit"
   for (const [status, body, re] of [
     [403, { error: { message: "Missing or insufficient permissions." } }, /règles/],
     [403, { error: { message: "Cloud Firestore API has not been used in project" } }, /API Firestore/],
-    [404, { error: { message: "The database (default) does not exist for project x" } }, /base Firestore/],
+    [404, { error: { message: "The database (default) does not exist for project x. Please visit https://console.cloud.google.com/datastore/setup?project=x to create a database." } }, /base Firestore/],
     [400, { error: { message: "API key not valid" } }, /clé/],
   ]) { fs.hooks.failWith = { status, body }; r = await run(fs, local); assert.equal(r.ok, false); assert.match(r.message, re); }
   fs.hooks.failWith = null;
@@ -103,4 +103,9 @@ test("copie en ligne d'une ancienne version de l'appli : migrée et fusionnée s
   fs.docs.set(ID, { data: JSON.stringify(old), t: "2026-11-13T21:00:00Z" });
   const local = randState(makeRng(10)); const r = await run(fs, local);
   assert.equal(r.ok, true); assert.deepEqual(missingFrom(r.merged, local), []); assert.deepEqual(missingFrom(r.merged, old), []);
+});
+
+test("un document pas encore créé (404 « Document … databases/(default) … not found ») n'est PAS pris pour une base absente", () => {
+  const body = { error: { code: 404, status: "NOT_FOUND", message: 'Document "projects/calcul-cm2-famille/databases/(default)/documents/profils/abc" not found.' } };
+  assert.doesNotMatch(explain(404, body), /base Firestore/);
 });
