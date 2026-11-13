@@ -2,7 +2,7 @@
    - Mise en cache de la coque de l'appli (jouable hors ligne).
    - NE TOUCHE JAMAIS aux données de progression (localStorage / IndexedDB) : il ne gère que ses propres caches.
    - Le numéro de version doit correspondre à js/version.js (vérifié par tests/version.test.mjs). */
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 const PREFIX = "calcul-cm2-shell-";
 const CACHE = PREFIX + VERSION;
 const ASSETS = [
@@ -10,14 +10,16 @@ const ASSETS = [
   "index.html",
   "manifest.webmanifest",
   "css/style.css",
-  "js/version.js",
-  "js/dom.js",
   "js/creatures.js",
+  "js/dom.js",
+  "js/generator.js",
   "js/main.js",
+  "js/numbers-fr.js",
+  "js/version.js",
+  "icons/apple-touch-icon.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/icon-maskable-512.png",
-  "icons/apple-touch-icon.png",
 ];
 
 self.addEventListener("install", (event) => {
