@@ -48,3 +48,39 @@ export function answerFromSay(say) {
   if ((m = say.match(new RegExp(`^le quart de ${N}$`)))) return parseFr(m[1]) / 4;
   throw new Error("phrase non reconnue : " + say);
 }
+
+// ---------- états aléatoires et faux localStorage pour les tests de sauvegarde ----------
+import { emptyState, COUNTERS } from "../js/state.js";
+export function randState(rng) {
+  const R = (n) => Math.floor(rng() * n);
+  const s = emptyState();
+  for (const c of COUNTERS) s.c[c] = R(400);
+  const fams = ["add", "sub", "mul", "dbl", "frac", "comp", "div", "trick"];
+  for (const f of fams) if (rng() < 0.8) s.fam[f] = { xp: R(300), n: R(500), lvl: 1 + R(3), maxLvl: 1 + R(3), recent: Array.from({ length: R(10) }, () => R(2)) };
+  for (let i = 0; i < 6; i++) {
+    const d = `2026-11-${String(1 + R(28)).padStart(2, "0")}`;
+    s.days[d] = { ok: R(60), tot: R(80), fam: { add: R(10), mul: R(10) }, learn: R(2) ? ["add9"] : [], easy: R(2) ? [`k|${R(5)}`] : [] };
+  }
+  for (let i = 0; i < 8; i++) s.tro[`t_calc:${1 + R(5)}`] = `2026-11-${String(1 + R(28)).padStart(2, "0")}`;
+  for (const f of fams) if (rng() < 0.6) { const st = R(5); s.cre[f] = { s: st, d: Object.fromEntries(Array.from({ length: st }, (_, i) => [i + 1, `2026-10-${String(1 + R(28)).padStart(2, "0")}`])) }; }
+  for (const id of ["add9", "x11", "x25", "tiers"]) if (rng() < 0.5) s.learn[id] = `2026-11-0${1 + R(9)}`;
+  for (let i = 0; i < 6; i++) { const key = `add_2d|${10 + R(60)} + ${10 + R(60)}`; s.review[key] = { k: "add_2d", p: { a: 11, b: 29 }, box: R(4), due: `2026-11-${String(10 + R(15))}`, miss: R(5), done: R(4) === 0, ...(R(2) ? { doneAt: "2026-11-12" } : {}) }; }
+  for (let i = 0; i < 4; i++) s.daily[`2026-11-${String(1 + R(28)).padStart(2, "0")}`] = { done: R(2) === 0, ok: R(20), n: 20, stars: R(4) };
+  s.rec["time:mix"] = R(40); s.rec["time:add"] = R(30);
+  s.m.done = Array.from({ length: R(5) }, (_, i) => `m-${i}`);
+  s.m.active = Array.from({ length: 3 }, (_, i) => ({ id: `m-${20 + i * 10 + R(3)}`, tpl: "fam", target: 10, progress: R(10), done: false }));
+  if (rng() < 0.5) s.futureKey = { n: R(9), list: [R(3), 3 + R(3)] }; // clé inconnue d'une version future
+  return s;
+}
+
+export function fakeLS() {
+  const m = new Map();
+  return {
+    get length() { return m.size; },
+    key: (i) => [...m.keys()][i] ?? null,
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => { m.set(k, String(v)); },
+    removeItem: (k) => { m.delete(k); },
+    _m: m,
+  };
+}
