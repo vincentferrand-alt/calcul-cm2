@@ -1,0 +1,169 @@
+import { h } from "../dom.js";
+import { store } from "../store.js";
+import { sfx } from "../audio.js";
+import { toKey } from "../dates.js";
+import { build, choices, famById, fmt } from "../generator.js";
+import { buildSession, recordAnswer, endSession } from "../progress.js";
+import { keypad } from "./keypad.js";
+
+export const lvlStars = (l) => "★".repeat(l) + "☆".repeat(3 - l);
+export const session = { opts: null }; // réglages de la série à jouer (posés par les autres écrans)
+
+const BRAVO = ["Bravo !", "Super !", "Exact !", "Bien joué !", "Parfait !", "Excellent !", "Tu gères !"];
+const OUPS = ["Presque !", "Pas tout à fait…", "Ce n'est pas grave !", "On regarde ensemble !"];
+const rnd = (a) => a[Math.floor(Math.random() * a.length)];
+
+export function hintPanel(prob, { animate = true } = {}) {
+  return h("div", { class: "hint" },
+    h("div", { class: "hint-title" }, "💡 L'astuce pour ces nombres"),
+    h("div", { class: "hint-text" }, prob.hint.text),
+    h("div", { class: "steps" }, prob.hint.steps.map((s, i) =>
+      h("div", { class: "step", style: animate ? { animationDelay: 0.25 + i * 0.35 + "s" } : { animation: "none" } },
+        h("span", { class: "step-n" }, String(i + 1)),
+        h("div", {}, h("div", { class: "step-t" }, s.t), h("div", { class: "step-eq" }, s.eq))))));
+}
+
+export function questionText(prob) {
+  return [h("div", { class: "q-text" }, prob.q), prob.showEq ? h("div", { class: "q-eq" }, "= ?") : null];
+}
+
+export function playScreen({ go }) {
+  const opts = session.opts;
+  if (!opts) { go("exercices"); return { el: h("div") }; }
+  const date = toKey();
+  const list = buildSession(store.state, opts, Math.random, date);
+  const total = list.length;
+  const S = { i: 0, n: 0, ok: 0, run: 0, best: 0, input: "", locked: false, up: [], mastered: 0, timer: null };
+  const root = h("main", { class: "screen play" });
+  const fam0 = opts.families !== "mix" && opts.families && opts.families.length === 1 ? famById(opts.families[0]) : null;
+
+  const bar = h("div", { class: "bar" }, h("div", { class: "bar-fill" }));
+  const counter = h("span", { class: "pill" }, "");
+  const top = h("div", { class: "topbar" },
+    h("button", { class: "icon-btn", "aria-label": "Quitter", onclick: () => { clearTimeout(S.timer); go(opts.back || "exercices"); } }, "✕"),
+    bar, counter);
+  const body = h("div", { class: "play-body" });
+  root.append(top, body);
+
+  function setProgress() {
+    bar.firstChild.style.width = (100 * S.n / total) + "%";
+    counter.textContent = `${Math.min(S.n + 1, total)} / ${total}`;
+  }
+
+  function render() {
+    S.locked = false; S.input = ""; setProgress();
+    const prob = list[S.i];
+    const fam = famById(prob.fam);
+    const card = h("div", { class: "q-card", style: { "--fam": fam.color } },
+      h("div", { class: "q-fam" }, `${fam.short}  ${fam.name} · ${lvlStars(prob.lvl || 1)}`),
+      prob.review ? h("div", { class: "q-tag" }, "↻ Un calcul à revoir") : prob.retry ? h("div", { class: "q-tag" }, "↻ On le refait") : null,
+      ...questionText(prob), h("div", { class: "q-flash" }));
+    body.replaceChildren(card);
+    if (store.settings.answer === "qcm") renderChoices(prob, card);
+    else renderInput(prob, card);
+  }
+
+  function renderChoices(prob, card) {
+    const opts4 = choices(prob);
+    const grid = h("div", { class: "choices" }, opts4.map((v, i) =>
+      h("button", { class: "choice", type: "button", "data-v": v, onclick: () => { sfx.tap(); answer(v, grid.children[i]); } },
+        h("span", { class: "choice-n" }, String(i + 1)), fmt(v))));
+    body.append(grid);
+    S.choicesEl = grid; S.optValues = opts4;
+  }
+
+  function renderInput(prob) {
+    const box = h("div", { class: "answer", "aria-live": "polite" }, h("span", { class: "ph" }, "?"));
+    const upd = () => { box.replaceChildren(S.input ? h("span", {}, S.input) : h("span", { class: "ph" }, "?")); };
+    const pad = keypad({
+      onDigit: (d) => { if (S.locked || S.input.length >= 6) return; S.input = S.input === "0" ? d : S.input + d; upd(); },
+      onDel: () => { if (S.locked) return; S.input = S.input.slice(0, -1); upd(); },
+      onOk: () => { if (S.locked || !S.input) return; answer(Number(S.input), box); },
+    });
+    body.append(box, pad);
+    S.box = box; S.upd = upd;
+  }
+
+  function answer(value, el) {
+    if (S.locked) return; S.locked = true;
+    const prob = list[S.i], ok = value === prob.a;
+    let ev;
+    store.update((s) => { ev = recordAnswer(s, prob, ok, { date, mode: opts.mode, review: !!prob.review, adapt: opts.adapt !== false }); });
+    if (ev.levelUp) S.up.push(ev.levelUp);
+    if (ev.mastered) S.mastered++;
+    if (!prob.retry) { S.n++; if (ok) S.ok++; }
+    const card = body.querySelector(".q-card");
+    if (ok) {
+      S.run++; S.best = Math.max(S.best, S.run); sfx.ok();
+      el.classList.add("good"); card.classList.add("good");
+      card.querySelector(".q-flash").textContent = "✓ " + rnd(BRAVO) + (S.run >= 3 ? `  🔥 ${S.run}` : "");
+      S.timer = setTimeout(next, 900);
+      card.onclick = () => { clearTimeout(S.timer); next(); };
+    } else {
+      S.run = 0; sfx.wrong();
+      el.classList.add("soft");
+      if (S.choicesEl) [...S.choicesEl.children].forEach((b) => { if (Number(b.dataset.v) === prob.a) b.classList.add("good"); });
+      if (!prob.retry) list.splice(Math.min(S.i + 4, list.length), 0, { ...build(prob.k, prob.p), lvl: prob.lvl, retry: true });
+      showWrong(prob, card);
+    }
+    setProgress();
+  }
+
+  function showWrong(prob, card) {
+    card.classList.add("soft");
+    card.querySelector(".q-flash").textContent = `${rnd(OUPS)} La réponse : ${fmt(prob.a)}`;
+    const next_ = h("button", { class: "btn green big", type: "button", onclick: next }, "J'ai compris →");
+    body.replaceChildren(card, h("div", { class: "wrong-zone" }, hintPanel(prob), h("p", { class: "muted center small" }, "On le reverra bientôt, pour bien l'apprendre."), next_));
+  }
+
+  function next() {
+    clearTimeout(S.timer);
+    if (S.i + 1 >= list.length) return finish();
+    S.i++; render();
+  }
+
+  function finish() {
+    S.done = true;
+    let r; store.update((s) => { r = endSession(s, { ok: S.ok, total: S.n }); });
+    sfx.level();
+    results(r);
+  }
+
+  function results(r) {
+    const titres = ["", "Bravo d'avoir joué !", "Très bien !", "Magnifique !"];
+    const stars = h("div", { class: "stars" }, [1, 2, 3].map((n) => h("span", { class: "star" + (n <= r.stars ? " on" : ""), style: { animationDelay: 0.3 + n * 0.25 + "s" } }, "★")));
+    [1, 2, 3].forEach((n) => { if (n <= r.stars) setTimeout(() => sfx.star(n), 300 + n * 250); });
+    const notes = [];
+    S.up.forEach((u) => notes.push(`🚀 Niveau ${u.to} débloqué en ${famById(u.fam).name} !`));
+    if (S.mastered) notes.push(`✨ ${S.mastered} calcul${S.mastered > 1 ? "s" : ""} devenu${S.mastered > 1 ? "s" : ""} facile${S.mastered > 1 ? "s" : ""} !`);
+    if (S.best >= 3) notes.push(`🔥 Meilleure série : ${S.best} bonnes réponses d'affilée`);
+    if (r.perfect) notes.push("💯 Zéro faute !");
+    root.replaceChildren(h("div", { class: "screen-body result" },
+      h("h1", { class: "result-title" }, titres[r.stars] || "Bravo !"),
+      stars,
+      h("div", { class: "card center" }, h("div", { class: "big-num" }, `${S.ok} / ${S.n}`), h("p", {}, "bonnes réponses du premier coup")),
+      notes.length ? h("div", { class: "card" }, notes.map((n) => h("p", { class: "note" }, n))) : null,
+      h("button", { class: "btn green big", onclick: () => go("jouer", true) }, "Rejouer (nouveaux calculs)"),
+      h("button", { class: "btn ghost big", onclick: () => go(opts.back || "exercices") }, "Retour")));
+  }
+
+  const onKey = (e) => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const handled = () => e.preventDefault();
+    if (S.done) return;
+    if (S.locked) {
+      if (e.key === "Enter" || e.key === " ") { handled(); const b = document.querySelector(".wrong-zone .btn"); if (b) b.click(); else { clearTimeout(S.timer); next(); } }
+      return;
+    }
+    if (store.settings.answer === "qcm") {
+      const i = "1234".indexOf(e.key);
+      if (i >= 0 && S.choicesEl) { handled(); S.choicesEl.children[i].click(); }
+    } else if (/^\d$/.test(e.key)) { handled(); if (S.input.length < 6) { S.input = S.input === "0" ? e.key : S.input + e.key; S.upd(); } }
+    else if (e.key === "Backspace") { handled(); S.input = S.input.slice(0, -1); S.upd(); }
+    else if (e.key === "Enter" && S.input) { handled(); answer(Number(S.input), S.box); }
+  };
+  document.addEventListener("keydown", onKey);
+
+  render();
+  return { el: root, destroy: () => { clearTimeout(S.timer); document.removeEventListener("keydown", onKey); } };
+}
