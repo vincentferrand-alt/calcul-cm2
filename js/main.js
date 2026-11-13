@@ -5,6 +5,7 @@ import { store } from "./store.js";
 import { demanderStockagePersistant } from "./storage.js";
 import { playScreen } from "./ui/play.js";
 import { exercicesScreen } from "./ui/exercices.js";
+import { apprendreScreen, ficheScreen } from "./ui/apprendre.js";
 
 const app = document.getElementById("app");
 
@@ -17,10 +18,11 @@ function homeScreen({ go }) {
         h("h1", { style: { margin: "18px 0 0", fontSize: "2rem" } }, "Calcul CM2 ✨"),
         mascot,
         h("div", { class: "bubble" }, "Prête pour quelques calculs ? Chaque bonne réponse fait grandir ton œuf !")),
-      h("button", { class: "btn big", onclick: () => go("exercices") }, "Exercices ▶"))) };
+      h("button", { class: "btn big", onclick: () => go("apprendre") }, "💡 Apprendre une astuce"),
+      h("button", { class: "btn big green", onclick: () => go("exercices") }, "🎯 Exercices"))) };
 }
 
-const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen };
+const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen };
 let current = null;
 
 function go(name, force) {
@@ -30,8 +32,8 @@ function go(name, force) {
 }
 function render() {
   if (current && current.destroy) current.destroy();
-  const name = location.hash.replace(/^#\/?/, "").split("/")[0];
-  const screen = (routes[name] || routes[""])({ go });
+  const [name, ...args] = location.hash.replace(/^#\/?/, "").split("/");
+  const screen = (routes[name] || routes[""])({ go, args });
   current = screen;
   app.replaceChildren(screen.el, h("div", { class: "badge-version" }, "v" + VERSION));
 }

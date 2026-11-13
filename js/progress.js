@@ -81,3 +81,12 @@ export function buildSession(s, opts, rng = Math.random, date) {
   }
   return shuffle(list, rng);
 }
+
+// Une fiche « Apprendre » vient d'être travaillée (la date du premier passage est conservée).
+export function markLearn(s, id, date) {
+  const first = !s.learn[id];
+  if (first) { s.learn[id] = date; s.c.learn = Object.keys(s.learn).length; }
+  const d = dayRec(s, date);
+  if (!d.learn.includes(id)) d.learn.push(id);
+  return first;
+}

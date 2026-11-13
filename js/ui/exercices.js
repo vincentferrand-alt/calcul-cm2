@@ -23,7 +23,7 @@ export function exercicesScreen({ go }) {
         h("button", { class: "btn big green", onclick: () => start("mix") }, "🎲 Mélange de tout"),
         h("div", { class: "fam-grid" }, FAMILIES.map((f) => {
           const fs = s.fam[f.id];
-          return h("button", { class: "fam-card", style: { "--fam": f.color }, onclick: () => start([f.id]) },
+          return h("button", { class: "fam-card", style: { "--fam": f.color, "--fam-ink": f.ink }, onclick: () => start([f.id]) },
             h("span", { class: "fam-sym" }, f.short), h("span", { class: "fam-name" }, f.name),
             h("span", { class: "fam-lvl" }, lvlStars(fs ? fs.lvl : 1)));
         }))));

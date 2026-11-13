@@ -3,14 +3,14 @@
 import { enLettres as nl } from "./numbers-fr.js";
 
 export const FAMILIES = [
-  { id: "add", name: "Additions", short: "+", color: "#ffb703", blurb: "Additionner malin" },
-  { id: "sub", name: "Soustractions", short: "−", color: "#4cc9f0", blurb: "Soustraire sans se tromper" },
-  { id: "mul", name: "Multiplications", short: "×", color: "#43b581", blurb: "Tables et astuces de produits" },
-  { id: "dbl", name: "Doubles et triples", short: "×2", color: "#ff8a3d", blurb: "Doubles, triples, quadruples" },
-  { id: "frac", name: "Moitiés et tiers", short: "½", color: "#8e7dff", blurb: "Moitiés, tiers, quarts" },
-  { id: "comp", name: "Compléments", short: "→", color: "#2ec4b6", blurb: "Aller à 100, à 1 000…" },
-  { id: "div", name: "Divisions", short: "÷", color: "#d9693f", blurb: "Tables à l'envers, ÷ 2 et ÷ 4" },
-  { id: "trick", name: "Astuces ×4 ×8 ×25 ×50", short: "★", color: "#5b6cff", blurb: "Les raccourcis des grands" },
+  { id: "add", name: "Additions", short: "+", color: "#ffb703", ink: "#3a2a00", blurb: "Additionner malin" },
+  { id: "sub", name: "Soustractions", short: "−", color: "#4cc9f0", ink: "#04364f", blurb: "Soustraire sans se tromper" },
+  { id: "mul", name: "Multiplications", short: "×", color: "#2f9e6f", ink: "#fff", blurb: "Tables et astuces de produits" },
+  { id: "dbl", name: "Doubles et triples", short: "×2", color: "#e8742a", ink: "#fff", blurb: "Doubles, triples, quadruples" },
+  { id: "frac", name: "Moitiés et tiers", short: "½", color: "#7a68f0", ink: "#fff", blurb: "Moitiés, tiers, quarts" },
+  { id: "comp", name: "Compléments", short: "→", color: "#2ec4b6", ink: "#033a36", blurb: "Aller à 100, à 1 000…" },
+  { id: "div", name: "Divisions", short: "÷", color: "#c85a34", ink: "#fff", blurb: "Tables à l'envers, ÷ 2 et ÷ 4" },
+  { id: "trick", name: "Astuces ×4 ×8 ×25 ×50", short: "★", color: "#4f5ff0", ink: "#fff", blurb: "Les raccourcis des grands" },
 ];
 export const famById = (id) => FAMILIES.find((f) => f.id === id);
 

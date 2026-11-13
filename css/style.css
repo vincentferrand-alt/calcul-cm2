@@ -134,12 +134,12 @@ body::before { /* étoiles discrètes */
 .seg-b.on { background: var(--sky); border-color: var(--sky); color: #06324a; }
 .fam-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .fam-card {
-  font: inherit; border: 0; cursor: pointer; text-align: left; color: #fff; padding: 14px 12px 12px; border-radius: 20px;
+  font: inherit; border: 0; cursor: pointer; text-align: left; color: var(--fam-ink, #fff); padding: 14px 12px 12px; border-radius: 20px;
   background: var(--fam); box-shadow: 0 5px 0 rgba(0, 0, 0, .22); display: flex; flex-direction: column; gap: 4px; min-height: 108px;
 }
 .fam-card:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0, 0, 0, .22); }
-.fam-sym { font-size: 1.9rem; font-weight: 900; line-height: 1; text-shadow: 0 2px 0 rgba(0, 0, 0, .2); }
-.fam-name { font-weight: 800; font-size: 1rem; text-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
+.fam-sym { font-size: 1.9rem; font-weight: 900; line-height: 1; }
+.fam-name { font-weight: 800; font-size: 1rem; }
 .fam-lvl { margin-top: auto; letter-spacing: 2px; font-size: .95rem; opacity: .95; }
 .small { font-size: .85rem; }
 
@@ -210,3 +210,30 @@ body::before { /* étoiles discrètes */
 .note { font-weight: 800; color: var(--ink); margin: 6px 0; text-align: left; }
 .wrong-zone > p { color: #dff3ff; margin: 2px 0 6px; }
 .choices { flex: 1; max-height: 440px; grid-auto-rows: 1fr; }
+
+/* ===== Apprendre ===== */
+.lead { color: #fff; font-weight: 800; margin: 2px 4px 0; font-size: 1.05rem; }
+.learn-group { display: flex; flex-direction: column; gap: 8px; }
+.learn-fam { color: #fff; font-weight: 900; display: flex; align-items: center; gap: 8px; margin-top: 6px; text-shadow: 0 2px 0 rgba(0,0,0,.2); }
+.fam-dot { display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 10px; background: var(--fam); color: var(--fam-ink, #fff); box-shadow: 0 3px 0 rgba(0,0,0,.2); font-size: .95rem; }
+.learn-item { display: flex; align-items: center; gap: 12px; font: inherit; font-weight: 800; text-align: left; background: #fff; color: var(--ink); border: 0; border-radius: 18px; padding: 12px 14px; min-height: 56px; box-shadow: 0 4px 0 #b9c9e4; cursor: pointer; }
+.learn-item:active { transform: translateY(3px); box-shadow: 0 1px 0 #b9c9e4; }
+.learn-emoji { font-size: 1.5rem; }
+.learn-done { color: var(--ok-d); font-size: 1.3rem; } .learn-go { color: #8da0c3; font-size: 1.5rem; }
+.fiche-head { display: flex; align-items: center; gap: 12px; background: var(--fam); color: var(--fam-ink, #fff); border-radius: 22px; padding: 14px; box-shadow: var(--shadow); }
+.fiche-emoji { font-size: 2.4rem; }
+.idea { font-weight: 900; font-size: 1.15rem; line-height: 1.3; }
+.tip { background: #fff8dc; border-radius: 12px; padding: 8px 10px; color: #7a5a00 !important; font-weight: 700; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.tab { font: inherit; font-weight: 800; border: 3px solid #d5e2f5; background: #fff; color: var(--ink); border-radius: 12px; padding: 6px 10px; cursor: pointer; }
+.tab.on { background: var(--fam); border-color: var(--fam); color: var(--fam-ink, #fff); }
+.ex-q { text-align: center; font-size: 2rem; font-weight: 900; margin: 10px 0; }
+.ex-result { text-align: center; font-weight: 900; font-size: 1.3rem; color: var(--ok-d); margin: 8px 0; animation: bounce .4s; }
+.card .btn { width: 100%; margin-top: 8px; }
+.step.ok { background: #e6fbef; } .step.ok .step-n { background: var(--ok); color: #fff; }
+.step.cur { background: #fff8dc; }
+.blank { display: inline-block; min-width: 2.2em; text-align: center; border-bottom: 4px solid var(--sun-d); color: var(--sun-d); }
+.mini-choices { display: flex; gap: 8px; margin-top: 8px; }
+.mini { flex: 1; font: inherit; font-size: 1.25rem; font-weight: 900; padding: 10px 4px; min-height: 48px; border: 0; border-radius: 14px; background: #fff; box-shadow: 0 4px 0 #b9c9e4; cursor: pointer; color: var(--ink); }
+.mini:active { transform: translateY(3px); box-shadow: 0 1px 0 #b9c9e4; }
+.mini.soft { background: var(--soft-bg); color: #b45f06; box-shadow: none; opacity: .7; }
