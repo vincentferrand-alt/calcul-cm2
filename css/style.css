@@ -313,3 +313,18 @@ body::before { /* étoiles discrètes */
 .nudge-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #d9a300; }
 @keyframes nudge-pulse { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.06) } }
 @media (prefers-reduced-motion: reduce) { .nudge-btn { animation: none } }
+
+/* v0.8 — dictée, réglages, compagnon */
+.btn.small { font-size: .95rem; padding: 8px 12px; min-height: 40px; width: auto; margin: 0; }
+.q-main { min-height: 4.2em; }
+.dict-play { width: 96px; height: 96px; border-radius: 50%; border: 0; font-size: 2.6rem; margin-top: 8px; cursor: pointer; background: var(--sky); box-shadow: 0 6px 0 #2a9fc4; }
+.dict-play:active { transform: translateY(4px); box-shadow: 0 2px 0 #2a9fc4; }
+.dict-label { font-weight: 900; font-size: 1.25rem; margin: 8px 0 4px; color: var(--ink); }
+.dict-actions { display: flex; gap: 10px; justify-content: center; margin: 6px 0 2px; flex-wrap: wrap; }
+.dict-actions .btn { box-shadow: 0 4px 0 #c9d6ec; }
+.dict-note { color: var(--ink-soft); font-weight: 700; font-size: .85rem; margin-top: 6px; }
+.speak-btn { position: absolute; top: 8px; right: 8px; width: 42px; height: 42px; border-radius: 50%; border: 0; font-size: 1.3rem; background: #e9f7ff; cursor: pointer; }
+.gear { position: absolute; top: 4px; right: 4px; width: 46px; height: 46px; border-radius: 50%; border: 0; font-size: 1.4rem; background: rgba(255,255,255,.22); cursor: pointer; display: grid; place-items: center; }
+.home-hero { position: relative; }
+.pet-pick { margin-top: 6px; font: inherit; font-weight: 800; font-size: .85rem; padding: 7px 10px; border-radius: 99px; border: 2px solid #d5e2f5; background: #fff; color: var(--ink); cursor: pointer; }
+.pet-pick.on { background: var(--sun); border-color: var(--sun); color: #5b3b00; }

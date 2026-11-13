@@ -1,7 +1,7 @@
 import { h, svgEl } from "../dom.js";
 import { store } from "../store.js";
 import { toKey } from "../dates.js";
-import { CREATURES, featured, creatureEgg } from "../creatures.js";
+import { CREATURES, featured, creatureEgg, creatureById } from "../creatures.js";
 import { creatureArt } from "./album.js";
 import { computeStreak } from "../streak.js";
 import { themeFor, DAILY_COUNT } from "../daily.js";
@@ -12,7 +12,8 @@ export function homeScreen({ go }) {
   const s = store.state, date = toKey();
   const streak = computeStreak(s, date), theme = themeFor(date), done = !!(s.daily[date] && s.daily[date].done);
   const name = store.profile && store.profile.name;
-  const feat = featured(s);
+  const comp = store.settings.companion && s.cre[store.settings.companion] && s.cre[store.settings.companion].s > 0 ? store.settings.companion : null;
+  const feat = comp ? { c: { id: comp }, st: s.cre[comp].s, xp: (s.fam[creatureById(comp).fam] || { xp: 0 }).xp } : featured(s);
   const mascot = h("div", { class: "mascot" });
   if (feat) mascot.append(creatureArt(feat.c.id, feat.st, feat.xp, "home"));
   else { // pas encore d'éclosion : l'œuf de la famille la plus avancée
@@ -32,6 +33,7 @@ export function homeScreen({ go }) {
     h("span", { class: "mission-n" }, `${Math.min(m.progress, m.target)}/${m.target}`)));
   return { el: h("main", { class: "screen" }, h("div", { class: "screen-body" },
     h("div", { class: "home-hero" },
+      h("button", { class: "gear", type: "button", "aria-label": "Réglages", onclick: () => go("reglages") }, "⚙️"),
       h("h1", { class: "hello" }, name ? `Salut ${name} !` : "Calcul CM2 ✨"),
       h("div", { class: "pills" },
         h("span", { class: "pill" }, `🔥 ${streak.current} jour${streak.current > 1 ? "s" : ""}`),

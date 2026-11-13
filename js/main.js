@@ -9,6 +9,7 @@ import { homeScreen } from "./ui/home.js";
 import { trophiesScreen } from "./ui/trophees.js";
 import { profilScreen } from "./ui/profil.js";
 import { albumScreen } from "./ui/album.js";
+import { reglagesScreen } from "./ui/reglages.js";
 import { creatureById, STAGE_NAMES } from "./creatures.js";
 import { refreshState } from "./game.js";
 import { toKey } from "./dates.js";
@@ -17,7 +18,7 @@ import { trophyLabel } from "./trophies.js";
 
 const app = document.getElementById("app");
 
-const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, profil: profilScreen };
+const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, reglages: reglagesScreen, profil: profilScreen };
 let current = null, shown = null; // shown = nom de l'écran réellement affiché
 
 const wanted = () => {

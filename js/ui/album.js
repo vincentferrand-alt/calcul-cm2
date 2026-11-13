@@ -19,6 +19,14 @@ export function creatureCard(e) {
 }
 
 export function albumScreen({ go }) {
+  const root = h("main", { class: "screen" });
+  const redraw = () => root.replaceChildren(...build().children);
+  const build = () => albumBody(go, redraw);
+  root.append(...build().children);
+  return { el: root };
+}
+
+function albumBody(go, redraw) {
   const s = store.state;
   const nb = CREATURES.filter((c) => s.cre[c.id] && s.cre[c.id].s > 0).length;
   const cards = CREATURES.map((c) => {
@@ -37,10 +45,12 @@ export function albumScreen({ go }) {
       h("div", { class: "pet-dots" }, [1, 2, 3, 4].map((n) => h("span", { class: "dot" + (n <= shown ? " on" : "") }))),
       shown >= 4 ? null : h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: pi.pct + "%" } })),
       h("div", { class: "pet-line" }, line),
-      shown ? h("div", { class: "pet-desc" }, c.desc) : null);
+      shown ? h("div", { class: "pet-desc" }, c.desc) : null,
+      shown ? h("button", { class: "pet-pick" + (store.settings.companion === c.id ? " on" : ""), type: "button", onclick: () => { store.set("companion", store.settings.companion === c.id ? null : c.id); redraw(); } },
+        store.settings.companion === c.id ? "⭐ Mon compagnon" : "☆ Choisir comme compagnon") : null);
   });
-  return { el: h("main", { class: "screen" }, topbar("Mes créatures", () => go("")),
+  return h("div", {}, topbar("Mes créatures", () => go("")),
     h("div", { class: "screen-body" },
-      h("div", { class: "card center" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Chaque bonne réponse fait grandir la créature de sa famille de calculs.")),
-      h("div", { class: "pets" }, cards))) };
+      h("div", { class: "card center" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Chaque bonne réponse fait grandir la créature de sa famille de calculs. Choisis ton compagnon : il t'accompagne sur l'accueil !")),
+      h("div", { class: "pets" }, cards)));
 }

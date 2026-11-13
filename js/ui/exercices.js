@@ -11,6 +11,10 @@ export function exercicesScreen({ go }) {
     session.opts = { families, count: store.settings.count || 10, mode: store.settings.answer === "qcm" ? "qcm" : "input", back: "exercices" };
     go("jouer", true);
   }
+  function startDictee() {
+    session.opts = { families: "mix", count: store.settings.count || 10, mode: "dictee", back: "exercices" };
+    go("jouer", true);
+  }
   function draw() {
     const set = store.settings;
     const seg = (key, options) => h("div", { class: "seg" }, options.map(([val, label]) =>
@@ -21,6 +25,7 @@ export function exercicesScreen({ go }) {
         h("div", { class: "card" }, h("h2", {}, "Comment veux-tu répondre ?"), seg("answer", [["qcm", "4 choix"], ["input", "Je tape"]]),
           h("h2", { style: { marginTop: "12px" } }, "Combien de calculs ?"), seg("count", [[10, "10"], [15, "15"], [20, "20"]])),
         h("button", { class: "btn big green", onclick: () => start("mix") }, "🎲 Mélange de tout"),
+        h("button", { class: "btn big light", onclick: startDictee }, "🎧 Dictée : écoute et calcule"),
         h("div", { class: "fam-grid" }, FAMILIES.map((f) => {
           const fs = s.fam[f.id];
           return h("button", { class: "fam-card", style: { "--fam": f.color, "--fam-ink": f.ink }, onclick: () => start([f.id]) },

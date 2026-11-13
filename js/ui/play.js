@@ -12,7 +12,8 @@ import { toast, confetti } from "./notify.js";
 import { creatureById, STAGE_NAMES } from "../creatures.js";
 import { creatureCard } from "./album.js";
 import { iconBtn } from "./common.js";
-import { nudgeLines, NUDGE_DELAY } from "../hints.js";
+import { nudgeLines, NUDGE_DELAY, hintSpeech } from "../hints.js";
+import { speak, stopSpeaking, speechSupported, voiceStatus, NO_VOICE_MESSAGE } from "../speech.js";
 
 export const lvlStars = (l) => "★".repeat(l) + "☆".repeat(Math.max(0, 4 - l));
 export const session = { opts: null }; // réglages de la série à jouer (posés par les autres écrans)
@@ -76,10 +77,28 @@ export function playScreen({ go }) {
     S.locked = false; S.input = ""; S.hinted = false; setProgress();
     const prob = list[S.i];
     const fam = famById(prob.fam);
+    const dict = opts.mode === "dictee", canSpeak = voiceStatus() === "ok";
+    const qMain = h("div", { class: "q-main" });
+    const sayIt = () => speak(prob.say, { rate: store.settings.rate });
+    const reveal = () => qMain.replaceChildren(...questionText(prob));
+    S.reveal = reveal;
+    if (dict && canSpeak) {
+      qMain.append(
+        h("button", { class: "dict-play", type: "button", "aria-label": "Écouter le calcul", onclick: () => { sfx.tap(); sayIt(); } }, "🔊"),
+        h("div", { class: "dict-label" }, "Écoute le calcul"),
+        h("div", { class: "dict-actions" },
+          h("button", { class: "btn small light", type: "button", onclick: () => { sfx.tap(); sayIt(); } }, "↻ Répéter"),
+          h("button", { class: "btn small light", type: "button", onclick: () => { sfx.tap(); reveal(); } }, "👁 Voir le calcul")));
+    } else {
+      reveal();
+      if (dict) qMain.append(h("div", { class: "dict-note" }, NO_VOICE_MESSAGE));
+    }
     const card = h("div", { class: "q-card", style: { "--fam": fam.color } },
       h("div", { class: "q-fam" }, `${fam.short}  ${fam.name} · ${lvlStars(prob.lvl || 1)}`),
       prob.review ? h("div", { class: "q-tag" }, "↻ Un calcul à revoir") : prob.retry ? h("div", { class: "q-tag" }, "↻ On le refait") : null,
-      ...questionText(prob), h("div", { class: "q-flash" }));
+      !dict && store.settings.readAloud && canSpeak ? h("button", { class: "speak-btn", type: "button", "aria-label": "Lire le calcul à voix haute", onclick: () => { sfx.tap(); sayIt(); } }, "🔊") : null,
+      qMain, h("div", { class: "q-flash" }));
+    if (canSpeak && (dict || store.settings.readAloud)) setTimeout(() => { if (!S.locked && list[S.i] === prob && !S.done) sayIt(); }, 350);
     body.replaceChildren(card);
     if (store.settings.answer === "qcm") renderChoices(prob, card);
     else renderInput(prob, card);
@@ -110,8 +129,9 @@ export function playScreen({ go }) {
 
   function answer(value, el) {
     if (S.locked) return; S.locked = true;
-    clearTimeout(S.nudgeT);
+    clearTimeout(S.nudgeT); stopSpeaking();
     const prob = list[S.i], ok = value === prob.a;
+    if (S.reveal) S.reveal();
     let res;
     const run = ok ? S.run + 1 : 0;
     store.update((s) => { res = afterAnswer(s, { prob, ok, hinted: S.hinted, review: !!prob.review, run, date, mode: opts.mode, adapt: opts.adapt !== false }); });
@@ -141,11 +161,15 @@ export function playScreen({ go }) {
     card.classList.add("soft");
     card.querySelector(".q-flash").textContent = `${rnd(OUPS)} La réponse : ${fmt(prob.a)}`;
     const next_ = h("button", { class: "btn green big", type: "button", onclick: next }, "J'ai compris →");
-    body.replaceChildren(card, h("div", { class: "wrong-zone" }, hintPanel(prob), h("p", { class: "muted center small" }, "On le reverra bientôt, pour bien l'apprendre."), next_));
+    const talk = voiceStatus() === "ok" && speechSupported();
+    const hear = () => speak(hintSpeech(prob), { rate: store.settings.rate });
+    if (talk && (opts.mode === "dictee" || store.settings.readAloud)) setTimeout(hear, 400);
+    body.replaceChildren(card, h("div", { class: "wrong-zone" }, hintPanel(prob),
+      talk && (opts.mode === "dictee" || store.settings.readAloud) ? h("button", { class: "btn light", type: "button", onclick: () => { sfx.tap(); hear(); } }, "🔊 Écouter l'astuce") : null, h("p", { class: "muted center small" }, "On le reverra bientôt, pour bien l'apprendre."), next_));
   }
 
   function next() {
-    clearTimeout(S.timer);
+    clearTimeout(S.timer); stopSpeaking();
     if (S.i + 1 >= list.length) return finish();
     S.i++; render();
   }
@@ -199,5 +223,5 @@ export function playScreen({ go }) {
   document.addEventListener("keydown", onKey);
 
   render();
-  return { el: root, destroy: () => { clearTimeout(S.timer); clearTimeout(S.nudgeT); document.removeEventListener("keydown", onKey); } };
+  return { el: root, destroy: () => { clearTimeout(S.timer); clearTimeout(S.nudgeT); stopSpeaking(); document.removeEventListener("keydown", onKey); } };
 }

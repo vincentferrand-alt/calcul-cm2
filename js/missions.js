@@ -16,6 +16,7 @@ export const TEMPLATES = {
   run: { make: (s, r) => ({ params: {}, target: R(r, 5, 8) }), text: (m) => `Réussis ${m.target} calculs d'affilée`, icon: "🔥" },
   today: { make: (s, r) => ({ params: {}, target: pick(r, [15, 20, 25]) }), text: (m) => `Réussis ${m.target} calculs aujourd'hui`, icon: "🌟" },
   mode: { make: (s, r) => ({ params: { mode: pick(r, ["qcm", "input"]) }, target: 1 }), text: (m) => `Termine une série ${MODES[m.params.mode]}`, icon: "🎮" },
+  dictee: { make: () => (typeof speechSynthesis !== "undefined" ? { params: {}, target: 1 } : null), text: () => "Fais une dictée de calculs (au moins 5)", icon: "🎧" },
   perfect: { make: () => ({ params: {}, target: 1 }), text: () => "Fais une série de 8 calculs ou plus sans aucune faute", icon: "💯" },
   learn: { make: (s) => (FICHES.some((f) => !s.learn[f.id]) ? { params: {}, target: 1 } : null), text: () => "Découvre une nouvelle fiche dans « Apprendre »", icon: "💡" },
   review: { make: (s, r, date) => { const n = R(r, 2, 4); return dueReviews(s, date).length >= n ? { params: {}, target: n } : null; }, text: (m) => `Rattrape ${m.target} calculs à revoir`, icon: "↻" },
@@ -50,6 +51,7 @@ export function missionEvent(s, ev, r = Math.random, date) {
       else if (m.tpl === "run") m.progress = Math.max(m.progress, ev.run || 0);
     } else if (ev.type === "session") {
       if (m.tpl === "mode" && ev.mode === m.params.mode && ev.total >= 5) m.progress = 1;
+      else if (m.tpl === "dictee" && ev.mode === "dictee" && ev.total >= 5) m.progress = 1;
       else if (m.tpl === "perfect" && ev.perfect && ev.total >= 8) m.progress = 1;
       else if (m.tpl === "daily" && ev.daily) m.progress = 1;
     } else if (ev.type === "learn" && m.tpl === "learn" && ev.first) m.progress = 1;

@@ -2,6 +2,15 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.8.0 — Dictée, réglages, créature compagnon
+- Mode « 🎧 Dictée : écoute et calcule » (écran Exercices) : le calcul est lu à voix haute en français (« quarante-sept plus trente-huit »), il n'est pas affiché ; boutons « ↻ Répéter » et « 👁 Voir le calcul ». Elle répond en QCM ou en tapant, comme d'habitude. Après une erreur, la bonne réponse et l'astuce sont lues à voix haute (bouton « Écouter l'astuce »).
+- Lecture à voix haute des calculs aussi dans les autres modes (option, bouton 🔊 sur la carte).
+- Synthèse vocale du navigateur uniquement : aucun micro, aucune reconnaissance vocale, aucun envoi de données. La voix ne démarre qu'après un appui. Si l'appareil n'a pas de voix française : message doux et le calcul s'affiche normalement.
+- Écran Réglages (⚙️ sur l'accueil) : sons, vitesse de la voix (lente / normale / rapide), lecture à voix haute, façon de répondre, test de la voix.
+- Créature compagnon : bouton « Choisir comme compagnon » dans l'album ; elle s'affiche sur l'accueil (réglage propre à chaque appareil).
+- Nouvelle mission « Fais une dictée de calculs » (seulement quand l'appareil sait lire à voix haute) et trophée « Oreille fine » (déjà prévu) alimenté par les bonnes réponses en dictée.
+- Choix : la voix n'est pas coupée par le réglage « sans le son » (qui ne concerne que les bruitages), puisque la dictée est une activité demandée.
+
 ## 0.7.1 — Retours d'essai : accueil, 4 niveaux, coup de pouce
 - Correction : après le code secret on arrive tout de suite sur l'accueil (plus besoin de fermer l'appli). À la fin du défi du jour, « Retour » ramène à l'accueil (et non à Exercices).
 - Flèche de retour (et croix) : bouton rond plus grand (48 px), icône dessinée et bien centrée.

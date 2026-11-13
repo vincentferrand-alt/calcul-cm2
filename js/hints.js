@@ -17,3 +17,17 @@ export function nudgeLines(prob) {
 }
 
 export const NUDGE_DELAY = { qcm: 12000, input: 16000 }; // millisecondes d'hésitation avant de proposer un coup de pouce
+
+// Texte écrit -> texte à lire à voix haute (symboles remplacés par des mots, séparateurs de milliers retirés).
+export function speakable(text) {
+  return String(text)
+    .replace(/(\d)[   ](?=\d{3}(\D|$))/g, "$1")
+    .replace(/×/g, " fois ").replace(/÷/g, " divisé par ").replace(/−/g, " moins ").replace(/\+/g, " plus ")
+    .replace(/=/g, " égale ").replace(/→/g, ", ").replace(/\s+/g, " ").replace(/ ,/g, ",").trim();
+}
+
+// L'astuce complète lue à voix haute après une erreur : la bonne réponse, puis chaque étape.
+export function hintSpeech(prob) {
+  const steps = prob.hint.steps.map((s) => `${s.t}. ${s.eq}.`).join(" ");
+  return speakable(`La réponse est ${prob.a}. Voici l'astuce. ${steps}`);
+}
