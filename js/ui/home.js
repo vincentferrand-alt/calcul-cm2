@@ -1,8 +1,9 @@
-import { h, svgEl } from "../dom.js";
+import { h } from "../dom.js";
 import { store } from "../store.js";
 import { toKey } from "../dates.js";
-import { CREATURES, featured, creatureEgg, creatureById } from "../creatures.js";
-import { creatureArt } from "./album.js";
+import { CREATURES, featured, creatureById } from "../creatures.js";
+import { scenePick } from "../shop.js";
+import { sceneEl } from "./scene.js";
 import { computeStreak } from "../streak.js";
 import { themeFor, DAILY_COUNT } from "../daily.js";
 import { missionText, missionIcon } from "../missions.js";
@@ -15,11 +16,12 @@ export function homeScreen({ go }) {
   const name = store.profile && store.profile.name;
   const comp = store.settings.companion && s.cre[store.settings.companion] && s.cre[store.settings.companion].s > 0 ? store.settings.companion : null;
   const feat = comp ? { c: { id: comp }, st: s.cre[comp].s, xp: (s.fam[creatureById(comp).fam] || { xp: 0 }).xp } : featured(s);
-  const mascot = h("div", { class: "mascot" });
-  if (feat) mascot.append(creatureArt(feat.c.id, feat.st, feat.xp, "home"));
-  else { // pas encore d'éclosion : l'œuf de la famille la plus avancée
+  // La scène : le compagnon (ou la créature la plus avancée) dans son décor, à la forme choisie.
+  let mascot;
+  if (feat) { const p = scenePick(s, feat.c.id); mascot = sceneEl({ id: feat.c.id, stage: p.st, xp: feat.xp, pick: p, variant: "home" }); }
+  else { // pas encore d'éclosion : l'œuf de la famille la plus avancée, dans la prairie
     const best = CREATURES.reduce((b, c) => ((s.fam[c.fam] ? s.fam[c.fam].xp : 0) > (s.fam[b.fam] ? s.fam[b.fam].xp : 0) ? c : b), CREATURES[0]);
-    mascot.append(svgEl(creatureEgg(best.id, s.fam[best.fam] ? s.fam[best.fam].xp : 0, "home")));
+    mascot = sceneEl({ id: best.id, stage: 0, xp: s.fam[best.fam] ? s.fam[best.fam].xp : 0, variant: "home" });
   }
   const msg = done ? "Défi du jour réussi, bravo ! Tu peux continuer à jouer autant que tu veux."
     : streak.current >= 2 ? `Ta série : ${streak.current} jours ! Continue avec le défi du jour.` : `Ton défi du jour t'attend. Chaque bonne réponse fait grandir ${feat ? "tes créatures" : "ton œuf"} !`;

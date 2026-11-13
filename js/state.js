@@ -20,7 +20,8 @@ export function emptyState() {
     review: {},   // calculs à revoir : clé -> { k, p, box, due, miss, done, doneAt }
     daily: {},    // défis du jour : date -> { done, ok, n, stars }
     rec: {},      // records personnels (défis de temps)
-    shop: { owned: {}, worn: {} }, // boutique : accessoires achetés (id -> date) et portés (créature -> emplacement -> id)
+    shop: { owned: {}, worn: {} }, // v0.10 : accessoires achetés (id -> date) et portés — conservés en lecture (plus en vente)
+    decor: { owned: {}, pick: {} }, // v0.11 : décors achetés (id -> date) et choix par créature (créature -> type -> { id, t })
     m: { active: [], done: [] }, // missions en cours / identifiants des missions terminées
   };
 }
@@ -40,6 +41,8 @@ export function migrate(raw) {
   for (const c of COUNTERS) if (!Number.isFinite(s.c[c])) s.c[c] = 0;
   if (!isObj(s.shop.owned)) s.shop.owned = {};
   if (!isObj(s.shop.worn)) s.shop.worn = {};
+  if (!isObj(s.decor.owned)) s.decor.owned = {};
+  if (!isObj(s.decor.pick)) s.decor.pick = {};
   if (!Array.isArray(s.m.active)) s.m.active = [];
   if (!Array.isArray(s.m.done)) s.m.done = [];
   return s;
@@ -119,6 +122,9 @@ export function merge(x, y) {
   const latest = (p, q) => { const d = (p.t || 0) - (q.t || 0); return d > 0 ? p : d < 0 ? q : sj(p) >= sj(q) ? p : q; };
   out.shop = { ...mergeAny(a.shop, b.shop), owned: mergeMap(a.shop.owned, b.shop.owned, minStr),
     worn: mergeMap(a.shop.worn, b.shop.worn, (x, y) => mergeMap(x, y, latest)) };
+  // Décors : mêmes règles (achats additionnés ; fond, météo, effet, animal et forme affichée : le choix le plus récent gagne).
+  out.decor = { ...mergeAny(a.decor, b.decor), owned: mergeMap(a.decor.owned, b.decor.owned, minStr),
+    pick: mergeMap(a.decor.pick, b.decor.pick, (x, y) => mergeMap(x, y, latest)) };
   return out;
 }
 
@@ -130,6 +136,7 @@ export function missingFrom(big, small) {
   for (const k of Object.keys(s.cre)) if (!(k in b.cre) || b.cre[k].s < s.cre[k].s) lost.push("cre:" + k);
   for (const k of Object.keys(s.learn)) if (!(k in b.learn)) lost.push("learn:" + k);
   for (const k of Object.keys((s.shop || {}).owned || {})) if (!((b.shop || {}).owned || {})[k]) lost.push("shop:" + k);
+  for (const k of Object.keys((s.decor || {}).owned || {})) if (!((b.decor || {}).owned || {})[k]) lost.push("decor:" + k);
   for (const k of Object.keys(s.days)) if (!(k in b.days) || b.days[k].ok < s.days[k].ok) lost.push("days:" + k);
   for (const k of Object.keys(s.c)) if ((b.c[k] || 0) < s.c[k]) lost.push("c:" + k);
   for (const k of Object.keys(s.fam)) if (!(k in b.fam) || b.fam[k].xp < s.fam[k].xp) lost.push("fam:" + k);

@@ -2,7 +2,7 @@
 // IDENTIFIANTS STABLES : "t_xxx:palier" ne sont jamais renommés ni supprimés (tests/trophy-ids.json le vérifie).
 // On peut AJOUTER des lignes ou des paliers ; on ne change jamais ce qui existe.
 import { FAMILIES } from "./generator.js";
-import { ownedCount } from "./shop.js";
+import { ownedCount, decorCount } from "./shop.js";
 
 export const TIER_NAMES = ["Bronze", "Argent", "Or", "Platine", "Diamant"];
 export const TIER_COLORS = ["#cd7f32", "#c3cad5", "#ffc933", "#8fd6e6", "#6fb7ff"];
@@ -22,7 +22,9 @@ export const LINES = [
   { id: "t_missions", name: "Missions", emoji: "🧭", tiers: [3, 15, 50, 150], value: (s) => s.c.missions, desc: (n) => `Accomplir ${n} missions` },
   { id: "t_stars", name: "Étoiles", emoji: "⭐", tiers: [10, 50, 150, 400], value: (s) => s.c.stars, desc: (n) => `Gagner ${n} étoiles` },
   { id: "t_hatch", name: "Éclosions", emoji: "🥚", tiers: [1, 4, 8], value: (s) => cre(s, 1), desc: (n) => `Faire éclore ${n} créature${n > 1 ? "s" : ""}` },
-  { id: "t_shop", name: "Garde-robe", emoji: "👒", tiers: [1, 4, 8, 12], value: (s) => ownedCount(s), desc: (n) => `Avoir ${n} accessoire${n > 1 ? "s" : ""} dans ta garde-robe` },
+  // v0.10, retirée de la boutique en v0.11 : les paliers déjà gagnés restent, plus de nouvel objectif (retired).
+  { id: "t_shop", name: "Garde-robe", emoji: "👒", tiers: [1, 4, 8, 12], retired: true, value: (s) => ownedCount(s), desc: (n) => `Avoir ${n} accessoire${n > 1 ? "s" : ""} dans ta garde-robe` },
+  { id: "t_decor", name: "Décorateur", emoji: "🏞️", tiers: [1, 5, 12, 20], value: (s) => decorCount(s), desc: (n) => `Avoir ${n} décor${n > 1 ? "s" : ""} pour tes créatures` },
   { id: "t_legend", name: "Légendes", emoji: "👑", tiers: [1, 3, 8], value: (s) => cre(s, 4), desc: (n) => `Amener ${n} créature${n > 1 ? "s" : ""} au dernier stade` },
   ...FAMILIES.map((f) => ({ id: "t_fam_" + f.id, name: f.name, emoji: f.short, tiers: [20, 80, 250, 700], value: (s) => (s.fam[f.id] ? s.fam[f.id].xp : 0), desc: (n) => `Réussir ${n} calculs de ${f.name.toLowerCase()}` })),
 ];
@@ -44,6 +46,7 @@ export function checkTrophies(s, date) {
 
 // Prochain palier d'une ligne : { tier, target, value } ou null si tout est gagné.
 export function nextTier(s, l) {
+  if (l.retired) return null;
   const v = l.value(s);
   const i = l.tiers.findIndex((t, k) => !s.tro[`${l.id}:${k + 1}`] && v < t);
   return i < 0 ? null : { tier: i + 1, target: l.tiers[i], value: v };

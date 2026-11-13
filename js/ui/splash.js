@@ -1,11 +1,12 @@
-// Écran d'ouverture : la créature compagnon (avec ses accessoires) accueille l'élève. Un appui, ou ~4 s, et on entre.
-import { h, svgEl } from "../dom.js";
+// Écran d'ouverture : la créature compagnon, dans son décor, accueille l'élève. Un appui, ou ~4 s, et on entre.
+import { h } from "../dom.js";
 import { store } from "../store.js";
 import { toKey } from "../dates.js";
-import { CREATURES, featured, creatureById, creatureEgg } from "../creatures.js";
+import { CREATURES, featured, creatureById } from "../creatures.js";
+import { scenePick } from "../shop.js";
+import { sceneEl } from "./scene.js";
 import { computeStreak } from "../streak.js";
 import { sfx } from "../audio.js";
-import { creatureArt } from "./album.js";
 
 export function greeting(hour, name, streak, done) {
   const base = hour < 5 ? "Déjà debout" : hour < 12 ? "Bonjour" : hour < 18 ? "Coucou" : "Bonsoir";
@@ -24,9 +25,9 @@ export function showSplash(onEnter) {
   const streak = computeStreak(s, date).current, done = !!(s.daily[date] && s.daily[date].done);
   const compId = store.settings.companion && s.cre[store.settings.companion] && s.cre[store.settings.companion].s > 0 ? store.settings.companion : null;
   const feat = compId ? { c: { id: compId }, st: s.cre[compId].s, xp: (s.fam[creatureById(compId).fam] || { xp: 0 }).xp } : featured(s);
-  const art = h("div", { class: "splash-art" });
-  if (feat) art.append(creatureArt(feat.c.id, feat.st, feat.xp, "splash"));
-  else art.append(svgEl(creatureEgg(CREATURES[0].id, 0, "splash")));
+  const art = h("div", { class: "splash-art scene-wrap" });
+  if (feat) { const p = scenePick(s, feat.c.id); art.append(sceneEl({ id: feat.c.id, stage: p.st, xp: feat.xp, pick: p, variant: "splash" })); }
+  else art.append(sceneEl({ id: CREATURES[0].id, stage: 0, variant: "splash" }));
   const g = greeting(new Date().getHours(), store.profile && store.profile.name, streak, done);
   let over = false, timer;
   const leave = () => {

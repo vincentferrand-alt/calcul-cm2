@@ -2,6 +2,16 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.11.0 — Boutique de décors et scène animée
+- La boutique 🛍️ vend désormais des DÉCORS (dessinés en SVG/CSS, originaux) : 8 fonds (prairie offerte, lac, forêt, plage, montagne, désert, banquise, nuit étoilée), 6 météos animées (feuilles, neige, pluie douce, vent, pétales, lucioles), 5 effets autour de la créature (étincelles, aura, cœurs d'étoiles, flammes, éclairs) et 6 petits animaux (papillons, oiseaux, libellules, petit lapin, poissons volants, chouette). Prix de 4 à 20 étoiles, croissants dans chaque rayon. Un appui sur une vignette pas encore achetée = un essai gratuit dans l'aperçu.
+- Une « scène » unique (fond + météo + effet + petit animal + créature) sur l'accueil, l'écran d'ouverture, l'aperçu de la boutique et l'album.
+- Pour chaque créature éclose : son décor (un fond, une météo, un effet, un animal) et sa forme affichée, choisie parmi les stades débloqués (onglet « Forme » de la boutique, ou les points sous chaque créature dans l'album). Ces choix sont dans la sauvegarde (synchronisés) ; entre deux appareils, le choix le plus récent gagne.
+- Jour / soir / nuit automatiques selon l'heure réelle : soleil, coucher de soleil, lune et étoiles, lumière du paysage (sans rien acheter).
+- Accessoires retirés de la boutique : leurs étoiles sont rendues automatiquement (solde = étoiles gagnées − prix des décors possédés). Rien n'est effacé : les achats d'accessoires restent dans la sauvegarde (ids inchangés) et le trophée « Garde-robe » déjà gagné est conservé (il n'affiche plus de prochain palier).
+- Nouveau trophée « Décorateur » (1, 5, 12, 20 décors).
+- Confort : 14 particules au plus (7 dans l'album), animations CSS en transform/opacité uniquement, arrêtées si « réduire les animations » est demandé, en pause quand l'appli passe en arrière-plan.
+- Choix : le jour va de 8 h à 18 h, le soir de 18 h à 21 h (et de 6 h à 8 h, lumière d'aube), la nuit de 21 h à 6 h ; le fond « Nuit étoilée » est toujours de nuit. Les pétales sont blancs et dorés (pas de rose). Un seul fond, une météo, un effet et un animal à la fois par créature. Limite connue (inchangée) : si deux appareils achètent chacun un décor avec les mêmes étoiles, le solde est ramené à 0 (jamais négatif).
+
 ## 0.10.1 — Correctif synchronisation
 - Bug : le vrai Firestore répond « Document "…/databases/(default)/…" not found » quand le profil n'existe pas encore ; le mot « database » faisait croire que la base elle-même n'existait pas, et la première synchro s'arrêtait à tort. Reconnaissance corrigée (la vraie absence de base dit « does not exist »), tests alignés sur les vrais messages de Firestore.
 

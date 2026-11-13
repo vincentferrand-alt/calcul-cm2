@@ -11,14 +11,15 @@ export function medalSVG(tier) {
 export function trophiesScreen({ go }) {
   const s = store.state;
   const total = Object.keys(s.tro).length;
-  const cards = LINES.map((l) => {
+  // Une ligne retirée (Garde-robe) ne s'affiche que si elle a déjà rapporté un palier : il est gardé pour toujours.
+  const cards = LINES.filter((l) => !l.retired || earnedTier(s, l) > 0).map((l) => {
     const tier = earnedTier(s, l), nt = nextTier(s, l), v = l.value(s);
     const pct = nt ? Math.min(100, Math.round(100 * v / nt.target)) : 100;
     const medal = h("div", { class: "medal" }); medal.append(svgEl(medalSVG(tier)), h("span", { class: "medal-emoji" }, l.emoji));
     return h("div", { class: "trophy" + (tier ? " got" : "") }, medal,
       h("div", { class: "grow" },
         h("div", { class: "trophy-name" }, l.name, tier ? h("span", { class: "tier-tag", style: { background: TIER_COLORS[tier - 1] } }, TIER_NAMES[tier - 1]) : null),
-        h("div", { class: "trophy-desc" }, nt ? `${TIER_NAMES[nt.tier - 1]} : ${l.desc(nt.target)}` : "Tous les paliers gagnés, bravo ! 🎉"),
+        h("div", { class: "trophy-desc" }, nt ? `${TIER_NAMES[nt.tier - 1]} : ${l.desc(nt.target)}` : l.retired ? "Trophée de collection : les accessoires ont laissé place aux décors." : "Tous les paliers gagnés, bravo ! 🎉"),
         nt ? h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: pct + "%" } })) : null,
         nt ? h("div", { class: "trophy-count" }, `${Math.min(v, nt.target)} / ${nt.target}`) : null));
   });

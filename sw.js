@@ -2,7 +2,7 @@
    - Mise en cache de la coque de l'appli (jouable hors ligne).
    - NE TOUCHE JAMAIS aux données de progression (localStorage / IndexedDB) : il ne gère que ses propres caches.
    - Le numéro de version doit correspondre à js/version.js (vérifié par tests/version.test.mjs). */
-const VERSION = "0.10.1";
+const VERSION = "0.11.0";
 const PREFIX = "calcul-cm2-shell-";
 const CACHE = PREFIX + VERSION;
 const ASSETS = [
@@ -15,6 +15,7 @@ const ASSETS = [
   "js/creatures.js",
   "js/daily.js",
   "js/dates.js",
+  "js/decor.js",
   "js/dom.js",
   "js/firebase-config.js",
   "js/game.js",
@@ -37,6 +38,7 @@ const ASSETS = [
   "js/trophies.js",
   "js/ui/album.js",
   "js/ui/apprendre.js",
+  "js/ui/art.js",
   "js/ui/boutique.js",
   "js/ui/common.js",
   "js/ui/exercices.js",
@@ -46,6 +48,7 @@ const ASSETS = [
   "js/ui/play.js",
   "js/ui/profil.js",
   "js/ui/reglages.js",
+  "js/ui/scene.js",
   "js/ui/splash.js",
   "js/ui/trophees.js",
   "js/version.js",

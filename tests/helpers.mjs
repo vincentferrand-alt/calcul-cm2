@@ -72,6 +72,9 @@ export function randState(rng) {
   s.shop = { owned: {}, worn: {} };
   for (const it of ["crown", "shades", "scarf"]) if (rng() < 0.5) s.shop.owned[it] = `2026-11-0${1 + R(9)}`;
   if (rng() < 0.5) s.shop.worn.add = { head: { id: rng() < 0.5 ? "crown" : null, t: 1000 + R(1000) } };
+  s.decor = { owned: {}, pick: {} };
+  for (const it of ["bg_lac", "wx_neige", "fx_aura", "pet_lapin", "bg_nuit"]) if (rng() < 0.5) s.decor.owned[it] = `2026-11-1${R(9)}`;
+  for (const c of ["add", "sub"]) if (rng() < 0.6) s.decor.pick[c] = { bg: { id: rng() < 0.5 ? "bg_lac" : "bg_prairie", t: 2000 + R(1000) }, wx: { id: rng() < 0.5 ? "wx_neige" : null, t: 2000 + R(1000) }, st: { id: 1 + R(4), t: 2000 + R(1000) } };
   if (rng() < 0.5) s.futureKey = { n: R(9), list: [R(3), 3 + R(3)] }; // clé inconnue d'une version future
   return s;
 }
