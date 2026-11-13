@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#6c4cf1">
+  <title>Calcul CM2</title>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid; place-items: center; text-align: center;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(160deg, #6c4cf1, #ff7ab6);
+      color: #fff;
+    }
+    h1 { font-size: 2.2rem; margin: 0 0 .5rem; }
+    p { margin: .25rem 0; font-size: 1.1rem; }
+    .version {
+      display: inline-block; margin-top: 1rem; padding: .35rem .9rem;
+      border-radius: 999px; background: rgba(255,255,255,.2); font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Calcul CM2 ✨</h1>
+    <p>La page est bien en ligne !</p>
+    <span class="version" id="version">version …</span>
+  </main>
+  <script type="module">
+    const v = "0.0.1";
+    document.getElementById("version").textContent = "version " + v;
+  </script>
+</body>
+</html>
