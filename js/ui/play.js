@@ -8,6 +8,9 @@ import { afterAnswer, afterSession } from "../game.js";
 import { trophyLabel } from "../trophies.js";
 import { missionText } from "../missions.js";
 import { keypad } from "./keypad.js";
+import { toast, confetti } from "./notify.js";
+import { creatureById, STAGE_NAMES } from "../creatures.js";
+import { creatureCard } from "./album.js";
 
 export const lvlStars = (l) => "★".repeat(l) + "☆".repeat(3 - l);
 export const session = { opts: null }; // réglages de la série à jouer (posés par les autres écrans)
@@ -36,7 +39,7 @@ export function playScreen({ go }) {
   const date = toKey();
   const list = buildSession(store.state, opts, Math.random, date);
   const total = list.length;
-  const S = { i: 0, n: 0, ok: 0, run: 0, best: 0, input: "", locked: false, up: [], mastered: 0, timer: null, tro: [], mis: [] };
+  const S = { i: 0, n: 0, ok: 0, run: 0, best: 0, input: "", locked: false, up: [], mastered: 0, timer: null, tro: [], mis: [], cre: [] };
   const root = h("main", { class: "screen play" });
   const fam0 = opts.families !== "mix" && opts.families && opts.families.length === 1 ? famById(opts.families[0]) : null;
 
@@ -93,7 +96,8 @@ export function playScreen({ go }) {
     let res;
     const run = ok ? S.run + 1 : 0;
     store.update((s) => { res = afterAnswer(s, { prob, ok, review: !!prob.review, run, date, mode: opts.mode, adapt: opts.adapt !== false }); });
-    const ev = res.ev; S.tro.push(...res.trophies); S.mis.push(...res.missions);
+    const ev = res.ev; S.tro.push(...res.trophies); S.mis.push(...res.missions); S.cre.push(...res.creatures);
+    res.creatures.forEach((e) => { sfx.hatch(); confetti(); toast(e.from === 0 ? `${creatureById(e.id).name} est né !` : `${creatureById(e.id).name} évolue : ${STAGE_NAMES[e.to]} !`, { icon: "🥚", sound: false }); });
     if (ev.levelUp) S.up.push(ev.levelUp);
     if (ev.mastered) S.mastered++;
     if (!prob.retry) { S.n++; if (ok) S.ok++; }
@@ -152,6 +156,7 @@ export function playScreen({ go }) {
       h("div", { class: "card center" }, h("div", { class: "big-num" }, `${S.ok} / ${S.n}`), h("p", {}, "bonnes réponses du premier coup")),
       notes.length ? h("div", { class: "card" }, notes.map((n) => h("p", { class: "note" }, n))) : null,
       S.tro.length ? h("div", { class: "card" }, h("h2", {}, "🏆 Nouveau" + (S.tro.length > 1 ? "x" : "") + " trophée" + (S.tro.length > 1 ? "s" : "") + " !"), S.tro.map((t) => h("p", { class: "note" }, trophyLabel(t.line, t.tier)))) : null,
+      S.cre.length ? h("div", { class: "card center" }, h("h2", {}, S.cre.some((e) => e.from === 0) ? "🥚 Une créature est née !" : "🌟 Ta créature évolue !"), S.cre.map((e) => creatureCard(e))) : null,
       S.mis.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), S.mis.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
       h("button", { class: "btn green big", onclick: () => go("jouer", true) }, "Rejouer (nouveaux calculs)"),
       h("button", { class: "btn ghost big", onclick: () => go(opts.back || "exercices") }, "Retour")));

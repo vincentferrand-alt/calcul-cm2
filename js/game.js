@@ -3,11 +3,13 @@ import { recordAnswer, endSession, markLearn } from "./progress.js";
 import { missionEvent, refillMissions } from "./missions.js";
 import { checkTrophies } from "./trophies.js";
 import { computeStreak } from "./streak.js";
+import { syncCreatures } from "./creatures.js";
 
 export function afterAnswer(s, { prob, ok, review, run, date, mode, adapt }) {
   const ev = recordAnswer(s, prob, ok, { date, mode, review, adapt });
   const missions = missionEvent(s, { type: "answer", prob, ok, review, run }, Math.random, date);
-  return { ev, missions, trophies: checkTrophies(s, date) };
+  const creatures = syncCreatures(s, date);
+  return { ev, missions, creatures, trophies: checkTrophies(s, date) };
 }
 
 export function afterSession(s, { ok, total, mode, daily, date }) {
@@ -34,5 +36,6 @@ export function refreshState(s, date) {
   refillMissions(s, Math.random, date);
   const streak = computeStreak(s, date);
   s.c.streakBest = Math.max(s.c.streakBest, streak.best);
-  return { trophies: checkTrophies(s, date), streak };
+  const creatures = syncCreatures(s, date);
+  return { trophies: checkTrophies(s, date), streak, creatures };
 }

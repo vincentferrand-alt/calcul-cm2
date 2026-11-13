@@ -8,6 +8,8 @@ import { apprendreScreen, ficheScreen } from "./ui/apprendre.js";
 import { homeScreen } from "./ui/home.js";
 import { trophiesScreen } from "./ui/trophees.js";
 import { profilScreen } from "./ui/profil.js";
+import { albumScreen } from "./ui/album.js";
+import { creatureById, STAGE_NAMES } from "./creatures.js";
 import { refreshState } from "./game.js";
 import { toKey } from "./dates.js";
 import { toast } from "./ui/notify.js";
@@ -15,7 +17,7 @@ import { trophyLabel } from "./trophies.js";
 
 const app = document.getElementById("app");
 
-const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, profil: profilScreen };
+const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, profil: profilScreen };
 let current = null;
 
 function go(name, force) {
@@ -35,7 +37,11 @@ addEventListener("hashchange", render);
 let fresh;
 store.update((st) => { fresh = refreshState(st, toKey()); });
 render();
-fresh.trophies.forEach((t) => toast("Nouveau trophée : " + trophyLabel(t.line, t.tier)));
+// Au démarrage (surtout après une fusion téléphone/iMac) : on regroupe les annonces pour ne pas couvrir l'écran.
+if (fresh.trophies.length > 2) toast(`${fresh.trophies.length} nouveaux trophées t'attendent !`);
+else fresh.trophies.forEach((t) => toast("Nouveau trophée : " + trophyLabel(t.line, t.tier)));
+if (fresh.creatures.length > 2) toast("Tes créatures ont grandi ! Va voir dans « Créatures ».", { icon: "🥚" });
+else fresh.creatures.forEach((e) => toast(`${creatureById(e.id).name} : ${STAGE_NAMES[e.to]} !`, { icon: "🥚" }));
 demanderStockagePersistant();
 export { go };
 

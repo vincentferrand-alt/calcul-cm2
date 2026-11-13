@@ -2,6 +2,14 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.7.0 — Créatures à collectionner
+- 8 créatures originales dessinées en SVG (aucun personnage sous licence), une par famille de calcul : Pomplo (additions), Frimo (soustractions), Kroko (multiplications), Duplo (doubles/triples), Parto (moitiés/tiers), Complo (compléments), Piko (divisions), Astro (astuces).
+- Chaque bonne réponse fait grandir la créature de sa famille : œuf (qui se fissure à mi-chemin) → éclosion à 10 bonnes réponses → bébé → jeune (50) → adulte (150) → légendaire (350, avec halo et étincelles).
+- Écran « Mes créatures » (album) avec la progression vers le prochain stade ; l'accueil montre la créature la plus avancée (ou l'œuf le plus proche d'éclore).
+- Éclosion / évolution : confettis, petit son, message et carte récapitulative à la fin de la série.
+- Sauvegarde : le stade atteint ne redescend jamais, fusion téléphone/iMac = stade maximum (testé). Un test vérifie qu'aucune couleur de créature n'est rosée.
+- Choix : les seuils (10 / 50 / 150 / 350) comptent les bonnes réponses de la famille, y compris les révisions.
+
 ## 0.6.0 — Récompenses : défi du jour, série, missions, trophées
 - Écran d'accueil : défi du jour (thème différent chaque jour, ~20 calculs, aucun chrono ; on peut le rejouer avec de nouveaux calculs), série de jours avec joker (1 joker au départ, +1 tous les 7 jours, 2 max : un jour manqué ne casse pas tout), 3 missions toujours renouvelées, étoiles.
 - Missions : remplacées dès qu'elles sont terminées par une nouvelle tirée d'une réserve variée (famille, enchaînement, mode, série parfaite, fiche à découvrir, calculs à rattraper, défi du jour).

@@ -253,7 +253,6 @@ body::before { /* étoiles discrètes */
 .bar.small { height: 10px; background: #e3ecf8; flex: none; }
 .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .menu-grid .btn { font-size: 1.05rem; }
-.menu-grid .btn:nth-child(3) { grid-column: 1 / -1; }
 .trophy { display: flex; gap: 12px; align-items: center; background: #fff; border-radius: 20px; padding: 12px; box-shadow: var(--shadow); }
 .medal { position: relative; width: 60px; height: 60px; flex: none; }
 .medal svg { width: 100%; height: 100%; }
@@ -275,3 +274,30 @@ body::before { /* étoiles discrètes */
 .toast-item { display: flex; align-items: center; gap: 10px; background: #fff; color: var(--ink); font-weight: 800; padding: 12px 14px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.3); border-left: 8px solid var(--sun); animation: pop-in .35s ease-out; }
 .toast-item.out { opacity: 0; transform: translateY(-10px); transition: .4s; }
 .toast-icon { font-size: 1.5rem; }
+
+/* v0.7 — créatures */
+.creature-art { width: 100%; }
+.creature-art svg { width: 100%; height: auto; display: block; }
+.mascot .creature-art svg { filter: drop-shadow(0 8px 10px rgba(0,0,0,.25)); }
+.pets { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pet { background: #fff; border-radius: 22px; padding: 10px 10px 12px; box-shadow: var(--shadow); border-top: 8px solid var(--fam); display: flex; flex-direction: column; align-items: center; text-align: center; gap: 3px; color: var(--ink); }
+.pet .creature-art { width: 86%; max-width: 150px; }
+.pet .creature-art.egg { filter: saturate(.8); }
+.pet-name { font-weight: 900; font-size: 1.1rem; }
+.pet-fam { font-size: .78rem; font-weight: 800; color: var(--ink-soft); }
+.pet-dots { display: flex; gap: 5px; margin: 2px 0 4px; }
+.pet-dots .dot { width: 11px; height: 11px; border-radius: 50%; background: #d9e0f0; }
+.pet-dots .dot.on { background: var(--sun); box-shadow: 0 0 0 2px #e0a800 inset; }
+.pet .bar { width: 100%; }
+.pet-line { font-size: .78rem; color: var(--ink-soft); font-weight: 700; }
+.pet-desc { font-size: .78rem; color: var(--ink-soft); font-style: italic; margin-top: 4px; }
+.creature-new { display: inline-block; width: 150px; margin: 4px 8px; animation: bounce .7s ease-out both; }
+.creature-name { font-weight: 900; font-size: 1.2rem; }
+.creature-stage { font-weight: 800; color: var(--ink-soft); }
+.spark { transform-box: fill-box; transform-origin: center; animation: twinkle2 1.6s ease-in-out infinite alternate; }
+@keyframes twinkle2 { from { opacity: .35; transform: scale(.7) } to { opacity: 1; transform: scale(1.15) } }
+.aura { animation: twinkle2 2.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@media (prefers-reduced-motion: reduce) { .spark, .aura, .creature-new { animation: none } }
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 60; }
+.confetti i { position: absolute; top: -14px; width: 9px; height: 14px; border-radius: 2px; animation: fall linear forwards; }
+@keyframes fall { to { top: 105%; margin-left: 30px; opacity: .9 } }
