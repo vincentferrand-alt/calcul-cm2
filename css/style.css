@@ -332,3 +332,5 @@ body::before { /* étoiles discrètes */
 .file-btn { position: relative; overflow: hidden; width: 100%; margin-top: 8px; box-shadow: 0 5px 0 #c9d6ec; }
 .file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .card .btn[disabled] { opacity: .6; }
+
+.pill.cloud { border: 0; font: inherit; cursor: pointer; color: inherit; }

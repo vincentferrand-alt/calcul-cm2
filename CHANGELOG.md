@@ -2,6 +2,11 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.9.1 — Synchronisation activée
+- Projet Firebase « calcul-cm2-famille » branché (clé web restreinte au site de l'appli côté Google Cloud ; la protection des données, ce sont les règles firestore.rules).
+- Petit nuage ☁️ sur l'accueil : ✓ synchro à jour, … en cours, ⚠️ problème (appui = Réglages avec la cause). Caché tant que la synchro n'est pas disponible.
+- Non vérifié ici : le vrai Firestore (pas d'accès réseau depuis mon environnement). À contrôler sur le téléphone, voir les messages de Réglages en cas de souci.
+
 ## 0.9.0 — Synchronisation téléphone ↔ iMac et sauvegarde en fichier
 - Synchronisation Firebase (Firestore, API REST : aucun SDK, aucune compilation). Inactive tant que js/firebase-config.js vaut `null` : l'appli reste 100 % locale. Guide pas à pas : docs/firebase.md ; règles de sécurité : firestore.rules.
 - Principe « jamais rien perdre » : on lit la copie en ligne, on FUSIONNE (union des trophées et créatures, maximum des compteurs), on vérifie qu'aucun élément n'a disparu (sinon on n'écrit rien), puis on écrit avec précondition ; si l'autre appareil a écrit entre-temps, on relit et on refusionne. Une copie en ligne illisible n'est jamais écrasée.
