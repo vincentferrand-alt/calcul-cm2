@@ -18,17 +18,23 @@ import { trophyLabel } from "./trophies.js";
 const app = document.getElementById("app");
 
 const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, profil: profilScreen };
-let current = null;
+let current = null, shown = null; // shown = nom de l'écran réellement affiché
 
+const wanted = () => {
+  const name = location.hash.replace(/^#\/?/, "").split("/")[0];
+  return !store.profile && name !== "profil" ? "profil" : name;
+};
 function go(name, force) {
   const target = "#/" + name;
-  if (location.hash === target || (name === "" && !location.hash)) { if (force) render(); return; }
-  location.hash = target;
+  if (location.hash !== target && !(name === "" && !location.hash)) { location.hash = target; return; }
+  // l'adresse ne change pas : on redessine seulement si l'écran affiché n'est plus le bon (ex. après le code secret) ou sur demande
+  if (force || shown !== wanted()) render();
 }
 function render() {
   if (current && current.destroy) current.destroy();
   let [name, ...args] = location.hash.replace(/^#\/?/, "").split("/");
   if (!store.profile && name !== "profil") name = "profil";
+  shown = name;
   const screen = (routes[name] || routes[""])({ go, args });
   current = screen;
   app.replaceChildren(screen.el, h("div", { class: "badge-version" }, "v" + VERSION));

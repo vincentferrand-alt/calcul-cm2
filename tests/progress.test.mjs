@@ -57,7 +57,7 @@ test("réussir hors révision (ou trop tôt) ne fait pas avancer le calcul à re
   assert.equal(s.review[p.key].box, 0);
 });
 
-test("niveau adaptatif : monte avec les réussites, redescend doucement, jamais hors 1..3", () => {
+test("niveau adaptatif : monte avec les réussites, redescend doucement, jamais hors 1..4", () => {
   const s = emptyState();
   for (let i = 0; i < 8; i++) recordAnswer(s, mk("add", 1), true, { date: "2026-11-13" });
   assert.equal(s.fam.add.lvl, 2); assert.equal(s.fam.add.maxLvl, 2);
@@ -65,8 +65,8 @@ test("niveau adaptatif : monte avec les réussites, redescend doucement, jamais 
   assert.equal(s.fam.add.lvl, 1); assert.equal(s.fam.add.maxLvl, 2, "le meilleur niveau atteint est conservé");
   for (let i = 0; i < 40; i++) recordAnswer(s, mk("add", 1), false, { date: "2026-11-13" });
   assert.equal(s.fam.add.lvl, 1);
-  for (let i = 0; i < 60; i++) recordAnswer(s, mk("sub", s.fam.sub?.lvl || 1), true, { date: "2026-11-13" });
-  assert.equal(s.fam.sub.lvl, 3);
+  for (let i = 0; i < 90; i++) recordAnswer(s, mk("sub", s.fam.sub?.lvl || 1), true, { date: "2026-11-13" });
+  assert.equal(s.fam.sub.lvl, 4);
 });
 
 test("niveau adaptatif : l'entraînement d'une fiche (adapt:false) ne change pas le niveau", () => {

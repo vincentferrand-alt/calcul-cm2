@@ -167,7 +167,14 @@ function x100Hint(n, k) { // k = 4 ou 2 : n x 25 = n x 100 ÷ 4 ; n x 50 = n x 1
 
 // ---------- registre des types de calcul ----------
 export const KINDS = {};
-function def(id, fam, levels, params, make) { KINDS[id] = { id, fam, levels, params, make }; }
+// Les niveaux sont numérotés 1 à 4. Les types écrits à l'origine avec les niveaux 1-3 sont décalés d'un cran (+1) ;
+// le niveau 1 (« très facile ») est ajouté ensuite par easy().
+function def(id, fam, levels, params, make) { KINDS[id] = { id, fam, levels: levels.map((l) => l + 1), params: (r, lvl) => params(r, lvl - 1), make }; }
+function easy(id, fn) {
+  const k = KINDS[id], old = k.params;
+  k.levels = [1, ...k.levels];
+  k.params = (r, lvl) => (lvl === 1 ? fn(r) : old(r, lvl));
+}
 const flip = (r) => r() < 0.5;
 const pair = (flipped, a, b, sym) => (flipped ? `${f(b)} ${sym} ${f(a)}` : `${f(a)} ${sym} ${f(b)}`);
 const sayPair = (flipped, a, b, word) => (flipped ? `${nl(b)} ${word} ${nl(a)}` : `${nl(a)} ${word} ${nl(b)}`);
@@ -382,6 +389,20 @@ def("trick_x50", "trick", [2, 3], (r, lvl) => ({ n: lvl === 2 ? draw(r, () => 2 
       err: [n * 25, p + 50, p - 50, p + 100, p - 100, n * 5] };
   });
 
+// --- Niveau 1 « très facile » : mêmes types de calcul, nombres plus petits, sans retenue ni emprunt quand c'est possible.
+easy("add_2d", (r) => draw(r, () => ({ a: R(r, 12, 58), b: R(r, 11, 39) }), (p) => nz(p.a) && nz(p.b) && p.a % 10 + p.b % 10 < 10));
+easy("sub_2d", (r) => draw(r, () => { const a = R(r, 32, 99); return { a, b: R(r, 11, a - 12) }; }, (p) => nz(p.b) && p.a % 10 >= p.b % 10 && p.a % 10 !== 0));
+easy("mul_table", (r) => ({ a: pick(r, [4, 6]), b: pick(r, TAB), flip: flip(r) }));
+easy("dbl_double", (r) => ({ n: draw(r, () => R(r, 12, 49), (n) => nz(n) && n % 10 < 5) }));
+easy("dbl_triple", (r) => ({ n: draw(r, () => R(r, 12, 33), (n) => nz(n) && n % 10 <= 3) }));
+easy("frac_half", (r) => ({ n: draw(r, () => R(r, 6, 24) * 2, nz) }));
+easy("frac_third", (r) => ({ n: draw(r, () => 3 * R(r, 12, 16), (n) => n % 30 !== 0) }));
+easy("frac_quarter", (r) => ({ n: draw(r, () => 4 * R(r, 12, 17), (n) => n % 10 !== 0) }));
+easy("comp_100", (r) => ({ n: draw(r, () => R(r, 11, 99), (n) => n % 5 === 0 && n % 10 !== 0) }));
+easy("div_inv", (r) => ({ d: pick(r, [4, 6]), q: pick(r, TAB) }));
+easy("trick_x4", (r) => ({ n: draw(r, () => R(r, 12, 25), nz), flip: flip(r) }));
+easy("trick_x25", (r) => ({ n: pick(r, [8, 12, 16, 24]), flip: flip(r) }));
+
 // ---------- construction / génération ----------
 export function build(kind, p) {
   const k = KINDS[kind];
@@ -393,6 +414,7 @@ export function build(kind, p) {
   return { k: kind, fam: k.fam, p, key: `${kind}|${out.q}`, ...out, err };
 }
 
+export const MAX_LEVEL = 4;
 export const kindsFor = (fam, level) => Object.values(KINDS).filter((k) => k.fam === fam && k.levels.includes(level));
 
 export function generate(fam, level, rng = Math.random, opts = {}) {

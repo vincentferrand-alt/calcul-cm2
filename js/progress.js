@@ -1,6 +1,6 @@
 // Règles de progression (pures : elles modifient l'état qu'on leur passe, sans toucher au navigateur).
 import { addDays } from "./dates.js";
-import { build, generate, FAMILIES, KINDS, shuffle } from "./generator.js";
+import { build, generate, FAMILIES, KINDS, shuffle, MAX_LEVEL } from "./generator.js";
 
 export const INTERVALS = [1, 3, 7, 14]; // jours avant de revoir un calcul raté : 4 réussites espacées = « devenu facile »
 
@@ -23,7 +23,7 @@ export function recordAnswer(s, prob, ok, ctx) {
     fs.recent.push(ok ? 1 : 0); if (fs.recent.length > 10) fs.recent.shift();
     if (fs.recent.length >= 8) {
       const ratio = fs.recent.reduce((a, b) => a + b, 0) / fs.recent.length;
-      if (ratio >= 0.85 && fs.lvl < 3) { fs.lvl++; fs.maxLvl = Math.max(fs.maxLvl, fs.lvl); fs.recent = []; ev.levelUp = { fam: prob.fam, to: fs.lvl }; }
+      if (ratio >= 0.85 && fs.lvl < MAX_LEVEL) { fs.lvl++; fs.maxLvl = Math.max(fs.maxLvl, fs.lvl); fs.recent = []; ev.levelUp = { fam: prob.fam, to: fs.lvl }; }
       else if (ratio <= 0.4 && fs.lvl > 1) { fs.lvl--; fs.recent = []; ev.levelDown = { fam: prob.fam, to: fs.lvl }; }
     }
   }
@@ -33,7 +33,7 @@ export function recordAnswer(s, prob, ok, ctx) {
     ev.missed = true;
     if (!r) s.review[prob.key] = { k: prob.k, p: prob.p, box: 0, due: addDays(date, 1), miss: 1, done: false };
     else { r.miss = (r.miss || 0) + 1; if (!r.done) { r.box = 0; r.due = addDays(date, 1); } }
-  } else if (r && !r.done && ctx.review && r.due <= date) {
+  } else if (r && !r.done && ctx.review && !ctx.hinted && r.due <= date) { // avec un coup de pouce : pas encore « maîtrisé »
     r.box++;
     if (r.box >= INTERVALS.length) {
       r.done = true; r.doneAt = date; s.c.easy++;
@@ -74,7 +74,9 @@ export function buildSession(s, opts, rng = Math.random, date) {
   const order = shuffle(fams, rng); let i = 0, guard = 0;
   while (list.length < count && guard++ < count * 40) {
     const fam = order[i++ % order.length];
-    const lvl = s.fam[fam]?.lvl || 1;
+    const own = s.fam[fam]?.lvl || 1;
+    // Défi du jour : il démarre doucement (les premiers calculs sont d'un cran plus faciles que son niveau).
+    const lvl = opts.daily && list.length < Math.ceil(count * 0.4) ? Math.max(1, own - 1) : own;
     const p = generate(fam, lvl, rng, opts.kinds ? { kinds: opts.kinds } : {});
     if (keys.has(p.key)) continue;
     keys.add(p.key); list.push(p);

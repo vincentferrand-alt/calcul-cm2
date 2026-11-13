@@ -11,8 +11,10 @@ import { keypad } from "./keypad.js";
 import { toast, confetti } from "./notify.js";
 import { creatureById, STAGE_NAMES } from "../creatures.js";
 import { creatureCard } from "./album.js";
+import { iconBtn } from "./common.js";
+import { nudgeLines, NUDGE_DELAY } from "../hints.js";
 
-export const lvlStars = (l) => "★".repeat(l) + "☆".repeat(3 - l);
+export const lvlStars = (l) => "★".repeat(l) + "☆".repeat(Math.max(0, 4 - l));
 export const session = { opts: null }; // réglages de la série à jouer (posés par les autres écrans)
 
 const BRAVO = ["Bravo !", "Super !", "Exact !", "Bien joué !", "Parfait !", "Excellent !", "Tu gères !"];
@@ -46,7 +48,7 @@ export function playScreen({ go }) {
   const bar = h("div", { class: "bar" }, h("div", { class: "bar-fill" }));
   const counter = h("span", { class: "pill" }, "");
   const top = h("div", { class: "topbar" },
-    h("button", { class: "icon-btn", "aria-label": "Quitter", onclick: () => { clearTimeout(S.timer); go(opts.back || "exercices"); } }, "✕"),
+    iconBtn("close", "Quitter", () => { clearTimeout(S.timer); go(opts.back ?? "exercices"); }),
     bar, counter);
   const body = h("div", { class: "play-body" });
   root.append(top, body);
@@ -56,8 +58,22 @@ export function playScreen({ go }) {
     counter.textContent = `${Math.min(S.n + 1, total)} / ${total}`;
   }
 
+  // Coup de pouce : si elle hésite, un bouton discret apparaît ; chaque appui dévoile un peu plus de la méthode (jamais le résultat).
+  function showNudge(prob, card) {
+    if (S.locked || S.done || list[S.i] !== prob) return;
+    const lines = nudgeLines(prob); let n = 0;
+    const shown = h("div", { class: "nudge-lines" });
+    const btn = h("button", { class: "nudge-btn", type: "button" }, "💡 Un coup de pouce ?");
+    btn.onclick = () => {
+      sfx.tap(); S.hinted = true;
+      shown.append(h("div", { class: "nudge-line" }, lines[n++]));
+      if (n >= lines.length) btn.remove(); else btn.textContent = "💡 Encore un indice";
+    };
+    card.append(h("div", { class: "nudge" }, shown, btn));
+  }
+
   function render() {
-    S.locked = false; S.input = ""; setProgress();
+    S.locked = false; S.input = ""; S.hinted = false; setProgress();
     const prob = list[S.i];
     const fam = famById(prob.fam);
     const card = h("div", { class: "q-card", style: { "--fam": fam.color } },
@@ -67,6 +83,8 @@ export function playScreen({ go }) {
     body.replaceChildren(card);
     if (store.settings.answer === "qcm") renderChoices(prob, card);
     else renderInput(prob, card);
+    clearTimeout(S.nudgeT);
+    S.nudgeT = setTimeout(() => showNudge(prob, card), NUDGE_DELAY[store.settings.answer === "qcm" ? "qcm" : "input"]);
   }
 
   function renderChoices(prob, card) {
@@ -92,10 +110,11 @@ export function playScreen({ go }) {
 
   function answer(value, el) {
     if (S.locked) return; S.locked = true;
+    clearTimeout(S.nudgeT);
     const prob = list[S.i], ok = value === prob.a;
     let res;
     const run = ok ? S.run + 1 : 0;
-    store.update((s) => { res = afterAnswer(s, { prob, ok, review: !!prob.review, run, date, mode: opts.mode, adapt: opts.adapt !== false }); });
+    store.update((s) => { res = afterAnswer(s, { prob, ok, hinted: S.hinted, review: !!prob.review, run, date, mode: opts.mode, adapt: opts.adapt !== false }); });
     const ev = res.ev; S.tro.push(...res.trophies); S.mis.push(...res.missions); S.cre.push(...res.creatures);
     res.creatures.forEach((e) => { sfx.hatch(); confetti(); toast(e.from === 0 ? `${creatureById(e.id).name} est né !` : `${creatureById(e.id).name} évolue : ${STAGE_NAMES[e.to]} !`, { icon: "🥚", sound: false }); });
     if (ev.levelUp) S.up.push(ev.levelUp);
@@ -105,7 +124,7 @@ export function playScreen({ go }) {
     if (ok) {
       S.run++; S.best = Math.max(S.best, S.run); sfx.ok();
       el.classList.add("good"); card.classList.add("good");
-      card.querySelector(".q-flash").textContent = "✓ " + rnd(BRAVO) + (S.run >= 3 ? `  🔥 ${S.run}` : "");
+      card.querySelector(".q-flash").textContent = S.hinted ? "✓ Bravo, tu y es arrivée avec un coup de pouce !" : "✓ " + rnd(BRAVO) + (S.run >= 3 ? `  🔥 ${S.run}` : "");
       S.timer = setTimeout(next, 900);
       card.onclick = () => { clearTimeout(S.timer); next(); };
     } else {
@@ -159,7 +178,7 @@ export function playScreen({ go }) {
       S.cre.length ? h("div", { class: "card center" }, h("h2", {}, S.cre.some((e) => e.from === 0) ? "🥚 Une créature est née !" : "🌟 Ta créature évolue !"), S.cre.map((e) => creatureCard(e))) : null,
       S.mis.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), S.mis.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
       h("button", { class: "btn green big", onclick: () => go("jouer", true) }, "Rejouer (nouveaux calculs)"),
-      h("button", { class: "btn ghost big", onclick: () => go(opts.back || "exercices") }, "Retour")));
+      h("button", { class: "btn ghost big", onclick: () => go(opts.back ?? "exercices") }, "Retour")));
   }
 
   const onKey = (e) => {
@@ -180,5 +199,5 @@ export function playScreen({ go }) {
   document.addEventListener("keydown", onKey);
 
   render();
-  return { el: root, destroy: () => { clearTimeout(S.timer); document.removeEventListener("keydown", onKey); } };
+  return { el: root, destroy: () => { clearTimeout(S.timer); clearTimeout(S.nudgeT); document.removeEventListener("keydown", onKey); } };
 }

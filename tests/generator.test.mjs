@@ -17,7 +17,7 @@ function allProblems(count = PER) {
 const problems = allProblems();
 
 test("chaque famille a au moins un type de calcul à chacun des 3 niveaux", () => {
-  for (const f of FAMILIES) for (const lvl of [1, 2, 3]) assert.ok(kindsFor(f.id, lvl).length > 0, `${f.id} niveau ${lvl}`);
+  for (const f of FAMILIES) for (const lvl of [1, 2, 3, 4]) assert.ok(kindsFor(f.id, lvl).length > 0, `${f.id} niveau ${lvl}`);
 });
 
 test(`résultats : entiers, positifs, bornés (${problems.length} calculs)`, () => {

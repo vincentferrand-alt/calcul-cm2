@@ -5,8 +5,8 @@ import { checkTrophies } from "./trophies.js";
 import { computeStreak } from "./streak.js";
 import { syncCreatures } from "./creatures.js";
 
-export function afterAnswer(s, { prob, ok, review, run, date, mode, adapt }) {
-  const ev = recordAnswer(s, prob, ok, { date, mode, review, adapt });
+export function afterAnswer(s, { prob, ok, review, run, date, mode, adapt, hinted }) {
+  const ev = recordAnswer(s, prob, ok, { date, mode, review, adapt, hinted });
   const missions = missionEvent(s, { type: "answer", prob, ok, review, run }, Math.random, date);
   const creatures = syncCreatures(s, date);
   return { ev, missions, creatures, trophies: checkTrophies(s, date) };

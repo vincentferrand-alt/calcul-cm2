@@ -2,6 +2,14 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.7.1 — Retours d'essai : accueil, 4 niveaux, coup de pouce
+- Correction : après le code secret on arrive tout de suite sur l'accueil (plus besoin de fermer l'appli). À la fin du défi du jour, « Retour » ramène à l'accueil (et non à Exercices).
+- Flèche de retour (et croix) : bouton rond plus grand (48 px), icône dessinée et bien centrée.
+- 4 niveaux de difficulté (★☆☆☆ à ★★★★) : nouveau niveau 1 « très facile » (additions sans retenue, soustractions sans emprunt, tables de 4 et 6, petits nombres). Les anciens niveaux 1-2-3 deviennent 2-3-4.
+- Le défi du jour démarre doucement : ses premiers calculs (40 %) sont d'un cran plus faciles que le niveau de la famille.
+- Coup de pouce : si elle hésite (12 s en QCM, 16 s en saisie), un bouton « 💡 Un coup de pouce ? » apparaît ; chaque appui donne un peu plus de la méthode, JAMAIS le résultat (testé sur des milliers de calculs).
+- Choix : le niveau déjà atteint est conservé tel quel (aucune migration de la sauvegarde) ; comme les niveaux sont plus doux, elle repart donc d'un contenu un peu plus facile, ce qui est voulu. Un calcul à revoir réussi avec un coup de pouce compte comme bonne réponse mais ne valide pas encore la maîtrise.
+
 ## 0.7.0 — Créatures à collectionner
 - 8 créatures originales dessinées en SVG (aucun personnage sous licence), une par famille de calcul : Pomplo (additions), Frimo (soustractions), Kroko (multiplications), Duplo (doubles/triples), Parto (moitiés/tiers), Complo (compléments), Piko (divisions), Astro (astuces).
 - Chaque bonne réponse fait grandir la créature de sa famille : œuf (qui se fissure à mi-chemin) → éclosion à 10 bonnes réponses → bébé → jeune (50) → adulte (150) → légendaire (350, avec halo et étincelles).
