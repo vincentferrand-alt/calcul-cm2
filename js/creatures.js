@@ -1,4 +1,5 @@
-// Créatures originales à collectionner (dessinées en SVG, aucune licence) : une par famille de calcul.
+// Créatures à collectionner, une par famille de calcul. Depuis la v0.12 : images (assets/creatures/<id>-<stade>.webp, détourées,
+// avec une ombre au sol séparée <id>-<stade>-ombre.webp). Le dessin SVG ci-dessous sert de secours si une image manque.
 // Les identifiants (add, sub, mul…) sont ceux des familles et ne changent JAMAIS : c'est la clé des sauvegardes.
 // Elles éclosent à 10 bonnes réponses dans leur famille, puis évoluent en 4 stades.
 import { dressing } from "./accessories.js";
@@ -9,39 +10,49 @@ export const STAGE_NAMES = ["Œuf", "Bébé", "Jeune", "Adulte", "Légendaire"];
 // forms : nom de l'espèce à chaque stade ; story : l'histoire de chaque évolution (stades 1 à 4).
 export const CREATURES = [
   { id: "add", name: "Braise", species: "Dragon", fam: "add", c1: "#ff9a6b", c2: "#e8512f", c3: "#8c2412", belly: "#ffe3b0", acc: "#ffd84a", spot: "#ffd84a",
-    forms: ["Dragonneau", "Jeune dragon", "Dragon", "Dragon d'or"],
+    forms: ["Dragonneau", "Jeune dragon", "Dragon", "Dragon de feu"],
     desc: "Un dragon au grand cœur : chaque addition fait jaillir une flamme.",
-    story: ["Une petite flamme, un grand bâillement : Braise le dragonneau est né !", "Ses ailes poussent et il sait déjà planer d'un coussin à l'autre.", "Braise est un vrai dragon : ses flammes réchauffent tous les calculs.", "Dragon d'or ! Son feu ne brûle pas, il fait briller tout ce qu'il touche."] },
+    story: ["Une petite flamme, un grand bâillement : Braise sort de son œuf, dans son nid de paille !", "Ses ailes ont poussé : il plane déjà d'un coussin à l'autre.", "Braise est un vrai dragon : ses écailles brillent comme des braises.", "Dragon de feu ! Ses flammes ne brûlent pas : elles font briller tout ce qu'il touche."],
+    aura: "#ff9a3c", parts: ["#ffd84a", "#ff9a3c", "#ff6a2a", "#fff1b0"] },
   { id: "sub", name: "Mistral", species: "Chat", fam: "sub", c1: "#b6e8fb", c2: "#4cb6e6", c3: "#1b5f88", belly: "#f4fcff", acc: "#ffd84a", spot: "#d7f3ff",
-    forms: ["Chaton des neiges", "Chat des neiges", "Chat des glaces", "Chat des étoiles"],
-    desc: "Un chat des neiges silencieux, expert pour retirer ce qui est en trop.",
-    story: ["Mistral, un chaton des neiges, ronronne déjà sur tes soustractions.", "Il bondit sur les calculs comme sur une souris de glace.", "Chat des glaces, il retire tout ce qui est en trop, sans un bruit.", "Chat des étoiles : une étoile brille sur son front."] },
+    forms: ["Chaton", "Jeune chat", "Chat", "Chat esprit des glaces"],
+    desc: "Un chat silencieux, expert pour retirer ce qui est en trop.",
+    story: ["Mistral, un chaton tout doux, ronronne déjà sur tes soustractions.", "Il bondit sur les calculs comme sur une pelote de laine.", "Un chat élégant qui retire tout ce qui est en trop, sans un bruit.", "Chat esprit des glaces : des volutes de givre dansent autour de lui !"],
+    aura: "#6fe0f0", parts: ["#bff3ff", "#6fe0f0", "#ffffff", "#4cc9f0"] },
   { id: "mul", name: "Filou", species: "Belette", fam: "mul", c1: "#e3c196", c2: "#b9803f", c3: "#6b4423", belly: "#fff1da", acc: "#2d2118", spot: "#d9b47e",
-    forms: ["Belette", "Belette agile", "Belette rusée", "Hermine blanche"],
+    forms: ["Bébé belette", "Belette agile", "Belette rusée", "Belette esprit de givre"],
     desc: "Une belette qui se faufile partout et connaît ses tables par cœur.",
-    story: ["Filou la belette se faufile partout et trouve le chemin le plus court.", "Il connaît déjà ses tables par cœur, même celles de 7 et de 8 !", "Filou a une queue au bout noir et plus d'un tour dans son sac.", "L'hiver est venu : Filou devient une hermine blanche comme la neige."] },
+    story: ["Filou la belette se faufile partout et trouve le chemin le plus court.", "Il connaît déjà ses tables par cœur, même celles de 7 et de 8 !", "Filou a une queue touffue et plus d'un tour dans son sac.", "L'hiver est venu : Filou devient un esprit de givre, avec un collier de perles."],
+    aura: "#7fd6f0", parts: ["#d9f6ff", "#7fd6f0", "#ffffff", "#2ec4b6"] },
   { id: "dbl", name: "Roux", species: "Renard", fam: "dbl", c1: "#ffb978", c2: "#f0832f", c3: "#9c4510", belly: "#fff3e3", acc: "#fff", spot: "#ffd3a6",
-    forms: ["Renardeau", "Renard", "Renard rusé", "Renard solaire"],
+    forms: ["Renardeau", "Renard", "Renard rusé", "Renard de feu"],
     desc: "Un renard malin qui double et triple tout ce qu'il touche.",
-    story: ["Roux le renardeau est né, la queue en panache et l'œil malin.", "Il double chaque idée : un malin, deux malins !", "Un renard rusé, qui double et triple sans jamais se tromper.", "Le bout de sa queue s'enflamme : un esprit renard se réveille…"] },
+    story: ["Roux le renardeau est né, la queue en panache et l'œil malin.", "Il double chaque idée : un malin, deux malins !", "Un renard rusé, qui double et triple sans jamais se tromper.", "Sa queue s'embrase : un esprit renard de feu se réveille !"],
+    aura: "#ffa040", parts: ["#ffd84a", "#ffa040", "#ff7a2a", "#ffffff"] },
   { id: "frac", name: "Rayure", species: "Tigre", fam: "frac", c1: "#f6f4ff", c2: "#cfc8f7", c3: "#4a3bb0", belly: "#ffffff", acc: "#ffd84a", spot: "#d9d3fa",
-    forms: ["Tigreau blanc", "Jeune tigre", "Tigre blanc", "Tigre de la lune"],
-    desc: "Un tigre blanc aux rayures violettes qui partage en parts bien égales.",
-    story: ["Un bébé tigre blanc aux rayures violettes : Rayure est né !", "Il partage tout en parts bien égales, c'est le tigre le plus juste.", "Rayure grandit et ses rayures violettes brillent de plus en plus.", "Tigre de la lune : il rugit, et tous les nombres se rangent en parts égales !"] },
-  { id: "comp", name: "Yuzu", species: "Kitsune à 4 queues", fam: "comp", c1: "#fff0c2", c2: "#f5c24d", c3: "#a06a08", belly: "#fffaf0", acc: "#2ec4b6", spot: "#8be8de",
-    forms: ["Petit kitsune (1 queue)", "Kitsune à 2 queues", "Kitsune à 3 queues", "Kitsune à 4 queues"],
-    desc: "Un renard-esprit qui trouve toujours ce qui manque, une queue de plus à chaque stade.",
-    story: ["Yuzu, un petit renard-esprit, apparaît avec une seule queue.", "Une deuxième queue pousse ! Il sait toujours ce qui manque.", "Trois queues : une flamme bleue danse au bout de chacune.", "Quatre queues ! Yuzu complète tout, il trouve à coup sûr ce qui manque."] },
+    forms: ["Tigreau", "Jeune tigre", "Tigre", "Tigre gardien"],
+    desc: "Un tigre puissant qui partage en parts bien égales.",
+    story: ["Un bébé tigre aux grands yeux : Rayure est né !", "Il partage tout en parts bien égales, c'est le tigre le plus juste.", "Rayure est devenu un grand tigre, calme et fort.", "Tigre gardien : une armure d'or et des flammes turquoise l'entourent !"],
+    aura: "#3fe0d0", parts: ["#ffb347", "#3fe0d0", "#ffd84a", "#ffffff"] },
+  { id: "comp", name: "Yuzu", species: "Kitsune de feu", fam: "comp", c1: "#fff0c2", c2: "#f5c24d", c3: "#a06a08", belly: "#fffaf0", acc: "#2ec4b6", spot: "#8be8de",
+    forms: ["Petit kitsune", "Kitsune des flammes", "Grand kitsune", "Kitsune ancestral"],
+    desc: "Un renard-esprit qui trouve toujours ce qui manque, avec ses queues aux pointes de feu.",
+    story: ["Yuzu, un petit renard-esprit, apparaît avec ses queues toutes douces.", "Des flammes dansent au bout de ses queues : il trouve toujours ce qui manque.", "Grand kitsune, il complète tout d'un coup de queue.", "Kitsune ancestral : ses marques rouges brillent, rien ne lui manque !"],
+    aura: "#ff8a4a", parts: ["#ffd84a", "#ff8a4a", "#ffffff", "#e8512f"] },
   { id: "div", name: "Luno", species: "Loup", fam: "div", c1: "#d3dbe8", c2: "#8c9cb6", c3: "#424f66", belly: "#f1f4f9", acc: "#ffd84a", spot: "#b7c3d6",
-    forms: ["Louveteau", "Jeune loup", "Loup gris", "Loup de la pleine lune"],
+    forms: ["Louveteau", "Jeune loup", "Loup gris", "Loup esprit de la lune"],
     desc: "Un loup qui partage tout en parts égales pour que toute la meute en ait.",
-    story: ["Luno, un louveteau, hurle à la lune sa toute première division.", "Il partage le butin en parts égales pour toute la meute.", "Un loup gris à la fourrure argentée veille sur les nombres.", "Loup de la pleine lune : toute la meute compte sur lui !"] },
+    story: ["Luno, un louveteau, hurle à la lune sa toute première division.", "Il partage le butin en parts égales pour toute la meute.", "Un loup gris à la fourrure argentée veille sur les nombres.", "Loup esprit de la lune : une lumière bleue l'entoure, toute la meute compte sur lui !"],
+    aura: "#5fc8ff", parts: ["#bfe6ff", "#5fc8ff", "#2ec4b6", "#ffffff"] },
   { id: "trick", name: "Aurore", species: "Kitsune à 9 queues", fam: "trick", c1: "#ffffff", c2: "#e4e7ff", c3: "#4a57d6", belly: "#ffffff", acc: "#ffd84a", spot: "#c9cfff",
-    forms: ["Kitsune à 3 queues", "Kitsune à 5 queues", "Kitsune à 7 queues", "Kitsune à 9 queues"],
+    forms: ["Petit kitsune blanc", "Kitsune des neiges", "Kitsune à 7 queues", "Kitsune à 9 queues"],
     desc: "Le grand esprit-renard des raccourcis : neuf queues pour neuf astuces.",
-    story: ["Aurore, esprit-renard, apparaît avec trois queues scintillantes.", "Cinq queues, cinq astuces de plus dans son sac.", "Sept queues : les raccourcis des grands n'ont plus de secret.", "Neuf queues ! Aurore est le grand kitsune des astuces."] },
+    story: ["Aurore, esprit-renard, apparaît avec ses queues blanches scintillantes.", "Des flammes bleues dansent autour d'elle : de nouvelles astuces dans son sac.", "Sept queues : les raccourcis des grands n'ont plus de secret.", "Neuf queues ! Aurore est le grand kitsune des astuces."],
+    aura: "#8fd8ff", parts: ["#ffffff", "#8fd8ff", "#4cc9f0", "#ffd84a"] },
 ];
 export const creatureById = (id) => CREATURES.find((c) => c.id === id);
+export const creatureImg = (id, stage) => `assets/creatures/${id}-${stage}.webp`;
+export const creatureShadow = (id, stage) => `assets/creatures/${id}-${stage}-ombre.webp`;
 
 export const stageForXp = (xp) => STAGE_XP.reduce((st, t, i) => (xp >= t ? i : st), 0);
 export function progressInfo(xp) {

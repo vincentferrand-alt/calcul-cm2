@@ -21,7 +21,7 @@ const page = await ctx.newPage();
 const errors = []; page.on("pageerror", (e) => errors.push(e.message));
 await page.goto(`http://localhost:${srv.address().port}/`);
 await page.waitForSelector(".home-hero");
-await page.locator(".splash").click({ timeout: 2000 }).catch(() => {}); await page.waitForSelector(".splash", { state: "detached" });
+await (await page.locator(".splash .btn", { hasText: "Plus tard" }).count() ? page.locator(".splash .btn", { hasText: "Plus tard" }) : page.locator(".splash")).click({ timeout: 2000 }).catch(() => {}); await page.waitForSelector(".splash", { state: "detached" });
 // réglages
 await page.locator(".gear").click(); await page.waitForSelector("text=Vitesse de lecture");
 await page.locator(".seg-b:has-text('Lente')").click();

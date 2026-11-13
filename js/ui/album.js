@@ -7,6 +7,7 @@ import { topbar } from "./common.js";
 import { scenePick, setPick } from "../shop.js";
 import { creatureArt } from "./art.js";
 import { sceneEl } from "./scene.js";
+import { playEvolution } from "./evolve.js";
 
 export { creatureArt };
 
@@ -50,6 +51,7 @@ function albumBody(go, redraw) {
       shown >= 4 ? null : h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: pi.pct + "%" } })),
       h("div", { class: "pet-line" }, line),
       shown ? h("div", { class: "pet-desc" }, c.story[pick.st - 1]) : null,
+      shown ? h("button", { class: "pet-replay", type: "button", "aria-label": `Revoir l'évolution : ${c.forms[pick.st - 1]}`, onclick: () => playEvolution(c.id, pick.st - 1, pick.st) }, "▶ Revoir l'évolution") : null,
       shown ? h("button", { class: "pet-pick" + (store.settings.companion === c.id ? " on" : ""), type: "button", onclick: () => { store.set("companion", store.settings.companion === c.id ? null : c.id); redraw(); } },
         store.settings.companion === c.id ? "⭐ Mon compagnon" : "☆ Choisir comme compagnon") : null);
   });

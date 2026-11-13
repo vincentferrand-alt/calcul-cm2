@@ -23,7 +23,8 @@ for (const [label, w, h] of [["phone", 384, 824], ["desk", 1200, 800]]) {
   await page.evaluate((st) => { localStorage.setItem("ccm2:state", JSON.stringify(st)); localStorage.setItem("ccm2:profile", JSON.stringify({ name: "Test", id: null })); }, STATE);
   await page.reload(); await page.waitForSelector(".splash"); await page.waitForTimeout(1200);
   await page.screenshot({ path: `${out}/decor-${label}-splash.png` });
-  await page.locator(".splash").click(); await page.waitForSelector(".splash", { state: "detached" }); await page.waitForTimeout(300);
+  if (await page.locator(".splash .btn", { hasText: "Plus tard" }).count()) await page.locator(".splash .btn", { hasText: "Plus tard" }).click(); else await page.locator(".splash").click();
+  await page.waitForSelector(".splash", { state: "detached" }); await page.waitForTimeout(300);
   await page.screenshot({ path: `${out}/decor-${label}-home.png` });
   await page.goto(url + "#/boutique"); await page.waitForSelector(".items"); await page.waitForTimeout(300);
   await page.screenshot({ path: `${out}/decor-${label}-boutique.png`, fullPage: true });
@@ -35,7 +36,7 @@ for (const [label, w, h] of [["phone", 384, 824], ["desk", 1200, 800]]) {
 }
 // Planche : chaque fond au jour, au soir et la nuit, avec un élément de chaque type.
 {
-  const ctx = await browser.newContext({ viewport: { width: 1100, height: 1500 }, deviceScaleFactor: 1, serviceWorkers: "block", reducedMotion: "reduce" });
+  const ctx = await browser.newContext({ viewport: { width: 1100, height: 2000 }, deviceScaleFactor: 1, serviceWorkers: "block", reducedMotion: "reduce" });
   const page = await ctx.newPage(); page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(url); await page.waitForTimeout(400);
   await page.evaluate(async () => {
@@ -46,7 +47,7 @@ for (const [label, w, h] of [["phone", 384, 824], ["desk", 1200, 800]]) {
     bgs.forEach((bg, i) => [8.5, 19, 23].forEach((hr, j) => grid.append(sceneEl({ id: ids[i], stage: 1 + ((i + j) % 4), pick: { bg, wx: wx[(i + j) % wx.length], fx: fx[(i + j) % fx.length], pet: pet[(i + j) % pet.length] }, variant: "home", hour: hr }))));
     document.body.replaceChildren(grid);
   });
-  await page.waitForTimeout(500);
+  await page.waitForFunction(() => [...document.images].every((i) => i.complete)); await page.waitForTimeout(300);
   await page.screenshot({ path: `${out}/decor-planche.png`, fullPage: true });
   await ctx.close();
 }

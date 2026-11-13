@@ -11,6 +11,7 @@ import { keypad } from "./keypad.js";
 import { toast, confetti } from "./notify.js";
 import { creatureById, STAGE_NAMES } from "../creatures.js";
 import { creatureCard } from "./album.js";
+import { playEvolutions } from "./evolve.js";
 import { iconBtn } from "./common.js";
 import { nudgeLines, NUDGE_DELAY, hintSpeech } from "../hints.js";
 import { speak, stopSpeaking, speechSupported, voiceStatus, NO_VOICE_MESSAGE } from "../speech.js";
@@ -203,6 +204,8 @@ export function playScreen({ go }) {
       S.mis.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), S.mis.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
       h("button", { class: "btn green big", onclick: () => go("jouer", true) }, "Rejouer (nouveaux calculs)"),
       h("button", { class: "btn ghost big", onclick: () => go(opts.back ?? "exercices") }, "Retour")));
+    // Éclosion / évolution pendant la série : la transformation se joue maintenant, par-dessus le résultat.
+    if (S.cre.length) playEvolutions(S.cre);
   }
 
   const onKey = (e) => {

@@ -75,6 +75,7 @@ export function randState(rng) {
   s.decor = { owned: {}, pick: {} };
   for (const it of ["bg_lac", "wx_neige", "fx_aura", "pet_lapin", "bg_nuit"]) if (rng() < 0.5) s.decor.owned[it] = `2026-11-1${R(9)}`;
   for (const c of ["add", "sub"]) if (rng() < 0.6) s.decor.pick[c] = { bg: { id: rng() < 0.5 ? "bg_lac" : "bg_prairie", t: 2000 + R(1000) }, wx: { id: rng() < 0.5 ? "wx_neige" : null, t: 2000 + R(1000) }, st: { id: 1 + R(4), t: 2000 + R(1000) } };
+  s.eve = {}; for (let i = 0; i < 3; i++) if (rng() < 0.5) s.eve[`2026-11-${String(1 + R(28)).padStart(2, "0")}`] = { ok: rng() < 0.5, n: 1 + R(2) };
   if (rng() < 0.5) s.futureKey = { n: R(9), list: [R(3), 3 + R(3)] }; // clé inconnue d'une version future
   return s;
 }

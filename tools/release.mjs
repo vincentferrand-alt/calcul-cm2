@@ -9,7 +9,7 @@ if (v) {
   wr("js/version.js", rd("js/version.js").replace(/VERSION = "[^"]+"/, `VERSION = "${v}"`));
   wr("sw.js", rd("sw.js").replace(/const VERSION = "[^"]+"/, `const VERSION = "${v}"`));
 }
-const files = ["./", "index.html", "manifest.webmanifest", ...walk("css").sort(), ...walk("js").sort(), ...walk("icons").sort()];
+const files = ["./", "index.html", "manifest.webmanifest", ...walk("css").sort(), ...walk("js").sort(), ...walk("icons").sort(), ...(fs.existsSync(path.join(root, "assets")) ? walk("assets").sort() : [])];
 const block = "const ASSETS = [\n" + files.map((f) => `  "${f}",`).join("\n") + "\n];";
 wr("sw.js", rd("sw.js").replace(/const ASSETS = \[[\s\S]*?\n\];/, block));
 console.log("sw.js à jour :", files.length, "fichiers", v ? "— version " + v : "");

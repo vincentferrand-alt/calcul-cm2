@@ -22,7 +22,7 @@ function walk(dir) {
 test("service worker : tous les fichiers de l'appli sont pré-cachés", () => {
   const sw = read("sw.js");
   const listed = new Set([...sw.matchAll(/^\s+"([^"]+)",?$/gm)].map((m) => m[1]));
-  const files = [...walk("js"), ...walk("css"), ...walk("icons"), "index.html", "manifest.webmanifest"];
+  const files = [...walk("js"), ...walk("css"), ...walk("icons"), ...walk("assets"), "index.html", "manifest.webmanifest"];
   for (const f of files) assert.ok(listed.has(f), `sw.js ne liste pas ${f}`);
   for (const l of listed) if (l !== "./") assert.ok(fs.existsSync(path.join(root, l)), `sw.js liste un fichier inexistant : ${l}`);
 });

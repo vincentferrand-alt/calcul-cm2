@@ -20,7 +20,9 @@ const deco = (s) => (s.decor ||= { owned: {}, pick: {} });
 export const hasDecor = (s, id) => { const d = decorById(id); return !!d && (d.price === 0 || !!(s.decor && s.decor.owned && s.decor.owned[id])); };
 export const decorCount = (s) => DECOR.filter((d) => d.price > 0 && hasDecor(s, d.id)).length;
 export const spent = (s) => DECOR.reduce((t, d) => t + (d.price > 0 && hasDecor(s, d.id) ? d.price : 0), 0);
-export const balance = (s) => Math.max(0, (s.c.stars || 0) - spent(s));
+// Étoiles gagnées : celles des séries (compteur) + une par énigme du soir (comptées à part : elles s'additionnent entre appareils).
+export const starsEarned = (s) => (s.c.stars || 0) + Object.keys(s.eve || {}).length;
+export const balance = (s) => Math.max(0, starsEarned(s) - spent(s));
 
 export function buyDecor(s, id, date) {
   const d = decorById(id);

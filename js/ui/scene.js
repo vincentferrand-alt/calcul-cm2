@@ -18,7 +18,7 @@ function astroHTML(tod, bg, lite) {
 }
 
 // opts : { id (créature, ou null), stage, xp, pick {bg,wx,fx,pet}, variant (home|splash|shop|album), lite, hour, art (élément à la place de la créature) }
-export function sceneEl({ id = null, stage = 0, xp = 0, pick = {}, variant = "home", lite = false, hour = new Date().getHours(), art = null } = {}) {
+export function sceneEl({ id = null, stage = 0, xp = 0, pick = {}, variant = "home", lite = false, hour = new Date().getHours(), art = null, sleepy = false } = {}) {
   const bg = decorById(pick.bg) ? pick.bg : DEFAULT_BG;
   const tod = bg === "bg_nuit" ? "night" : timeOfDay(hour);
   const c = id ? creatureById(id) : null;
@@ -30,7 +30,8 @@ export function sceneEl({ id = null, stage = 0, xp = 0, pick = {}, variant = "ho
   el.innerHTML = `<div class="sc-sky"></div><div class="sc-astro" aria-hidden="true">${astroHTML(tod, bg, lite)}</div>${landSVG(bg)}`
     + `<div class="sc-pets" aria-hidden="true">${pick.pet ? petHTML(pick.pet) : ""}</div><div class="sc-shade"></div>`
     + `<div class="sc-box sc-fxb" aria-hidden="true">${fx.back}</div><div class="sc-box sc-cre"></div><div class="sc-box sc-fxf" aria-hidden="true">${fx.front}</div>`
-    + (pick.wx ? weatherHTML(pick.wx, lite, seed) : "");
+    + (pick.wx ? weatherHTML(pick.wx, lite, seed) : "") + '<div class="sc-sleep" aria-hidden="true"><i class="sc-zzz">z z Z</i></div>';
+  if (sleepy) el.classList.add("sleepy");
   el.querySelector(".sc-cre").append(art || creatureArt(id || "add", id ? stage : 0, xp, `sc${variant}`));
   return el;
 }

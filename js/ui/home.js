@@ -2,7 +2,9 @@ import { h } from "../dom.js";
 import { store } from "../store.js";
 import { toKey } from "../dates.js";
 import { CREATURES, featured, creatureById } from "../creatures.js";
-import { scenePick } from "../shop.js";
+import { scenePick, starsEarned } from "../shop.js";
+import { eveningOpen, eveningDone, EVENING_HOUR } from "../evening.js";
+import { openRiddle } from "./evening.js";
 import { sceneEl } from "./scene.js";
 import { computeStreak } from "../streak.js";
 import { themeFor, DAILY_COUNT } from "../daily.js";
@@ -18,7 +20,8 @@ export function homeScreen({ go }) {
   const feat = comp ? { c: { id: comp }, st: s.cre[comp].s, xp: (s.fam[creatureById(comp).fam] || { xp: 0 }).xp } : featured(s);
   // La scène : le compagnon (ou la créature la plus avancée) dans son décor, à la forme choisie.
   let mascot;
-  if (feat) { const p = scenePick(s, feat.c.id); mascot = sceneEl({ id: feat.c.id, stage: p.st, xp: feat.xp, pick: p, variant: "home" }); }
+  const hour = new Date().getHours(), sleepy = hour >= EVENING_HOUR && eveningDone(s, date);
+  if (feat) { const p = scenePick(s, feat.c.id); mascot = sceneEl({ id: feat.c.id, stage: p.st, xp: feat.xp, pick: p, variant: "home", sleepy }); }
   else { // pas encore d'éclosion : l'œuf de la famille la plus avancée, dans la prairie
     const best = CREATURES.reduce((b, c) => ((s.fam[c.fam] ? s.fam[c.fam].xp : 0) > (s.fam[b.fam] ? s.fam[b.fam].xp : 0) ? c : b), CREATURES[0]);
     mascot = sceneEl({ id: best.id, stage: 0, xp: s.fam[best.fam] ? s.fam[best.fam].xp : 0, variant: "home" });
@@ -49,7 +52,8 @@ export function homeScreen({ go }) {
       h("div", { class: "pills" },
         h("span", { class: "pill" }, `🔥 ${streak.current} jour${streak.current > 1 ? "s" : ""}`),
         streak.jokers ? h("span", { class: "pill", title: "Un jour manqué ne casse pas ta série" }, `🃏 joker ×${streak.jokers}`) : null,
-        h("span", { class: "pill" }, `⭐ ${s.c.stars}`), cloud),
+        h("span", { class: "pill" }, `⭐ ${starsEarned(s)}`), cloud,
+        eveningOpen(s, date, hour) ? h("button", { class: "pill eve-pill", type: "button", onclick: () => openRiddle(feat ? feat.c.id : CREATURES[0].id, () => go("", true)) }, "🌙 Énigme du soir") : null),
       mascot, h("div", { class: "bubble" }, msg)),
     h("div", { class: "card daily" }, h("div", { class: "row" }, h("span", { class: "daily-emoji" }, theme.emoji),
       h("div", { class: "grow" }, h("h2", {}, done ? "Défi du jour ✅" : "Défi du jour"), h("p", {}, `${theme.label} · environ ${DAILY_COUNT} calculs, sans chrono`))),

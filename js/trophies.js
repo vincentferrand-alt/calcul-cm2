@@ -2,7 +2,7 @@
 // IDENTIFIANTS STABLES : "t_xxx:palier" ne sont jamais renommés ni supprimés (tests/trophy-ids.json le vérifie).
 // On peut AJOUTER des lignes ou des paliers ; on ne change jamais ce qui existe.
 import { FAMILIES } from "./generator.js";
-import { ownedCount, decorCount } from "./shop.js";
+import { ownedCount, decorCount, starsEarned } from "./shop.js";
 
 export const TIER_NAMES = ["Bronze", "Argent", "Or", "Platine", "Diamant"];
 export const TIER_COLORS = ["#cd7f32", "#c3cad5", "#ffc933", "#8fd6e6", "#6fb7ff"];
@@ -20,7 +20,8 @@ export const LINES = [
   { id: "t_easy", name: "Devenus faciles", emoji: "✨", tiers: [3, 15, 50, 150], value: (s) => s.c.easy, desc: (n) => `Maîtriser ${n} calculs qui étaient difficiles` },
   { id: "t_speed", name: "Éclair", emoji: "⚡", tiers: [1, 5, 15], value: (s) => s.c.speed, desc: (n) => `Battre ${n} fois ton record de temps` },
   { id: "t_missions", name: "Missions", emoji: "🧭", tiers: [3, 15, 50, 150], value: (s) => s.c.missions, desc: (n) => `Accomplir ${n} missions` },
-  { id: "t_stars", name: "Étoiles", emoji: "⭐", tiers: [10, 50, 150, 400], value: (s) => s.c.stars, desc: (n) => `Gagner ${n} étoiles` },
+  { id: "t_stars", name: "Étoiles", emoji: "⭐", tiers: [10, 50, 150, 400], value: starsEarned, desc: (n) => `Gagner ${n} étoiles` },
+  { id: "t_eve", name: "Énigmes du soir", emoji: "🌙", tiers: [1, 7, 20, 50], value: (s) => Object.keys(s.eve || {}).length, desc: (n) => `Résoudre ${n} énigme${n > 1 ? "s" : ""} du soir` },
   { id: "t_hatch", name: "Éclosions", emoji: "🥚", tiers: [1, 4, 8], value: (s) => cre(s, 1), desc: (n) => `Faire éclore ${n} créature${n > 1 ? "s" : ""}` },
   // v0.10, retirée de la boutique en v0.11 : les paliers déjà gagnés restent, plus de nouvel objectif (retired).
   { id: "t_shop", name: "Garde-robe", emoji: "👒", tiers: [1, 4, 8, 12], retired: true, value: (s) => ownedCount(s), desc: (n) => `Avoir ${n} accessoire${n > 1 ? "s" : ""} dans ta garde-robe` },

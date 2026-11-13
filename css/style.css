@@ -493,3 +493,75 @@ body::before { /* étoiles discrètes */
 .pet-dots .dot.sel { outline: 3px solid var(--sky); outline-offset: 2px; }
 .pet-dots { gap: 9px; }
 .pet-dots .dot { width: 16px; height: 16px; }
+
+/* ===== v0.12 — créatures en images (WebP détourées) + ombre au sol séparée ===== */
+.creature-art.img { position: relative; aspect-ratio: 1; }
+.creature-art.img .cre-scale { position: absolute; inset: 0; transform-origin: 50% 95.5%; }
+.creature-art.img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; -webkit-user-drag: none; user-select: none; -webkit-touch-callout: none; }
+.creature-art.img.st-1 .cre-scale { transform: scale(.8); }
+.creature-art.img.st-2 .cre-scale { transform: scale(.88); }
+.creature-art.img.st-3 .cre-scale { transform: scale(.96); }
+.scene > .sc-box { aspect-ratio: 1; }
+.sc-cre .creature-art.img { animation: none; }
+.sc-cre .creature-art.img .cre-img { animation: sc-breathe 3.6s ease-in-out infinite; transform-origin: 50% 95.5%; }
+.pet .creature-art.img { width: 86%; max-width: 160px; }
+.chip .creature-art.img .cre-scale { transform: none; }
+.item-ic .creature-art.img .cre-scale { transform: none; }
+
+/* v0.12 — transformation animée */
+.evo { position: fixed; inset: 0; z-index: 70; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px; text-align: center; color: #fff;
+  background: radial-gradient(circle at 50% 40%, #24408a 0%, #11225a 55%, #081236 100%); animation: splash-in .35s ease both; overflow: hidden; }
+.evo.out { opacity: 0; transition: opacity .3s ease; }
+.evo-stage { position: relative; width: min(78vw, 340px); aspect-ratio: 1; }
+.evo-stage > div { position: absolute; inset: 0; }
+.evo-halo { border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--glow) 55%, transparent), transparent); animation: evo-halo 3s ease-out both; }
+.evo-old .creature-art, .evo-new .creature-art { width: 100%; height: 100%; }
+.evo-old .creature-art > svg, .evo-new .creature-art > svg { width: 100%; height: 100%; }
+.evo-old { animation: evo-charge 1.25s ease-in both, evo-fade-out .5s ease 1.25s both; }
+.evo-new { opacity: 0; animation: evo-grow 1.1s cubic-bezier(.3, 1.4, .5, 1) 1.35s both; }
+.evo-flash { inset: -30% !important; border-radius: 50%; background: radial-gradient(closest-side, #fff, rgba(255, 255, 255, .85) 40%, transparent); opacity: 0; animation: evo-flash 1s ease-out 1.1s both; }
+.evo-parts { pointer-events: none; }
+.evo-p { position: absolute; left: 50%; top: 52%; width: 12px; height: 12px; margin: -6px; border-radius: 50%; opacity: 0; box-shadow: 0 0 8px 2px rgba(255, 255, 255, .5); animation: evo-burst 1.3s cubic-bezier(.15, .7, .3, 1) both; }
+.evo-text { opacity: 0; animation: pop-in .4s ease-out 2.1s both; max-width: 22em; }
+.evo-title { font-size: 1.7rem; font-weight: 900; }
+.evo-form { font-size: 1.15rem; font-weight: 900; color: var(--sun); margin-top: 2px; }
+.evo-story { margin: 6px 0 12px; font-weight: 700; color: #dff3ff; line-height: 1.35; }
+.evo-btn { width: auto; min-width: 180px; }
+@keyframes evo-charge { 0% { transform: scale(1); filter: brightness(1) } 70% { transform: scale(1.04) rotate(-2deg); filter: brightness(1.8) } 100% { transform: scale(1.07) rotate(2deg); filter: brightness(3) } }
+@keyframes evo-fade-out { to { opacity: 0 } }
+@keyframes evo-grow { 0% { opacity: 0; transform: scale(.82); filter: brightness(2.6) } 45% { opacity: 1 } 70% { transform: scale(1.1); filter: brightness(1.2) } 100% { opacity: 1; transform: scale(1); filter: brightness(1) } }
+@keyframes evo-flash { 0% { opacity: 0; transform: scale(.3) } 25% { opacity: 1; transform: scale(1) } 100% { opacity: 0; transform: scale(1.4) } }
+@keyframes evo-burst { 0% { opacity: 1; transform: translate(0, 0) scale(.4) } 70% { opacity: 1 } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.1) } }
+@keyframes evo-halo { 0% { transform: scale(.6); opacity: .2 } 40% { transform: scale(1.15); opacity: 1 } 100% { transform: scale(1); opacity: .7 } }
+/* « réduire les animations » : un simple fondu */
+.evo.calm .evo-old { animation: evo-fade-out .6s ease .2s both; }
+.evo.calm .evo-new { animation: splash-in .6s ease .4s both; }
+.evo.calm .evo-flash, .evo.calm .evo-halo { display: none; }
+.evo.calm .evo-text { animation: splash-in .4s ease .6s both; }
+@media (prefers-reduced-motion: reduce) { .evo, .evo * { animation-duration: .6s !important; } }
+.pet-replay { margin-top: 4px; font: inherit; font-weight: 800; font-size: .8rem; padding: 6px 10px; border-radius: 99px; border: 2px solid #d5e2f5; background: #eef6ff; color: var(--ink); cursor: pointer; }
+
+/* v0.12 — énigme du soir */
+.riddle { background: #fff; color: var(--ink); border-radius: 22px; padding: 12px 14px 14px; box-shadow: var(--shadow); width: min(92vw, 420px); text-align: center; cursor: default; }
+.riddle-who { font-weight: 900; color: #4a57d6; }
+.riddle-q { font-size: 2.1rem; font-weight: 900; margin: 4px 0 8px; }
+.riddle-q .q-eq { font-size: 1.6rem; }
+.riddle-choices { flex: none; max-height: none; grid-auto-rows: auto; }
+.riddle-choices .choice { min-height: 64px; font-size: 1.6rem; }
+.riddle-msg { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 1rem; }
+.riddle-msg:empty { display: none; }
+.riddle-night { font-weight: 900; margin: 8px 0 6px; color: #4a57d6; }
+.riddle-end .btn { width: auto; min-width: 160px; }
+.splash-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.splash-actions .btn { width: auto; min-width: 150px; }
+.splash.has-riddle { overflow-y: auto; justify-content: flex-start; padding-top: max(16px, env(safe-area-inset-top)); cursor: default; }
+.splash.has-riddle .v-splash { width: min(70vw, 300px); }
+.pill.eve-pill { border: 0; font: inherit; font-weight: 900; cursor: pointer; background: var(--sun); color: #5b3b00; animation: nudge-pulse 2s ease-in-out infinite; }
+.modal { position: fixed; inset: 0; z-index: 65; background: rgba(6, 14, 40, .72); display: grid; place-items: center; padding: 14px; overflow-y: auto; animation: splash-in .3s ease both; }
+.modal-in { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; width: min(92vw, 420px); }
+.modal-x { position: absolute; top: -6px; right: -6px; z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fff; font-size: 1.2rem; font-weight: 900; cursor: pointer; box-shadow: var(--shadow); }
+/* la créature s'endort après l'énigme */
+.sc-zzz { inset: auto !important; left: 60%; top: 12%; font-weight: 900; color: #fff; font-size: clamp(14px, 4vw, 26px); text-shadow: 0 2px 6px rgba(0, 0, 40, .5); animation: sc-zzz 3s ease-in-out infinite; }
+@keyframes sc-zzz { 0% { transform: translate(0, 10px) scale(.7); opacity: 0 } 30% { opacity: 1 } 100% { transform: translate(18px, -24px) scale(1.15); opacity: 0 } }
+.sc-sleep { display: none; }
+.scene.sleepy .sc-sleep { display: block; }

@@ -19,7 +19,7 @@ for (const [label, w, h] of [["phone", 384, 824], ["desk", 1200, 800]]) {
   });
   await page.reload(); await page.waitForSelector(".splash"); await page.waitForTimeout(1300);
   await page.screenshot({ path: `${out}/shop-${label}-splash.png` });
-  await page.locator(".splash").click(); await page.waitForSelector(".splash", { state: "detached" }); await page.waitForTimeout(300);
+  await (await page.locator(".splash .btn", { hasText: "Plus tard" }).count() ? page.locator(".splash .btn", { hasText: "Plus tard" }) : page.locator(".splash")).click(); await page.waitForSelector(".splash", { state: "detached" }); await page.waitForTimeout(300);
   await page.screenshot({ path: `${out}/shop-${label}-home.png` });
   await page.goto(`http://localhost:${srv.address().port}/#/boutique`); await page.waitForSelector(".items"); await page.waitForTimeout(300);
   await page.screenshot({ path: `${out}/shop-${label}-boutique.png`, fullPage: true });
