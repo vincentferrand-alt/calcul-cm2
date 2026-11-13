@@ -68,7 +68,7 @@ export function randState(rng) {
   for (let i = 0; i < 4; i++) s.daily[`2026-11-${String(1 + R(28)).padStart(2, "0")}`] = { done: R(2) === 0, ok: R(20), n: 20, stars: R(4) };
   s.rec["time:mix"] = R(40); s.rec["time:add"] = R(30);
   s.m.done = Array.from({ length: R(5) }, (_, i) => `m-${i}`);
-  s.m.active = Array.from({ length: 3 }, (_, i) => ({ id: `m-${20 + i * 10 + R(3)}`, tpl: "fam", target: 10, progress: R(10), done: false }));
+  s.m.active = Array.from({ length: 3 }, (_, i) => ({ id: `m-${20 + i * 10 + R(3)}`, tpl: "fam", params: { fam: "add" }, target: 10, progress: R(10), done: false }));
   if (rng() < 0.5) s.futureKey = { n: R(9), list: [R(3), 3 + R(3)] }; // clé inconnue d'une version future
   return s;
 }

@@ -10,6 +10,7 @@ import { trophiesScreen } from "./ui/trophees.js";
 import { profilScreen } from "./ui/profil.js";
 import { albumScreen } from "./ui/album.js";
 import { reglagesScreen } from "./ui/reglages.js";
+import { startSyncing, setSyncHook } from "./syncer.js";
 import { creatureById, STAGE_NAMES } from "./creatures.js";
 import { refreshState } from "./game.js";
 import { toKey } from "./dates.js";
@@ -44,11 +45,18 @@ addEventListener("hashchange", render);
 let fresh;
 store.update((st) => { fresh = refreshState(st, toKey()); });
 render();
-// Au démarrage (surtout après une fusion téléphone/iMac) : on regroupe les annonces pour ne pas couvrir l'écran.
-if (fresh.trophies.length > 2) toast(`${fresh.trophies.length} nouveaux trophées t'attendent !`);
-else fresh.trophies.forEach((t) => toast("Nouveau trophée : " + trophyLabel(t.line, t.tier)));
-if (fresh.creatures.length > 2) toast("Tes créatures ont grandi ! Va voir dans « Créatures ».", { icon: "🥚" });
-else fresh.creatures.forEach((e) => toast(`${creatureById(e.id).name} : ${STAGE_NAMES[e.to]} !`, { icon: "🥚" }));
+// Annonces (au démarrage, ou après une fusion avec l'autre appareil) : regroupées pour ne pas couvrir l'écran.
+function announce(news) {
+  if (!news) return;
+  if (news.trophies.length > 2) toast(`${news.trophies.length} nouveaux trophées t'attendent !`);
+  else news.trophies.forEach((t) => toast("Nouveau trophée : " + trophyLabel(t.line, t.tier)));
+  if (news.creatures.length > 2) toast("Tes créatures ont grandi ! Va voir dans « Créatures ».", { icon: "🥚" });
+  else news.creatures.forEach((e) => toast(`${creatureById(e.id).name} : ${STAGE_NAMES[e.to]} !`, { icon: "🥚" }));
+}
+announce(fresh);
+// Synchronisation (si elle est activée) : quand l'autre appareil a apporté du nouveau, on redessine l'accueil / l'album / les trophées (jamais en pleine partie).
+setSyncHook((news) => { if (["", "album", "trophees", "reglages"].includes(shown)) render(); announce(news); });
+startSyncing();
 demanderStockagePersistant();
 export { go };
 

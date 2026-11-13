@@ -4,11 +4,45 @@ import { sfx } from "../audio.js";
 import { speak, voiceStatus, speechSupported, NO_VOICE_MESSAGE } from "../speech.js";
 import { VERSION } from "../version.js";
 import { topbar } from "./common.js";
+import { sync, onSyncStatus, runSync, syncAvailable } from "../syncer.js";
+import { FIREBASE } from "../firebase-config.js";
+import { syncConfigured } from "../sync.js";
+import { exportData, importData } from "../state.js";
+import { toKey } from "../dates.js";
+import { toast } from "./notify.js";
 
 const RATES = [[0.75, "🐢 Lente"], [0.9, "Normale"], [1.1, "🐇 Rapide"]];
 
+const hhmm = (d) => d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
 export function reglagesScreen({ go }) {
   const root = h("main", { class: "screen" });
+  const syncBox = h("div", { class: "card" });
+  function drawSync() {
+    const configured = syncConfigured(FIREBASE), hasId = !!(store.profile && store.profile.id);
+    let line, btn = null;
+    if (!configured) line = "Pas encore activée : ta progression est gardée sur cet appareil. Pense à faire une sauvegarde dans un fichier (juste en dessous).";
+    else if (!hasId) { line = "Pour retrouver ta progression sur un autre appareil, crée ton prénom et ton code secret."; btn = h("button", { class: "btn light", type: "button", onclick: () => go("profil") }, "🔑 Créer mon code secret"); }
+    else {
+      line = sync.state === "syncing" ? "Synchronisation en cours…" : sync.state === "ok" && sync.at ? `✅ Tout est à jour (${hhmm(sync.at)}). Tes trophées te suivent sur tes autres appareils.`
+        : sync.state === "error" ? `⚠️ ${sync.message}` : "Ta progression se synchronise toute seule entre tes appareils.";
+      btn = h("button", { class: "btn light", type: "button", disabled: sync.state === "syncing", onclick: () => { sfx.tap(); runSync(); } }, "↻ Synchroniser maintenant");
+    }
+    syncBox.replaceChildren(h("h2", {}, "☁️ Synchronisation"), h("p", {}, line), btn);
+  }
+  const off = onSyncStatus(drawSync);
+  function exportFile() {
+    const blob = new Blob([exportData(store.state, VERSION)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = h("a", { href: url, download: `calcul-cm2-sauvegarde-${toKey()}.json` });
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast("Sauvegarde enregistrée dans tes téléchargements", { icon: "💾", sound: false });
+  }
+  async function importFile(file) {
+    if (!file) return;
+    try { store.replaceState(importData(await file.text(), store.state)); toast("Sauvegarde ajoutée : rien n'a été effacé !", { icon: "💾", sound: false }); }
+    catch (e) { toast(e.message || "Ce fichier ne marche pas.", { icon: "⚠️", sound: false }); }
+  }
   function seg(key, options) {
     return h("div", { class: "seg" }, options.map(([val, label]) =>
       h("button", { class: "seg-b" + (store.settings[key] === val ? " on" : ""), type: "button", onclick: () => { store.set(key, val); sfx.tap(); draw(); } }, label)));
@@ -28,8 +62,13 @@ export function reglagesScreen({ go }) {
           voiceNote ? h("p", { class: "small" }, voiceNote) : null),
         h("div", { class: "card" }, h("h2", {}, "✍️ Façon de répondre"),
           seg("answer", [["qcm", "4 choix"], ["input", "Je tape"]])),
+        syncBox,
+        h("div", { class: "card" }, h("h2", {}, "💾 Sauvegarde dans un fichier"),
+          h("p", {}, "Un fichier de secours avec tous tes trophées et tes créatures. Quand tu l'ajoutes, rien n'est jamais effacé : tout est fusionné."),
+          h("button", { class: "btn light", type: "button", onclick: () => { sfx.tap(); exportFile(); } }, "⬇️ Enregistrer ma sauvegarde"),
+          h("label", { class: "btn light file-btn" }, "⬆️ Ajouter une sauvegarde", h("input", { type: "file", accept: ".json,application/json", onchange: (e) => importFile(e.target.files[0]) }))),
         h("p", { class: "muted center small", style: { color: "#dff3ff" } }, `Calcul CM2 · version ${VERSION}`)));
   }
-  draw();
-  return { el: root };
+  draw(); drawSync();
+  return { el: root, destroy: off };
 }

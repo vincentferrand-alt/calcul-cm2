@@ -2,6 +2,15 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.9.0 — Synchronisation téléphone ↔ iMac et sauvegarde en fichier
+- Synchronisation Firebase (Firestore, API REST : aucun SDK, aucune compilation). Inactive tant que js/firebase-config.js vaut `null` : l'appli reste 100 % locale. Guide pas à pas : docs/firebase.md ; règles de sécurité : firestore.rules.
+- Principe « jamais rien perdre » : on lit la copie en ligne, on FUSIONNE (union des trophées et créatures, maximum des compteurs), on vérifie qu'aucun élément n'a disparu (sinon on n'écrit rien), puis on écrit avec précondition ; si l'autre appareil a écrit entre-temps, on relit et on refusionne. Une copie en ligne illisible n'est jamais écrasée.
+- Quand : à l'ouverture, ~10 s après la fin d'une partie, quand l'appli passe en arrière-plan, au retour du réseau, et via le bouton « Synchroniser maintenant ». Les trophées / évolutions gagnés sur l'autre appareil sont annoncés.
+- Réglages : état de la synchro avec messages clairs (base non créée, règles, clé refusée, hors ligne…), sauvegarde exportable en fichier .json et import qui FUSIONNE (n'efface jamais).
+- Missions : la fusion garde au plus 3 missions actives (choix déterministe), pour que deux appareils ne se renvoient pas des missions en boucle. Une mission abîmée ne peut plus provoquer d'écran blanc.
+- Choix : l'identité de synchro est l'empreinte (SHA-256) du prénom + code secret (même prénom et même code sur chaque appareil) ; le document est interdit en liste/suppression par les règles. Limite d'envoi : 900 000 caractères (très largement suffisant).
+- Non testable ici : la vraie base Firebase (tests avec une fausse base qui imite l'API, et deux navigateurs). L'écran Réglages affichera la cause exacte si quelque chose ne va pas.
+
 ## 0.8.0 — Dictée, réglages, créature compagnon
 - Mode « 🎧 Dictée : écoute et calcule » (écran Exercices) : le calcul est lu à voix haute en français (« quarante-sept plus trente-huit »), il n'est pas affiché ; boutons « ↻ Répéter » et « 👁 Voir le calcul ». Elle répond en QCM ou en tapant, comme d'habitude. Après une erreur, la bonne réponse et l'astuce sont lues à voix haute (bouton « Écouter l'astuce »).
 - Lecture à voix haute des calculs aussi dans les autres modes (option, bouton 🔊 sur la carte).

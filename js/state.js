@@ -106,7 +106,12 @@ export function merge(x, y) {
   out.rec = mergeMap(a.rec, b.rec, maxN);
   const done = uniq(a.m.done, b.m.done);
   const byId = mergeMap(Object.fromEntries(a.m.active.map((m) => [m.id, m])), Object.fromEntries(b.m.active.map((m) => [m.id, m])), mergeMission);
-  out.m = { ...mergeAny(a.m, b.m), done, active: Object.values(byId).filter((m) => !m.done && !done.includes(m.id)) };
+  // Au plus 3 missions actives (celles qui sont le plus avancées ; à égalité, ordre des identifiants) : le choix est déterministe,
+  // donc deux appareils qui fusionnent aboutissent à la même liste et ne se « renvoient » jamais des missions en boucle.
+  const ratio = (m) => (m.target ? Math.min(1, (m.progress || 0) / m.target) : 0);
+  const active = Object.values(byId).filter((m) => !m.done && !done.includes(m.id))
+    .sort((p, q) => ratio(q) - ratio(p) || (p.id < q.id ? -1 : p.id > q.id ? 1 : 0)).slice(0, 3).sort((p, q) => (p.id < q.id ? -1 : p.id > q.id ? 1 : 0));
+  out.m = { ...mergeAny(a.m, b.m), done, active };
   return out;
 }
 

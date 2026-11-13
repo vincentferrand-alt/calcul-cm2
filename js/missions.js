@@ -23,11 +23,12 @@ export const TEMPLATES = {
   daily: { make: (s, r, date) => (s.daily[date]?.done ? null : { params: {}, target: 1 }), text: (m, date) => `Termine le défi du jour${date ? " : " + themeFor(date).label : ""}`, icon: "📅" },
 };
 const sameMission = (a, b) => a.tpl === b.tpl && JSON.stringify(a.params) === JSON.stringify(b.params);
-export const missionText = (m, date) => TEMPLATES[m.tpl].text(m, date);
+export const missionText = (m, date) => { try { return TEMPLATES[m.tpl].text(m, date); } catch { return "Une mission t'attend"; } }; // jamais d'écran blanc à cause d'une mission abîmée
+const validMission = (m) => { try { return !!TEMPLATES[m.tpl].text(m, "2026-01-01"); } catch { return false; } };
 export const missionIcon = (m) => TEMPLATES[m.tpl].icon;
 
 export function refillMissions(s, r = Math.random, date) {
-  s.m.active = s.m.active.filter((m) => TEMPLATES[m.tpl] && !m.done);
+  s.m.active = s.m.active.filter((m) => TEMPLATES[m.tpl] && !m.done && validMission(m));
   let guard = 0;
   while (s.m.active.length < SLOTS && guard++ < 60) {
     const tpl = pick(r, Object.keys(TEMPLATES));

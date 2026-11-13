@@ -328,3 +328,7 @@ body::before { /* étoiles discrètes */
 .home-hero { position: relative; }
 .pet-pick { margin-top: 6px; font: inherit; font-weight: 800; font-size: .85rem; padding: 7px 10px; border-radius: 99px; border: 2px solid #d5e2f5; background: #fff; color: var(--ink); cursor: pointer; }
 .pet-pick.on { background: var(--sun); border-color: var(--sun); color: #5b3b00; }
+
+.file-btn { position: relative; overflow: hidden; width: 100%; margin-top: 8px; box-shadow: 0 5px 0 #c9d6ec; }
+.file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.card .btn[disabled] { opacity: .6; }
