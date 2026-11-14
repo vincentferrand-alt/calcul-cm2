@@ -441,3 +441,4 @@ export function choices(prob, rng = Math.random) {
   for (const v of [a + step, a - step, a + 1, a - 1, a + 2, a - 2, a + 2 * step, a - 2 * step, a + 3, a + 5, a + 7]) take(v);
   return shuffle([a, ...wrong], rng);
 }
+export { addHint, subHint, doubling, tableHint, splitTimes, quarterHint, compHint }; // v0.18 : réutilisées par la fiche chrono (js/fiche.js)

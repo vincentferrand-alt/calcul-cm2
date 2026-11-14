@@ -4,6 +4,7 @@ import { missionEvent, refillMissions } from "./missions.js";
 import { checkTrophies } from "./trophies.js";
 import { computeStreak } from "./streak.js";
 import { syncCreatures } from "./creatures.js";
+import { recordFiche } from "./fiche.js";
 
 export function afterAnswer(s, { prob, ok, review, run, date, mode, adapt, hinted }) {
   const ev = recordAnswer(s, prob, ok, { date, mode, review, adapt, hinted });
@@ -24,6 +25,23 @@ export function afterSession(s, { ok, total, mode, daily, date }) {
   s.c.streakBest = Math.max(s.c.streakBest, streak.best);
   const missions = missionEvent(s, { type: "session", mode, ok, total, perfect: r.perfect, daily }, Math.random, date);
   return { ...r, streak, missions, trophies: checkTrophies(s, date) };
+}
+
+// v0.18 : une fiche chrono terminée. Tout est appliqué d'un coup, à la fin (rien n'est corrigé pendant l'épreuve).
+// info : { period, rhythm, score (scoreFiche), secs, date, stamp }
+export function afterFiche(s, info) {
+  const r = recordFiche(s, info), date = info.date;
+  const missions = []; let run = 0;
+  for (const row of info.score.rows) {
+    if (row.state === "todo") continue;
+    const ok = row.state === "ok"; run = ok ? run + 1 : 0;
+    missions.push(...missionEvent(s, { type: "answer", prob: row.p, ok, review: false, run }, Math.random, date));
+  }
+  const streak = computeStreak(s, date);
+  s.c.streakBest = Math.max(s.c.streakBest, streak.best);
+  missions.push(...missionEvent(s, { type: "session", mode: "fiche", ok: info.score.ok, total: info.score.total, perfect: r.perfect, daily: false }, Math.random, date));
+  const creatures = syncCreatures(s, date);
+  return { ...r, streak, missions, creatures, trophies: checkTrophies(s, date) };
 }
 
 export function afterLearn(s, id, date) {

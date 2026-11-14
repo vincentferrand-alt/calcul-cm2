@@ -72,19 +72,21 @@ export function homeScreen({ go }) {
     h("div", { class: "week-days" }, T.week.days.map((d) => h("span", { class: "week-day" + (d.played ? " on" : "") + (d.today ? " today" : "") + (d.future ? " future" : ""), title: d.played ? `${d.ok} bonnes réponses` : "" },
       h("span", { class: "week-dot" }, d.played ? "✓" : ""), h("span", { class: "week-l" }, d.letter))))];
   const chip = (id, icon, label, status, onclick, extra = {}) => h("button", { class: "tchip" + (extra.done ? " done" : "") + (extra.hot ? " hot" : ""), type: "button", "data-chip": id,
-    "aria-label": `${label} : ${status}`, "aria-expanded": extra.panel ? "false" : null, onclick },
+    "aria-label": `${extra.full || label} : ${status}`, "aria-expanded": extra.panel ? "false" : null, onclick },
     h("span", { class: "tchip-i", "aria-hidden": "true" }, icon), h("span", { class: "tchip-l" }, label), h("span", { class: "tchip-s" }, status));
   const chips = h("div", { class: "today-chips", role: "group", "aria-label": "Aujourd'hui" });
   function drawPanel() {
     panel.className = "today-panel card" + (shownPanel ? " open" : "") + " p-" + open;
     panel.replaceChildren(...(open === "week" ? weekRows() : [h("h2", {}, "🧭 Tes missions"), ...missionRows()]));
-    for (const c of chips.children) if (c.dataset.chip !== "daily") { const on = shownPanel && c.dataset.chip === open; c.classList.toggle("on", on); c.setAttribute("aria-expanded", on ? "true" : "false"); }
+    for (const c of chips.children) if (c.dataset.chip === "missions" || c.dataset.chip === "week") { const on = shownPanel && c.dataset.chip === open; c.classList.toggle("on", on); c.setAttribute("aria-expanded", on ? "true" : "false"); }
   }
   const toggle = (id) => { if (shownPanel && open === id) shownPanel = false; else { open = id; shownPanel = true; store.set("homePanel", id); } drawPanel(); };
+  chips.classList.add("n4"); // v0.18 : quatre pastilles (la fiche chrono de la classe)
   chips.append(
-    chip("daily", "🏁", "Défi du jour", T.daily.status, startDaily, { done: T.daily.done }),
+    chip("daily", "🏁", "Défi", T.daily.status, startDaily, { done: T.daily.done, full: "Défi du jour" }),
+    chip("fiche", "⏱️", "Chrono", T.fiche.status, () => go("chrono"), { full: "Fiche chrono, 50 calculs en 5 minutes" }),
     chip("missions", "🧭", "Missions", T.missions.status, () => toggle("missions"), { panel: true, hot: !!(T.missions.best && T.missions.best.pct >= 60) }),
-    chip("week", "📅", "Ma semaine", T.week.status, () => toggle("week"), { panel: true }));
+    chip("week", "📅", "Semaine", T.week.status, () => toggle("week"), { panel: true, full: "Ma semaine" }));
   drawPanel();
 
   return { destroy: offCloud, el: h("main", { class: "screen home" }, h("div", { class: "screen-body" },

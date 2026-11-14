@@ -10,6 +10,7 @@ import { dueReviews } from "../progress.js";
 import { launchFor, REVIEW_MAX } from "../next.js";
 import { toKey } from "../dates.js";
 import { GAMES, gameById, launchGame } from "../games.js";
+import { RHYTHMS, PERIODS, rhythmLine, perCalc, periodOf, periodFor, ficheBest } from "../fiche.js";
 
 export function exercicesScreen({ go }) {
   const root = h("main", { class: "screen" });
@@ -45,13 +46,31 @@ export function exercicesScreen({ go }) {
           h("span", { class: "fam-sym", "aria-hidden": "true" }, f.short), h("span", { class: "fam-name" }, f.mini || f.name),
           h("span", { class: "fam-lvl", "aria-label": `niveau ${fs ? fs.lvl : 1}` }, lvlStars(fs ? fs.lvl : 1)));
       }));
+    // v0.18 : la fiche chrono n'a pas de thème (ses 50 lignes sont celles de la classe) : on choisit son rythme et sa période.
+    let step2;
+    if (game.id === "chrono") {
+      const period = periodOf(set.fichePeriod, date), auto = !PERIODS.includes(Number(set.fichePeriod));
+      const rhythms = h("div", { class: "rhythm-grid" }, RHYTHMS.map((x) => {
+        const best = ficheBest(s, period, x.id);
+        return h("button", { class: "rhythm-card" + (x.id === (set.ficheRhythm || "classe") ? " last" : ""), type: "button", "data-rhythm": x.id,
+          "aria-label": `${x.name} : ${rhythmLine(x)}${best ? ", record " + best : ""}`, onclick: () => { sfx.tap(); store.set("ficheRhythm", x.id); go("chrono"); } },
+          h("span", { class: "rhythm-ic", "aria-hidden": "true" }, x.icon),
+          h("span", { class: "grow" }, h("b", {}, x.name), h("small", {}, `${rhythmLine(x)} · ≈ ${perCalc(x)} s par calcul`)),
+          h("span", { class: "rhythm-rec" }, best ? `🏅 ${best}` : "›"));
+      }));
+      const per = h("div", { class: "card play-opts" }, h("div", { class: "opt-row" }, h("span", { class: "opt-l" }, "Période"),
+        h("div", { class: "seg period-seg", role: "group", "aria-label": "Période de l'année" }, [[0, "Auto"], ...PERIODS.map((n) => [n, String(n)])].map(([val, text]) => {
+          const on = val === 0 ? auto : !auto && Number(set.fichePeriod) === val;
+          return h("button", { class: "seg-b" + (on ? " on" : ""), type: "button", "aria-pressed": on ? "true" : "false", onclick: () => { sfx.tap(); store.set("fichePeriod", val); draw(); } }, text);
+        }))),
+        h("p", { class: "opt-note" }, auto ? `Auto : période ${periodFor(date)} en ce moment, comme en classe.` : `Période ${period} choisie : les calculs de cette partie de l'année.`));
+      step2 = [h("h2", { class: "step-h" }, h("span", { class: "step-num" }, "2"), "Choisis ton rythme"), rhythms, per];
+    } else step2 = [h("h2", { class: "step-h" }, h("span", { class: "step-num" }, "2"), "Choisis ton thème", h("small", {}, "un appui et c'est parti")), themes];
     root.replaceChildren(
       topbar("Jouer", null),
       h("div", { class: "screen-body jouer" }, review,
         h("h2", { class: "step-h" }, h("span", { class: "step-num" }, "1"), "Choisis ton jeu"),
-        tiles, opts,
-        h("h2", { class: "step-h" }, h("span", { class: "step-num" }, "2"), "Choisis ton thème", h("small", {}, "un appui et c'est parti")),
-        themes));
+        tiles, opts, step2));
   }
   draw();
   return { el: root };

@@ -3,6 +3,7 @@
 import { themeFor } from "./daily.js";
 import { missionText, missionIcon } from "./missions.js";
 import { weekSummary } from "./week.js";
+import { ficheBestAny, ficheCount } from "./fiche.js";
 
 const ratio = (m) => (m && m.target ? Math.max(0, Math.min(1, (m.progress || 0) / m.target)) : 0);
 
@@ -16,7 +17,9 @@ export function todaySummary(s, date) {
   const w = weekSummary(s, date);
   // La mission la plus avancée donne le « presque ! » de la pastille.
   const best = missions.reduce((b, m) => (m.pct > (b ? b.pct : -1) ? m : b), null);
+  const fb = ficheBestAny(s), fc = ficheCount(s);
   return {
+    fiche: { best: fb, count: fc, status: fc ? `${fb} point${fb > 1 ? "s" : ""}` : "À essayer" }, // v0.18 : la fiche chrono (meilleur score, tous rythmes confondus)
     daily: { done: !!(d && d.done), label: theme.label, status: d && d.done ? "Fait ✓" : "À faire" },
     missions: { list: missions, count: missions.length, best, status: best && best.pct >= 60 ? "Presque !" : `${missions.length} en cours` },
     week: { played: w.played, ok: w.ok, days: w.days, status: `${w.played} jour${w.played > 1 ? "s" : ""}` },

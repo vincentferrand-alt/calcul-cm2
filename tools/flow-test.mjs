@@ -57,7 +57,7 @@ await tap('.tchip[data-chip="week"]'); assert.equal(await page.locator(".today-p
 // « Jouer » : 1. le jeu (tuiles), 2. le thème (une seule grille) ; les réglages seulement pour la série et la dictée
 await tab("Jouer"); await page.waitForSelector(".fam-grid");
 assert.equal(await page.locator(".tab-b.on").innerText(), "🎮\nJouer");
-assert.equal(await page.locator(".game-tile").count(), 3); assert.equal(await page.locator(".theme-grid .fam-card").count(), 9, "mélange + 8 familles");
+assert.equal(await page.locator(".game-tile").count(), 4); // v0.18 : série, 50 en 5 min, course, dictée assert.equal(await page.locator(".theme-grid .fam-card").count(), 9, "mélange + 8 familles");
 assert.equal(await page.locator(".game-tile.on").getAttribute("data-game"), "serie");
 assert.equal(await page.locator(".play-opts").count(), 1);
 await tap('.game-tile[data-game="course"]'); assert.equal(await page.locator(".play-opts").count(), 0, "pas de réglages pour la course");

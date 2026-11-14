@@ -20,7 +20,7 @@ export function playableMissions(s, date, { speech = true } = {}) {
     if (m.tpl === "review") return due > 0;
     if (m.tpl === "daily") return !dailyDone;
     if (m.tpl === "dictee") return speech;
-    return ["fam", "run", "today", "mode", "perfect", "learn", "course"].includes(m.tpl);
+    return ["fam", "run", "today", "mode", "perfect", "learn", "course", "fiche"].includes(m.tpl);
   }).sort((a, b) => ratio(b) - ratio(a) || (a.id < b.id ? -1 : 1));
 }
 const missionNext = (m, date) => ({ kind: "mission", icon: "🧭", label: missionText(m, date), mission: m });
@@ -68,6 +68,7 @@ export function launchFor(next, date, settings = {}, back = "") {
     if (m.tpl === "daily") return play({ families: themeFor(date).families, count: DAILY_COUNT, daily: true });
     if (m.tpl === "learn") return { route: "apprendre" };
     if (m.tpl === "course") return { route: "course", opts: { families: "mix", count: 10, mode: "course", back } }; // v0.15
+    if (m.tpl === "fiche") return { route: "chrono" }; // v0.18 : l'écran « Prête ? » de la fiche chrono
     if (m.tpl === "perfect") return play({ families: "mix", count: Math.max(count, 10) });
   }
   return play({ families: "mix" });

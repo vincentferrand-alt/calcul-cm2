@@ -10,7 +10,7 @@ export const TABS = [
   { id: "album", icon: "🥚", label: "Collection", also: ["carnet", "trophees"] },
   { id: "boutique", icon: "🛍️", label: "Boutique" },
 ];
-export const NO_TABS = ["jouer", "profil", "course"]; // v0.15 : pas d'onglets pendant la course
+export const NO_TABS = ["jouer", "profil", "course", "chrono"]; // v0.15 : pas d'onglets pendant la course ; v0.18 : ni pendant la fiche chrono
 export const showsTabs = (screen) => !NO_TABS.includes(screen);
 // L'onglet allumé pour un écran (les sous-écrans allument leur onglet parent ; les réglages n'en allument aucun).
 export const tabFor = (screen) => { const t = TABS.find((x) => x.id === screen || (x.also || []).includes(screen)); return t ? t.id : null; };
