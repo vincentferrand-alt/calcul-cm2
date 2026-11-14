@@ -78,7 +78,8 @@ export function buildSession(s, opts, rng = Math.random, date) {
     const fam = order[i++ % order.length];
     const own = s.fam[fam]?.lvl || 1;
     // Défi du jour : il démarre doucement (les premiers calculs sont d'un cran plus faciles que son niveau).
-    const lvl = opts.daily && list.length < Math.ceil(count * 0.4) ? Math.max(1, own - 1) : own;
+    // Course des réponses (v0.15) : tous les calculs sont d'un cran plus faciles (opts.easier).
+    const lvl = (opts.daily && list.length < Math.ceil(count * 0.4)) || opts.easier ? Math.max(1, own - 1) : own;
     const p = generate(fam, lvl, rng, opts.kinds ? { kinds: opts.kinds } : {});
     if (keys.has(p.key)) continue;
     keys.add(p.key); list.push(p);

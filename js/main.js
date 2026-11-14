@@ -13,6 +13,7 @@ import { reglagesScreen } from "./ui/reglages.js";
 import { boutiqueScreen } from "./ui/boutique.js";
 import { showSplash } from "./ui/splash.js";
 import { carnetScreen } from "./ui/carnet.js";
+import { courseScreen } from "./ui/course.js";
 import { startSyncing, setSyncHook } from "./syncer.js";
 import { refreshState } from "./game.js";
 import { toKey } from "./dates.js";
@@ -27,7 +28,7 @@ applyMotion(store.settings.motion);
 
 const app = document.getElementById("app");
 
-const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, reglages: reglagesScreen, boutique: boutiqueScreen, profil: profilScreen, carnet: carnetScreen };
+const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, reglages: reglagesScreen, boutique: boutiqueScreen, profil: profilScreen, carnet: carnetScreen, course: courseScreen };
 let current = null, shown = null; // shown = nom de l'écran réellement affiché
 let pending = emptyNews(); // nouvelles en attente d'affichage
 

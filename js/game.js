@@ -14,6 +14,7 @@ export function afterAnswer(s, { prob, ok, review, run, date, mode, adapt, hinte
 
 export function afterSession(s, { ok, total, mode, daily, date }) {
   const r = endSession(s, { ok, total });
+  if (mode === "course") s.c.course = (s.c.course || 0) + 1; // v0.15 : une course terminée
   if (daily) {
     const d = (s.daily[date] ||= { done: false, ok: 0, n: 0, stars: 0 });
     d.done = true; d.ok = Math.max(d.ok, ok); d.n = Math.max(d.n, total); d.stars = Math.max(d.stars, r.stars);

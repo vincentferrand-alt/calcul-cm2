@@ -44,7 +44,7 @@ function growLine(s, c) {
 
 function grid(go) {
   const s = store.state;
-  const nb = CREATURES.filter((c) => stageOf(s, c.id) > 0).length, nights = Object.keys(s.eve || {}).length;
+  const nb = CREATURES.filter((c) => stageOf(s, c.id) > 0).length, nights = Object.keys(s.eve || {}).length, runs = Object.keys(s.run || {}).length;
   const cards = CREATURES.map((c) => {
     const f = famById(c.fam), st = stageOf(s, c.id), g = growthOf(s, c.id), pick = st ? scenePick(s, c.id) : null;
     const art = st ? sceneEl({ id: c.id, stage: pick.st, xp: xpOf(s, c), pick, variant: "album", lite: true }) : h("div", { class: "pet-egg" }, creatureArt(c.id, 0, xpOf(s, c), "al" + c.id));
@@ -60,7 +60,7 @@ function grid(go) {
       h("div", { class: "album-head" },
         h("div", { class: "card center album-count" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Touche une créature pour voir son histoire.")),
         h("button", { class: "card dream-link", type: "button", onclick: () => { sfx.tap(); go("carnet"); } },
-          h("span", { class: "dream-moon", "aria-hidden": "true" }, "🌙"), h("span", { class: "grow" }, h("b", {}, "Carnet de rêves"), h("small", {}, nights ? `${nights} souvenir${nights > 1 ? "s" : ""} du soir` : "Les souvenirs des énigmes du soir")), h("span", { class: "nb-go" }, "›"))),
+          h("span", { class: "dream-moon", "aria-hidden": "true" }, "🌙"), h("span", { class: "grow" }, h("b", {}, "Carnet de rêves"), h("small", {}, nights + runs ? [nights ? `${nights} soir${nights > 1 ? "s" : ""}` : null, runs ? `${runs} course${runs > 1 ? "s" : ""}` : null].filter(Boolean).join(" · ") : "Les souvenirs des énigmes du soir et des courses")), h("span", { class: "nb-go" }, "›"))),
       h("div", { class: "pets" }, cards))];
 }
 

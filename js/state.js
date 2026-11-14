@@ -6,7 +6,7 @@
 //  - merge est idempotent, commutatif et associatif (testé) : l'ordre des synchronisations n'a aucune importance.
 
 export const SCHEMA = 1;
-export const COUNTERS = ["ok", "tot", "perfect", "learn", "dict", "daily", "easy", "speed", "missions", "sessions", "stars", "streakBest"];
+export const COUNTERS = ["ok", "tot", "perfect", "learn", "dict", "daily", "easy", "speed", "missions", "sessions", "stars", "streakBest", "course"]; // v0.15 : course = courses terminées sur cet appareil
 
 export function emptyState() {
   return {
@@ -23,6 +23,7 @@ export function emptyState() {
     shop: { owned: {}, worn: {} }, // v0.10 : accessoires achetés (id -> date) et portés — conservés en lecture (plus en vente)
     decor: { owned: {}, pick: {} }, // v0.11 : décors achetés (id -> date) et choix par créature (créature -> type -> { id, t })
     eve: {},      // v0.12 : énigmes du soir : date -> { ok, n } (une par jour ; chacune rapporte une étoile)
+    run: {},      // v0.15 : photos-souvenirs des courses : "AAAA-MM-JJThh:mm" -> { c, st, bg, ok, n, fam } (union à la fusion)
     m: { active: [], done: [] }, // missions en cours / identifiants des missions terminées
   };
 }
@@ -112,6 +113,7 @@ export function merge(x, y) {
   out.daily = mergeMap(a.daily, b.daily, (p, q) => ({ ...mergeAny(p, q), done: !!(p.done || q.done), ok: maxN(p.ok, q.ok), n: maxN(p.n, q.n), stars: maxN(p.stars, q.stars) }));
   out.rec = mergeMap(a.rec, b.rec, maxN);
   out.eve = mergeMap(a.eve, b.eve, (p, q) => ({ ...mergeAny(p, q), ok: !!(p.ok || q.ok), n: maxN(p.n, q.n) }));
+  out.run = mergeMap(a.run, b.run, (p, q) => mergeAny(p, q)); // v0.15 : union des photos de course (même logique que eve)
   const done = uniq(a.m.done, b.m.done);
   const byId = mergeMap(Object.fromEntries(a.m.active.map((m) => [m.id, m])), Object.fromEntries(b.m.active.map((m) => [m.id, m])), mergeMission);
   // Au plus 3 missions actives (celles qui sont le plus avancées ; à égalité, ordre des identifiants) : le choix est déterministe,
@@ -144,6 +146,7 @@ export function missingFrom(big, small) {
   for (const k of Object.keys(s.fam)) if (!(k in b.fam) || b.fam[k].xp < s.fam[k].xp) lost.push("fam:" + k);
   for (const k of Object.keys(s.rec)) if ((b.rec[k] || 0) < s.rec[k]) lost.push("rec:" + k);
   for (const k of Object.keys(s.eve || {})) if (!(k in (b.eve || {}))) lost.push("eve:" + k);
+  for (const k of Object.keys(s.run || {})) if (!(k in (b.run || {}))) lost.push("run:" + k);
   for (const k of Object.keys(s.daily)) if (s.daily[k].done && !(b.daily[k] && b.daily[k].done)) lost.push("daily:" + k);
   return lost;
 }

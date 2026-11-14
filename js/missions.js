@@ -21,6 +21,7 @@ export const TEMPLATES = {
   perfect: { make: () => ({ params: {}, target: 1 }), text: () => "Fais une série de 8 calculs ou plus sans aucune faute", icon: "💯" },
   learn: { make: (s) => (FICHES.some((f) => !s.learn[f.id]) ? { params: {}, target: 1 } : null), text: () => "Découvre une nouvelle fiche dans « Apprendre »", icon: "💡" },
   review: { make: (s, r, date) => { const n = R(r, 2, 4); return dueReviews(s, date).length >= n ? { params: {}, target: n } : null; }, text: (m) => `Rattrape ${m.target} calculs à revoir`, icon: "↻" },
+  course: { make: () => ({ params: {}, target: 1 }), text: () => "Termine une course des réponses", icon: "🏃" }, // v0.15
   daily: { make: (s, r, date) => (s.daily[date]?.done ? null : { params: {}, target: 1 }), text: (m, date) => `Termine le défi du jour${date ? " : " + themeFor(date).label : ""}`, icon: "📅" },
 };
 const sameMission = (a, b) => a.tpl === b.tpl && JSON.stringify(a.params) === JSON.stringify(b.params);
@@ -56,6 +57,7 @@ export function missionEvent(s, ev, r = Math.random, date) {
       else if (m.tpl === "dictee" && ev.mode === "dictee" && ev.total >= 5) m.progress = 1;
       else if (m.tpl === "perfect" && ev.perfect && ev.total >= 8) m.progress = 1;
       else if (m.tpl === "daily" && ev.daily) m.progress = 1;
+      else if (m.tpl === "course" && ev.mode === "course") m.progress = 1;
     } else if (ev.type === "learn" && m.tpl === "learn" && ev.first) m.progress = 1;
     if (m.progress >= m.target && before < m.target) { m.done = true; finished.push(m); }
   }

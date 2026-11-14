@@ -14,6 +14,10 @@ export function exercicesScreen({ go }) {
     session.opts = { families, count: store.settings.count || 10, mode: store.settings.answer === "qcm" ? "qcm" : "input", back: "exercices" };
     go("jouer", true);
   }
+  function startCourse(families) {
+    session.opts = { families, count: 10, mode: "course", back: "exercices" };
+    go("course", true);
+  }
   function startDictee() {
     session.opts = { families: "mix", count: store.settings.count || 10, mode: "dictee", back: "exercices" };
     go("jouer", true);
@@ -37,6 +41,13 @@ export function exercicesScreen({ go }) {
           h("h2", { style: { marginTop: "12px" } }, "Combien de calculs ?"), seg("count", [[10, "10"], [15, "15"], [20, "20"]])),
         h("button", { class: "btn big green", onclick: () => start("mix") }, "🎲 Mélange de tout"),
         h("button", { class: "btn big light", onclick: startDictee }, "🎧 Dictée : écoute et calcule"),
+        // v0.15 : la course des réponses — mélange ou une famille
+        h("div", { class: "card course-card" },
+          h("div", { class: "row" }, h("span", { class: "course-ic", "aria-hidden": "true" }, "🏃"),
+            h("div", { class: "grow" }, h("h2", {}, "La course des réponses"), h("p", {}, "Ta créature court dans son décor : passe par la porte de la bonne réponse ! 10 portes, sans chrono."))),
+          h("div", { class: "course-pick" },
+            h("button", { class: "btn green course-mix", type: "button", onclick: () => startCourse("mix") }, "🎲 Mélange"),
+            FAMILIES.map((f) => h("button", { class: "course-fam", type: "button", style: { "--fam": f.color, "--fam-ink": f.ink }, "aria-label": "Course : " + f.name, title: f.name, onclick: () => startCourse([f.id]) }, f.short)))),
         h("button", { class: "btn big light", onclick: () => go("apprendre") }, "💡 Apprendre : les fiches astuces"),
         h("div", { class: "fam-grid" }, FAMILIES.map((f) => {
           const fs = s.fam[f.id];

@@ -186,47 +186,7 @@ export function playScreen({ go }) {
     results(r);
   }
 
-  function results(r) {
-    const titres = ["", "Bravo d'avoir joué !", "Très bien !", "Magnifique !"];
-    const titre = opts.daily ? "Défi du jour terminé !" : titres[r.stars] || "Bravo !";
-    const stars = h("div", { class: "stars" }, [1, 2, 3].map((n) => h("span", { class: "star" + (n <= r.stars ? " on" : ""), style: { animationDelay: 0.3 + n * 0.25 + "s" } }, "★")));
-    [1, 2, 3].forEach((n) => { if (n <= r.stars) setTimeout(() => sfx.star(n), 300 + n * 250); });
-    const notes = [];
-    S.up.forEach((u) => notes.push(`🚀 Niveau ${u.to} débloqué en ${famById(u.fam).name} !`));
-    if (S.mastered) notes.push(`✨ ${S.mastered} calcul${S.mastered > 1 ? "s" : ""} devenu${S.mastered > 1 ? "s" : ""} facile${S.mastered > 1 ? "s" : ""} !`);
-    if (S.best >= 3) notes.push(`🔥 Meilleure série : ${S.best} bonnes réponses d'affilée`);
-    if (r.perfect) notes.push("💯 Zéro faute !");
-    if (opts.daily && r.streak) notes.push(`🔥 Série : ${r.streak.current} jour${r.streak.current > 1 ? "s" : ""}`);
-    const near = nearCard();
-    root.replaceChildren(h("div", { class: "screen-body result" },
-      h("h1", { class: "result-title" }, titre),
-      stars,
-      h("div", { class: "card center" }, h("div", { class: "big-num" }, `${S.ok} / ${S.n}`), h("p", {}, "bonnes réponses du premier coup")),
-      notes.length ? h("div", { class: "card" }, notes.map((n) => h("p", { class: "note" }, n))) : null,
-      S.tro.length ? h("div", { class: "card" }, h("h2", {}, "🏆 Nouveau" + (S.tro.length > 1 ? "x" : "") + " trophée" + (S.tro.length > 1 ? "s" : "") + " !"), S.tro.map((t) => h("p", { class: "note" }, trophyLabel(t.line, t.tier)))) : null,
-      S.cre.length ? h("div", { class: "card center" }, h("h2", {}, S.cre.some((e) => e.from === 0) ? "🥚 Une créature est née !" : "🌟 Ta créature évolue !"), S.cre.map((e) => creatureCard(e))) : null,
-      S.mis.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), S.mis.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
-      near,
-      h("button", { class: "btn big " + (near ? "light" : "green"), onclick: () => go("jouer", true) }, "Rejouer (nouveaux calculs)"),
-      h("button", { class: "btn ghost big", onclick: () => go(opts.back ?? "exercices") }, "Retour")));
-    // Éclosion / évolution pendant la série : la transformation se joue maintenant, par-dessus le résultat.
-    if (S.cre.length) playEvolutions(S.cre);
-  }
-
-  // v0.13 : une créature (des familles jouées) est à ≤ 10 bonnes réponses de grandir → « Encore 5 additions et Braise évolue ! »
-  function nearCard() {
-    const near = nearEvolution(store.state, opts.families && opts.families !== "mix" ? opts.families : "mix");
-    if (!near) return null;
-    const xp = store.state.fam[near.fam] ? store.state.fam[near.fam].xp : 0;
-    const again = () => {
-      session.opts = { families: [near.fam], count: store.settings.count || 10, mode: opts.mode === "dictee" ? "dictee" : store.settings.answer === "qcm" ? "qcm" : "input", back: opts.back ?? "exercices" };
-      go("jouer", true);
-    };
-    return h("div", { class: "card near", style: { "--fam": famById(near.fam).color } },
-      h("div", { class: "row" }, h("div", { class: "near-art" }, creatureArt(near.id, near.stage, xp, "near")),
-        h("div", { class: "grow" }, h("p", { class: "near-t" }, near.text), h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: near.pct + "%" } })))),
-      h("button", { class: "btn big green", type: "button", onclick: again }, "Continuer ›"));
-  }
+  function results(r) { showResults(root, { S, r, opts, date, go, replay: () => go("jouer", true) }); }
 
   const onKey = (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -248,3 +208,49 @@ export function playScreen({ go }) {
   render();
   return { el: root, destroy: () => { clearTimeout(S.timer); clearTimeout(S.nudgeT); stopSpeaking(); document.removeEventListener("keydown", onKey); } };
 }
+
+// Écran de fin de série (v0.15 : partagé avec la course des réponses). extra : une carte en plus (photo-souvenir).
+export function showResults(root, { S, r, opts, date, go, replay, extra = null }) {
+  const titres = ["", "Bravo d'avoir joué !", "Très bien !", "Magnifique !"];
+  const titre = opts.daily ? "Défi du jour terminé !" : titres[r.stars] || "Bravo !";
+  const stars = h("div", { class: "stars" }, [1, 2, 3].map((n) => h("span", { class: "star" + (n <= r.stars ? " on" : ""), style: { animationDelay: 0.3 + n * 0.25 + "s" } }, "★")));
+  [1, 2, 3].forEach((n) => { if (n <= r.stars) setTimeout(() => sfx.star(n), 300 + n * 250); });
+  const notes = [];
+  S.up.forEach((u) => notes.push(`🚀 Niveau ${u.to} débloqué en ${famById(u.fam).name} !`));
+  if (S.mastered) notes.push(`✨ ${S.mastered} calcul${S.mastered > 1 ? "s" : ""} devenu${S.mastered > 1 ? "s" : ""} facile${S.mastered > 1 ? "s" : ""} !`);
+  if (S.best >= 3) notes.push(`🔥 Meilleure série : ${S.best} bonnes réponses d'affilée`);
+  if (r.perfect) notes.push("💯 Zéro faute !");
+  if (opts.daily && r.streak) notes.push(`🔥 Série : ${r.streak.current} jour${r.streak.current > 1 ? "s" : ""}`);
+  const near = nearCard(S, opts, go);
+  root.replaceChildren(h("div", { class: "screen-body result" },
+    h("h1", { class: "result-title" }, titre),
+    stars,
+    h("div", { class: "card center" }, h("div", { class: "big-num" }, `${S.ok} / ${S.n}`), h("p", {}, "bonnes réponses du premier coup")),
+    notes.length ? h("div", { class: "card" }, notes.map((n) => h("p", { class: "note" }, n))) : null,
+    S.tro.length ? h("div", { class: "card" }, h("h2", {}, "🏆 Nouveau" + (S.tro.length > 1 ? "x" : "") + " trophée" + (S.tro.length > 1 ? "s" : "") + " !"), S.tro.map((t) => h("p", { class: "note" }, trophyLabel(t.line, t.tier)))) : null,
+    S.cre.length ? h("div", { class: "card center" }, h("h2", {}, S.cre.some((e) => e.from === 0) ? "🥚 Une créature est née !" : "🌟 Ta créature évolue !"), S.cre.map((e) => creatureCard(e))) : null,
+    S.mis.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), S.mis.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
+    extra,
+    near,
+    h("button", { class: "btn big " + (near ? "light" : "green"), onclick: replay }, opts.mode === "course" ? "Refaire une course" : "Rejouer (nouveaux calculs)"),
+    h("button", { class: "btn ghost big", onclick: () => go(opts.back ?? "exercices") }, "Retour")));
+  // Éclosion / évolution pendant la série : la transformation se joue maintenant, par-dessus le résultat.
+  if (S.cre.length) playEvolutions(S.cre);
+}
+
+// v0.13 : une créature (des familles jouées) est à ≤ 10 bonnes réponses de grandir → « Encore 5 additions et Braise évolue ! »
+function nearCard(S, opts, go) {
+  const near = nearEvolution(store.state, opts.families && opts.families !== "mix" ? opts.families : "mix");
+  if (!near) return null;
+  const xp = store.state.fam[near.fam] ? store.state.fam[near.fam].xp : 0;
+  const again = () => {
+    if (opts.mode === "course") { session.opts = { families: [near.fam], count: 10, mode: "course", back: opts.back ?? "exercices" }; go("course", true); return; }
+    session.opts = { families: [near.fam], count: store.settings.count || 10, mode: opts.mode === "dictee" ? "dictee" : store.settings.answer === "qcm" ? "qcm" : "input", back: opts.back ?? "exercices" };
+    go("jouer", true);
+  };
+  return h("div", { class: "card near", style: { "--fam": famById(near.fam).color } },
+    h("div", { class: "row" }, h("div", { class: "near-art" }, creatureArt(near.id, near.stage, xp, "near")),
+      h("div", { class: "grow" }, h("p", { class: "near-t" }, near.text), h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: near.pct + "%" } })))),
+    h("button", { class: "btn big green", type: "button", onclick: again }, "Continuer ›"));
+}
+

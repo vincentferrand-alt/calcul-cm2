@@ -87,6 +87,10 @@ await imac.page.locator(".news-banner:not(.out) .nb-x").click(); await imac.page
 await imac.page.evaluate(async () => { const { runSync } = await import("./js/syncer.js"); await runSync(); });
 await imac.page.waitForTimeout(300);
 assert.equal(await imac.page.locator(".news-banner:not(.out)").count(), 0, "expliqué une seule fois");
+// v0.15 : une photo de course faite sur le téléphone arrive dans le carnet de l'iMac (union, rien ne se perd)
+const rk = await phone.page.evaluate(async () => { const { store } = await import("./js/store.js"); const { addRunPhoto } = await import("./js/course.js"); let k; store.update((s) => { k = addRunPhoto(s, { c: "add", st: 1, bg: "bg_prairie", ok: 8, n: 10, fam: "mix" }, new Date(2026, 10, 14, 17, 5)); }); return k; });
+await syncNow(phone.page); await syncNow(imac.page);
+assert.ok(await imac.page.evaluate((k) => !!JSON.parse(localStorage.getItem("ccm2:state")).run[k], rk), "la photo de course est sur l'iMac");
 console.log("appels Firestore :", calls.join(" "));
 const errors = [...phone.errors, ...imac.errors];
 console.log(errors.length ? "ERREURS : " + errors.join("\n") : "synchro entre deux appareils OK, pas d'erreur JS");

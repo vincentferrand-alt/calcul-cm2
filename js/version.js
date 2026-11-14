@@ -1,2 +1,2 @@
 // Source unique du numéro de version (sw.js et CHANGELOG.md doivent être alignés : voir tests/version.test.mjs)
-export const VERSION = "0.14.1";
+export const VERSION = "0.15.0";

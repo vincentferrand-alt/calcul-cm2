@@ -23,6 +23,7 @@ export const LINES = [
   { id: "t_missions", name: "Missions", emoji: "🧭", tiers: [3, 15, 50, 150], value: (s) => s.c.missions, desc: (n) => `Accomplir ${n} missions` },
   { id: "t_stars", name: "Étoiles", emoji: "⭐", tiers: [10, 50, 150, 400], value: starsEarned, desc: (n) => `Gagner ${n} étoiles` },
   { id: "t_eve", name: "Énigmes du soir", emoji: "🌙", tiers: [1, 7, 20, 50], value: (s) => Object.keys(s.eve || {}).length, desc: (n) => `Résoudre ${n} énigme${n > 1 ? "s" : ""} du soir` },
+  { id: "t_run", name: "Coureur", emoji: "🏃", tiers: [1, 5, 20, 50], value: (s) => Math.max(s.c.course || 0, Object.keys(s.run || {}).length), desc: (n) => `Terminer ${n} course${n > 1 ? "s" : ""} des réponses` }, // v0.15
   { id: "t_hatch", name: "Éclosions", emoji: "🥚", tiers: [1, 4, 8], value: (s) => cre(s, 1), desc: (n) => `Faire éclore ${n} créature${n > 1 ? "s" : ""}` },
   // v0.10, retirée de la boutique en v0.11 : les paliers déjà gagnés restent, plus de nouvel objectif (retired).
   { id: "t_shop", name: "Garde-robe", emoji: "👒", tiers: [1, 4, 8, 12], retired: true, value: (s) => ownedCount(s), desc: (n) => `Avoir ${n} accessoire${n > 1 ? "s" : ""} dans ta garde-robe` },

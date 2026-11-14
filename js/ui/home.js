@@ -46,7 +46,7 @@ export function homeScreen({ go }) {
   };
   drawCloud(); const offCloud = onSyncStatus(drawCloud);
   const settings = { answer: store.settings.answer, count: store.settings.count };
-  const launch = (l) => { if (l.route === "jouer") session.opts = l.opts; go(l.route, true); };
+  const launch = (l) => { if (l.opts) session.opts = l.opts; go(l.route, true); };
   const startDaily = () => launch(launchFor({ kind: "daily" }, date, settings, ""));
 
   // Objectif sous la scène : un appui lance une série de la bonne famille (comme « Faire grandir » de l'album).

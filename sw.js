@@ -2,7 +2,7 @@
    - Mise en cache de la coque de l'appli (jouable hors ligne).
    - NE TOUCHE JAMAIS aux données de progression (localStorage / IndexedDB) : il ne gère que ses propres caches.
    - Le numéro de version doit correspondre à js/version.js (vérifié par tests/version.test.mjs). */
-const VERSION = "0.14.1";
+const VERSION = "0.15.0";
 const PREFIX = "calcul-cm2-shell-";
 const CACHE = PREFIX + VERSION;
 const ASSETS = [
@@ -13,6 +13,7 @@ const ASSETS = [
   "js/accessories.js",
   "js/audio.js",
   "js/cheer.js",
+  "js/course.js",
   "js/creatures.js",
   "js/daily.js",
   "js/dates.js",
@@ -51,6 +52,7 @@ const ASSETS = [
   "js/ui/boutique.js",
   "js/ui/carnet.js",
   "js/ui/common.js",
+  "js/ui/course.js",
   "js/ui/evening.js",
   "js/ui/evolve.js",
   "js/ui/exercices.js",
