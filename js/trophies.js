@@ -17,7 +17,7 @@ export const LINES = [
   { id: "t_days", name: "Jours de jeu", emoji: "📆", tiers: [3, 10, 25, 50, 100], value: daysPlayed, desc: (n) => `Jouer ${n} jours différents` },
   { id: "t_perfect", name: "Sans faute", emoji: "💯", tiers: [1, 5, 15, 40], value: (s) => s.c.perfect, desc: (n) => `Faire ${n} série${n > 1 ? "s" : ""} sans faute` },
   { id: "t_daily", name: "Défis du jour", emoji: "📅", tiers: [1, 5, 15, 40], value: (s) => s.c.daily, desc: (n) => `Terminer ${n} défi${n > 1 ? "s" : ""} du jour` },
-  { id: "t_learn", name: "Curiosité", emoji: "💡", tiers: [3, 8, 14, 17], value: (s) => s.c.learn, desc: (n) => `Découvrir ${n} astuces` },
+  { id: "t_learn", name: "Curiosité", emoji: "💡", tiers: [3, 8, 14, 17, 22], value: (s) => s.c.learn, desc: (n) => `Découvrir ${n} astuces` }, // v0.19 : palier 22 (les fiches des nombres à virgule)
   { id: "t_dict", name: "Oreille fine", emoji: "🎧", tiers: [10, 50, 150, 400], value: (s) => s.c.dict, desc: (n) => `Réussir ${n} calculs en dictée` },
   { id: "t_easy", name: "Devenus faciles", emoji: "✨", tiers: [3, 15, 50, 150], value: (s) => s.c.easy, desc: (n) => `Maîtriser ${n} calculs qui étaient difficiles` },
   { id: "t_speed", name: "Éclair", emoji: "⚡", tiers: [1, 5, 15], value: (s) => s.c.speed, desc: (n) => `Battre ${n} fois ton record à la fiche chrono` }, // v0.18 : la fiche « 50 calculs en 5 minutes » fait vivre ce trophée

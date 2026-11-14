@@ -4,8 +4,9 @@ import fs from "node:fs";
 import { makeRng, FAMILIES } from "../js/generator.js";
 import { emptyState, migrate, merge, missingFrom } from "../js/state.js";
 import { HOLE, fmtDec, parseAnswer, sameValue, typeKey, buildSheet, makeFiche, RHYTHMS, rhythmById, rhythmLine, perCalc, PERIODS, LINES, periodFor, periodOf,
-  scoreFiche, recordFiche, recKey, ficheBest, ficheBestAny, ficheCount, ficheHistory, evenParts, filled, solved, UNITS } from "../js/fiche.js";
-import { afterFiche } from "../js/game.js";
+  scoreFiche, recordFiche, recKey, ficheBest, ficheBestAny, ficheCount, ficheHistory, evenParts, filled, solved, UNITS,
+  practiceSet, typesOf, ficheTrend, revengeTypes, REVENGE } from "../js/fiche.js";
+import { afterFiche, afterPractice } from "../js/game.js";
 import { refillMissions, TEMPLATES, missionText } from "../js/missions.js";
 import { allTrophyIds, lineById } from "../js/trophies.js";
 import { todaySummary } from "../js/today.js";
@@ -215,4 +216,45 @@ test("fiche : sauvegarde additive — anciennes sauvegardes, fusion sans perte, 
 test("fiche : la tuile « 50 en 5 min » de l'onglet Jouer mène à l'écran de la fiche", () => {
   assert.equal(gameById("chrono").name, "50 en 5 min"); assert.equal(gameById("chrono").themed, false);
   assert.deepEqual(launchGame("chrono", "classe", {}), { route: "chrono", opts: null });
+});
+
+test("v0.19 : entraînement par type — bons types, pas de doublon, période la plus proche si besoin", () => {
+  for (const period of PERIODS) for (const t of typesOf(period)) {
+    const set = practiceSet(period, [t], 10, makeRng(t.length * period));
+    assert.ok(set.length >= 3, `${t} en période ${period}`);
+    assert.ok(set.every((p) => p.t === t), t);
+    assert.equal(new Set(set.map((p) => p.q)).size, set.length, "jamais deux fois le même énoncé");
+  }
+  const mix = practiceSet(2, ["dmul", "gapone", "num"], 10, makeRng(5));
+  assert.equal(mix.length, 10); assert.ok(new Set(mix.map((p) => p.t)).size >= 2);
+  assert.ok(practiceSet(1, ["gapdiv"], 5, makeRng(1)).every((p) => p.t === "gapdiv"), "divisions à trou : prises en période 2");
+  assert.deepEqual(practiceSet(1, ["inconnu"], 5), []);
+});
+
+test("v0.19 : revanche — types des erreurs d'abord, puis des calculs pas faits ; 10 calculs en 2 minutes", () => {
+  assert.deepEqual(REVENGE, { n: 10, secs: 120 });
+  const f = makeFiche(2, "classe", makeRng(8));
+  const sc = scoreFiche(f, f.map((p, k) => (k < 40 ? fmtDec(p.a) : k < 42 ? "99999" : "")));
+  const t = revengeTypes(sc);
+  assert.ok(t.length >= 1 && t.length <= 3);
+  assert.equal(t[0], f[40].t, "le type de la première erreur d'abord");
+  assert.deepEqual(revengeTypes(scoreFiche(f, f.map((p) => fmtDec(p.a)))), [], "fiche parfaite : pas de revanche");
+});
+
+test("v0.19 : courbe « Mes fiches » — de la plus ancienne à la plus récente, 8 au plus", () => {
+  const s = emptyState();
+  assert.deepEqual(ficheTrend(s), []);
+  for (let k = 0; k < 11; k++) s.fiche[`2026-11-${String(k + 1).padStart(2, "0")}T10:00:00`] = { p: 2, r: k % 2 ? "decouverte" : "classe", ok: 10 + k, n: 20, tot: k % 2 ? 20 : 50, t: 300, miss: [] };
+  const t = ficheTrend(s);
+  assert.equal(t.length, 8); assert.equal(t[7].ok, 20); assert.equal(t[0].ok, 13);
+  assert.equal(t[7].pct, 40); assert.equal(t[6].pct, 95); assert.equal(t[7].icon, "🏫");
+});
+
+test("v0.19 : entraînement compté (jour, familles, missions), sans record ni fiche enregistrée", () => {
+  const s = emptyState(); refillMissions(s, makeRng(2), D);
+  const set = practiceSet(2, ["dmul"], 10, makeRng(3));
+  const r = afterPractice(s, set.map((p, k) => ({ p, state: k < 7 ? "ok" : "miss" })), D);
+  assert.equal(s.c.tot, 10); assert.equal(s.c.ok, 7); assert.equal(s.days[D].ok, 7); assert.equal(s.fam.mul.xp, 7);
+  assert.deepEqual(s.fiche, {}); assert.deepEqual(s.rec, {}); assert.equal(s.c.sessions, 0);
+  assert.ok(Array.isArray(r.missions) && Array.isArray(r.trophies) && Array.isArray(r.creatures));
 });

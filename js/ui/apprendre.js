@@ -10,6 +10,7 @@ import { missionText } from "../missions.js";
 import { toast } from "./notify.js";
 import { session } from "./play.js";
 import { topbar } from "./common.js";
+import { exampleOf, practiceSet, periodOf, fmtDec, parseAnswer, HOLE, r5 } from "../fiche.js";
 
 // v0.17 : « Apprendre » est un onglet à part entière : toutes les fiches en tuiles sur deux colonnes (rangées par famille,
 // la couleur et le symbole de la famille sur chaque tuile), avec le compteur des astuces découvertes.
@@ -37,9 +38,15 @@ const splitLast = (eq) => {
   return { before: segs.length ? segs.join(" ; ") + " ; " : "", lhs: last.slice(0, i), rhs: last.slice(i + 3) };
 };
 function stepChoices(v) {
-  const wrong = []; for (const c of [v + 10, v - 10, v + 1, v - 1, v + 2, v - 2, v + 20]) if (c > 0 && c !== v && wrong.length < 2) wrong.push(c);
+  // v0.19 : nombres à virgule — les pièges classiques sont la virgule mal placée (× 10, ÷ 10) et l'erreur d'un dixième.
+  const cands = Number.isInteger(v) ? [v + 10, v - 10, v + 1, v - 1, v + 2, v - 2, v + 20] : [v * 10, v / 10, v + 1, v - 1, v + 0.1, v - 0.1, v + 0.2];
+  const wrong = []; for (const c of cands.map(r5)) if (c > 0 && c !== v && !wrong.includes(c) && wrong.length < 2) wrong.push(c);
   return shuffle([v, ...wrong]);
 }
+// v0.19 : un calcul d'exemple, qu'il vienne du générateur (fiches d'origine) ou de la fiche chrono (fiches à virgule).
+const exProblem = (f, ex) => (f.chrono ? exampleOf(ex.t, ex.opts, ...ex.vals) : build(ex.kind, ex.p));
+// L'énoncé d'un calcul de la fiche chrono, à la manière des fiches : « 7,6 × 100 = ? », « 0,3 + ? = 1 ».
+const qText = (p) => p.q.replace(HOLE, "?");
 
 export function ficheScreen({ go, args }) {
   const f = ficheById(args[0]);
@@ -57,14 +64,15 @@ export function ficheScreen({ go, args }) {
   let exIdx = 0, shown = 0;
   const exBox = h("div", { class: "card" });
   function drawExample() {
-    const ex = f.examples[exIdx], p = build(ex.kind, ex.p), steps = p.hint.steps;
-    const tabs = f.examples.length > 1 ? h("div", { class: "tabs" }, f.examples.map((e, i) => h("button", { class: "tab" + (i === exIdx ? " on" : ""), onclick: () => { exIdx = i; shown = 0; drawExample(); } }, e.label))) : null;
+    const exs = f.chrono ? f.chrono.examples : f.examples;
+    const ex = exs[exIdx], p = exProblem(f, ex), steps = p.hint.steps;
+    const tabs = exs.length > 1 ? h("div", { class: "tabs" }, exs.map((e, i) => h("button", { class: "tab" + (i === exIdx ? " on" : ""), onclick: () => { exIdx = i; shown = 0; drawExample(); } }, e.label))) : null;
     const done = shown >= steps.length;
     fill(exBox, h("h2", {}, "👀 L'exemple pas à pas"), tabs,
-      h("div", { class: "ex-q" }, ex.label, p.showEq ? " = ?" : ""),
+      h("div", { class: "ex-q" }, f.chrono ? qText(p) : ex.label, p.showEq ? " = ?" : ""),
       h("div", { class: "steps" }, steps.slice(0, shown).map((st, i) =>
         h("div", { class: "step", style: { animationDelay: "0s" } }, h("span", { class: "step-n" }, String(i + 1)), h("div", {}, h("div", { class: "step-t" }, st.t), h("div", { class: "step-eq" }, st.eq))))),
-      done ? h("div", { class: "ex-result" }, `Résultat : ${fmt(p.a)} ✓`) : null,
+      done ? h("div", { class: "ex-result" }, `Résultat : ${fmtDec(p.a)} ✓`) : null,
       h("button", { class: "btn " + (done ? "light" : ""), onclick: () => { sfx.tap(); if (done) { shown = 0; } else { shown++; if (shown >= steps.length) { sfx.ok(); learned(); } } drawExample(); } },
         done ? "↺ Revoir" : shown === 0 ? "Montre-moi l'astuce ▶" : "Étape suivante ▶"));
   }
@@ -72,31 +80,32 @@ export function ficheScreen({ go, args }) {
   // --- mini-exemple interactif : elle trouve elle-même chaque étape
   const gBox = h("div", { class: "card" });
   let gp, gi, gwrong;
-  function newGuided() { gp = generate(f.fam, Math.random() < 0.5 ? 1 : 2, Math.random, { kinds: f.kinds }); gi = 0; gwrong = new Set(); drawGuided(); }
+  function newGuided() { gp = f.chrono ? practiceSet(periodOf(store.settings.fichePeriod, date), f.chrono.types, 1)[0] : generate(f.fam, Math.random() < 0.5 ? 1 : 2, Math.random, { kinds: f.kinds }); gi = 0; gwrong = new Set(); drawGuided(); }
   function drawGuided() {
     const steps = gp.hint.steps, finished = gi >= steps.length;
     const doneSteps = steps.slice(0, gi).map((st, i) => h("div", { class: "step ok", style: { animation: "none", opacity: 1 } }, h("span", { class: "step-n" }, "✓"), h("div", {}, h("div", { class: "step-t" }, st.t), h("div", { class: "step-eq" }, st.eq))));
     let current = null;
     if (!finished) {
-      const st = steps[gi], { before, lhs, rhs } = splitLast(st.eq), v = Number(rhs.replace(/ /g, ""));
+      const st = steps[gi], { before, lhs, rhs } = splitLast(st.eq), v = parseAnswer(rhs); // v0.19 : lit aussi les nombres à virgule
       current = h("div", { class: "step cur", style: { animation: "none", opacity: 1 } },
         h("span", { class: "step-n" }, String(gi + 1)),
         h("div", { class: "grow" }, h("div", { class: "step-t" }, st.t), h("div", { class: "step-eq" }, before + lhs + " = ", h("span", { class: "blank" }, "▢")),
           h("div", { class: "mini-choices" }, stepChoices(v).map((c) => h("button", { class: "mini" + (gwrong.has(c) ? " soft" : ""), disabled: gwrong.has(c), onclick: () => {
             if (c === v) { sfx.ok(); gi++; gwrong = new Set(); if (gi >= steps.length) { sfx.level(); learned(); } } else { sfx.wrong(); gwrong.add(c); }
             drawGuided();
-          } }, fmt(c))))));
+          } }, fmtDec(c))))));
     }
     fill(gBox, h("h2", {}, "🎮 À toi de jouer !"), h("p", { class: "muted" }, "Trouve chaque étape de l'astuce."),
-      h("div", { class: "ex-q" }, gp.q, gp.showEq ? " = ?" : ""),
+      h("div", { class: "ex-q" }, f.chrono ? qText(gp) : gp.q, gp.showEq ? " = ?" : ""),
       h("div", { class: "steps" }, doneSteps, current),
-      finished ? h("div", { class: "ex-result" }, `Bravo ! ${fmt(gp.a)} ✓`) : null,
+      finished ? h("div", { class: "ex-result" }, `Bravo ! ${fmtDec(gp.a)} ✓`) : null,
       h("button", { class: "btn light", onclick: newGuided }, finished ? "Un autre exemple ▶" : "Changer de calcul"));
   }
 
   drawExample(); newGuided();
   const train = () => {
     learned();
+    if (f.chrono) { go("chrono/train/" + f.id); return; } // v0.19 : 10 calculs sans chrono, réponse tapée avec la virgule
     session.opts = { families: [f.fam], kinds: f.kinds, count: store.settings.count || 10, mode: store.settings.answer === "qcm" ? "qcm" : "input", adapt: false, noReview: true, back: "fiche/" + f.id };
     go("jouer");
   };

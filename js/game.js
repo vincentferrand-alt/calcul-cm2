@@ -4,7 +4,7 @@ import { missionEvent, refillMissions } from "./missions.js";
 import { checkTrophies } from "./trophies.js";
 import { computeStreak } from "./streak.js";
 import { syncCreatures } from "./creatures.js";
-import { recordFiche } from "./fiche.js";
+import { recordFiche, countAnswers } from "./fiche.js";
 
 export function afterAnswer(s, { prob, ok, review, run, date, mode, adapt, hinted }) {
   const ev = recordAnswer(s, prob, ok, { date, mode, review, adapt, hinted });
@@ -42,6 +42,21 @@ export function afterFiche(s, info) {
   missions.push(...missionEvent(s, { type: "session", mode: "fiche", ok: info.score.ok, total: info.score.total, perfect: r.perfect, daily: false }, Math.random, date));
   const creatures = syncCreatures(s, date);
   return { ...r, streak, missions, creatures, trophies: checkTrophies(s, date) };
+}
+
+// v0.19 : un entraînement sans fiche (« Je m'entraîne » des fiches à virgule, « Refaire mes erreurs », revanche de 2 minutes).
+// rows : { p, state: "ok" | "miss" | "todo" } — compte les réponses (jour, familles, missions), comme une série, sans record.
+export function afterPractice(s, rows, date) {
+  countAnswers(s, rows, date);
+  const missions = []; let run = 0;
+  for (const row of rows) {
+    if (row.state === "todo") continue;
+    const ok = row.state === "ok"; run = ok ? run + 1 : 0;
+    missions.push(...missionEvent(s, { type: "answer", prob: row.p, ok, review: false, run }, Math.random, date));
+  }
+  const streak = computeStreak(s, date);
+  s.c.streakBest = Math.max(s.c.streakBest, streak.best);
+  return { missions, creatures: syncCreatures(s, date), trophies: checkTrophies(s, date), streak };
 }
 
 export function afterLearn(s, id, date) {

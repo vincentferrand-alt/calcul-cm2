@@ -124,6 +124,44 @@ assert.match(await page.locator(".ch-todos h2").innerText(), /Pas encore faits \
 await page.locator(".ch-todos .btn.small").click(); assert.equal(await page.locator(".ch-todo").count(), 15, "les réponses des calculs pas faits");
 assert.match(await page.locator(".ch-rec").innerText(), /record à ce rythme : 18 points/);
 await shot(page, "chrono-9-temps");
+// v0.19 : la courbe « Mes dernières fiches » (2 fiches) et la revanche de 2 minutes
+assert.equal(await page.locator(".ch-trend .trend-col").count(), 2, "une barre par fiche");
+assert.match(await page.locator(".ch-trend .trend-msg").innerText(), /fiche/);
+await page.locator(".ch-trend").scrollIntoViewIfNeeded(); await shot(page, "chrono-9b-courbe");
+await page.locator(".ch-revenge").click(); await page.waitForSelector(".ch-eq");
+const RV = await sheet(page);
+assert.equal(RV.length, 10, "10 calculs"); assert.match(await page.locator(".ch-time").innerText(), /2:00/, "2 minutes");
+for (let k = 0; k < 6; k++) { await tapKeys(page, dec(RV[k].a)); await page.locator(".ch-next").click(); }
+await page.locator(".ch-finish").click(); await page.locator(".ch-pause .btn.light").click(); await page.waitForSelector(".ch-result");
+assert.match(await page.locator(".ch-points-l").innerText(), /revanche/i); assert.equal(await page.locator(".ch-points .big-num").innerText(), "6");
+const st3 = await page.evaluate(() => JSON.parse(localStorage.getItem("ccm2:state")));
+assert.equal(Object.keys(st3.fiche).length, 2, "la revanche n'est pas une fiche (pas de record)");
+await shot(page, "chrono-9c-revanche");
+// v0.19 : une fiche « Apprendre » des nombres à virgule, et son entraînement sans chrono
+await page.evaluate(() => { location.hash = "#/apprendre"; }); await page.waitForSelector(".learn-item");
+assert.equal(await page.locator(".learn-item").count(), 22);
+await page.evaluate(() => { location.hash = "#/fiche/dec_x10"; }); await page.waitForSelector(".fiche-head");
+assert.match(await page.locator(".ex-q").first().innerText(), /7,6 × 100 = \?/);
+for (let k = 0; k < 3; k++) await page.locator(".card .btn", { hasText: /Montre-moi|Étape suivante/ }).first().click();
+assert.match(await page.locator(".ex-result").first().innerText(), /760/);
+// « À toi de jouer » : on trouve chaque étape (le bon choix est la valeur de l'égalité)
+for (let guard = 0; guard < 20 && !(await page.locator(".ex-result", { hasText: "Bravo" }).count()); guard++) {
+  await page.locator(".step.cur .mini:not([disabled])").first().click(); // un choix faux se grise : on essaie le suivant
+}
+assert.ok(await page.locator(".ex-result", { hasText: "Bravo" }).count(), "« À toi de jouer » terminé avec des nombres à virgule");
+await shot(page, "chrono-9d-fiche-apprendre");
+await page.locator(".btn.big.green", { hasText: "Je m'entraîne" }).click(); await page.waitForSelector(".ch-check");
+for (let k = 0; k < 10; k++) {
+  const q = await page.locator(".ch-card .ch-eq").innerText();
+  assert.match(q.replace(/\u202f/g, ""), /× 10+ =/, "entraînement : uniquement des × 10, × 100…");
+  // la réponse est calculée à partir de l'énoncé affiché : « 7,6 × 100 = ? »
+  const [x, p] = q.replace(/[?\s\u202f]/g, "").replace(/=.*$/, "").split("×").map((v) => Number(v.replace(",", ".")));
+  await tapKeys(page, dec(x * p)); await page.locator(".ch-check").click();
+  await page.waitForSelector(".q-card.good"); await page.clock.runFor(900);
+}
+await page.waitForSelector(".result"); assert.match(await page.locator(".result").innerText(), /Entraînement terminé[\s\S]*10 \/ 10/);
+await shot(page, "chrono-9e-entrainement");
+await page.locator(".btn", { hasText: "Retour à la fiche" }).click(); await page.waitForSelector(".fiche-head");
 await page.context().close();
 
 // ---------- iMac : « Comme en classe » (50 calculs) au clavier ----------

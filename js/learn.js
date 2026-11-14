@@ -71,5 +71,27 @@ export const FICHES = [
     intro: "Deux fois 50 font 100. Donc multiplier par 50, c'est multiplier par 100, puis prendre la moitié.",
     kinds: ["trick_x50"],
     examples: [{ label: "18 × 50", kind: "trick_x50", p: { n: 18, flip: false } }, { label: "35 × 50", kind: "trick_x50", p: { n: 35, flip: false } }] },
+  // v0.19 : fiches des calculs de la fiche chrono de la classe (nombres à virgule, compléments à 1 et à 10, numération).
+  // chrono.types : les types de lignes de js/fiche.js ; chrono.examples : exampleOf(t, opts, ...valeurs tirées) — exacts, testés.
+  { id: "dec_x10", fam: "mul", emoji: "➡️", title: "× 10, × 100, × 1 000", idea: "Chaque chiffre avance d'un rang par zéro",
+    intro: "Multiplier par 10, c'est rendre chaque chiffre 10 fois plus grand : il avance d'un rang vers la gauche, et la virgule se décale d'un rang vers la droite. × 100 : deux rangs. × 1 000 : trois rangs.",
+    tip: "S'il n'y a plus de chiffre, on écrit des zéros : 0,21 × 1 000 = 210. Et un zéro au début ne s'écrit pas : 0,76 × 100 = 76.",
+    kinds: [], chrono: { types: ["dmul"], examples: [{ label: "7,6 × 100", t: "dmul", opts: { div: 10 }, vals: [76, 100] }, { label: "0,21 × 1 000", t: "dmul", opts: { div: 100 }, vals: [21, 1000] }, { label: "3,05 × 10", t: "dmul", opts: { div: 100 }, vals: [305, 10] }] } },
+  { id: "dec_d10", fam: "div", emoji: "⬅️", title: "÷ 10, ÷ 100, ÷ 1 000", idea: "Chaque chiffre recule d'un rang par zéro",
+    intro: "Diviser par 10, c'est rendre chaque chiffre 10 fois plus petit : il recule d'un rang vers la droite, et la virgule se décale d'un rang vers la gauche. ÷ 100 : deux rangs. ÷ 1 000 : trois rangs.",
+    tip: "Un nombre entier a une virgule cachée à la fin : 48 = 48,0. Et s'il manque des chiffres, on écrit des zéros devant : 400 ÷ 1 000 = 0,4.",
+    kinds: [], chrono: { types: ["ddiv"], examples: [{ label: "48 ÷ 10", t: "ddiv", vals: [48, 10] }, { label: "400 ÷ 1 000", t: "ddiv", vals: [400, 1000] }, { label: "6 000 ÷ 100", t: "ddiv", vals: [6000, 100] }] } },
+  { id: "dec_add", fam: "add", emoji: "✏️", title: "Additionner des nombres à virgule", idea: "Les unités avec les unités, les dixièmes avec les dixièmes",
+    intro: "On additionne séparément les unités, puis les dixièmes. Si les dixièmes dépassent 10, ils font une unité de plus.",
+    tip: "10 dixièmes = 1 unité : 0,6 + 0,8 = 1,4.",
+    kinds: [], chrono: { types: ["dadd", "addd"], examples: [{ label: "7,6 + 3,8", t: "dadd", opts: { div: 10 }, vals: [76, 38] }, { label: "10 + 0,1", t: "addd", vals: [10, 1] }] } },
+  { id: "dec_comp", fam: "comp", emoji: "🧩", title: "Compléter à 1 et à 10", idea: "1 = 10 dixièmes · on saute jusqu'à l'unité, puis jusqu'à 10",
+    intro: "Pour aller à 1, on compte en dixièmes : 0,3, c'est 3 dixièmes, il en manque 7, donc 0,7. Pour aller à 10, on fait deux sauts : jusqu'à l'unité suivante, puis jusqu'à 10.",
+    tip: "Vérifie en additionnant : 6,9 + 3,1 = 10.",
+    kinds: [], chrono: { types: ["gapone", "gapten"], examples: [{ label: "0,3 + ? = 1", t: "gapone", vals: [3] }, { label: "6,9 + ? = 10", t: "gapten", vals: [69] }, { label: "4,5 + ? = 10", t: "gapten", vals: [45] }] } },
+  { id: "dec_num", fam: "add", emoji: "🏷️", title: "Unités, dixièmes, dizaines de mille", idea: "Chaque mot dit combien vaut le chiffre",
+    intro: "Un dixième, c'est 0,1 ; une dizaine, c'est 10 ; une dizaine de mille, c'est 10 000. On calcule chaque morceau, puis on les rassemble.",
+    tip: "44 dizaines de mille = 44 × 10 000 = 440 000.",
+    kinds: [], chrono: { types: ["num"], examples: [{ label: "2 unités et 9 dixièmes", t: "num", opts: { big: "u", small: "di" }, vals: [2, 9] }, { label: "44 dizaines de mille et 4 dizaines", t: "num", opts: { big: "dm", small: "d" }, vals: [44, 4] }] } },
 ];
 export const ficheById = (id) => FICHES.find((f) => f.id === id);

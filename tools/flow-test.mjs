@@ -65,7 +65,7 @@ await tap('.game-tile[data-game="serie"]'); await page.waitForSelector(".play-op
 await page.screenshot({ path: `${out}/flow-4-jouer.png` });
 await tab("Apprendre"); await page.waitForSelector(".learn-item");
 assert.match(await page.locator(".tab-b.on").innerText(), /Apprendre/, "Apprendre est un onglet à part");
-assert.equal(await page.locator(".learn-item").count(), 17);
+assert.equal(await page.locator(".learn-item").count(), 22); // v0.19 : + 5 fiches des nombres à virgule
 await page.locator(".learn-item").first().click(); await page.waitForSelector(".fiche-head");
 assert.match(await page.locator(".tab-b.on").innerText(), /Apprendre/, "une fiche reste sous l'onglet Apprendre");
 await tap(".icon-btn"); await page.waitForSelector(".learn-grid");

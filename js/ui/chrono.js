@@ -6,7 +6,9 @@ import { h } from "../dom.js";
 import { store } from "../store.js";
 import { sfx } from "../audio.js";
 import { toKey } from "../dates.js";
-import { makeFiche, rhythmById, periodOf, scoreFiche, HOLE, fmtDec, parseAnswer, sameValue, ficheBest, solved, typeKey } from "../fiche.js";
+import { makeFiche, rhythmById, periodOf, scoreFiche, HOLE, fmtDec, parseAnswer, sameValue, ficheBest, solved, typeKey, practiceSet, revengeTypes, REVENGE, ficheTrend } from "../fiche.js";
+import { afterPractice } from "../game.js";
+import { ficheById } from "../learn.js";
 import { afterFiche } from "../game.js";
 import { hintPanel } from "./play.js";
 import { iconBtn, topbar } from "./common.js";
@@ -25,12 +27,27 @@ function eqEl(p, hole, cls = "") {
   return h("div", { class: "ch-eq" + (len > 28 ? " xlong" : len > 16 ? " long" : "") + (cls ? " " + cls : "") }, before, hole, after);
 }
 
-export function chronoScreen({ go }) {
+// v0.19 : la courbe « Mes dernières fiches » (une barre par fiche : la part de points, quel que soit le rythme).
+export function trendCard(s) {
+  const t = ficheTrend(s, 8);
+  if (t.length < 2) return null;
+  const last = t[t.length - 1], prev = t[t.length - 2], up = last.pct - prev.pct;
+  const msg = up > 0 ? `En progrès : +${up} % depuis la fiche d'avant !` : up === 0 ? "Pareil que la fiche d'avant : bien régulier !" : "Chaque fiche t'entraîne : la prochaine sera la bonne.";
+  return h("div", { class: "card ch-trend" }, h("h2", {}, "📈 Mes dernières fiches"),
+    h("div", { class: "trend", role: "img", "aria-label": "Points des dernières fiches : " + t.map((f) => `${f.ok} sur ${f.tot}`).join(", ") },
+      t.map((f, k) => h("div", { class: "trend-col" + (k === t.length - 1 ? " last" : "") },
+        h("span", { class: "trend-v" }, String(f.ok)),
+        h("span", { class: "trend-track" }, h("span", { class: "trend-bar", style: { transform: `scaleY(${Math.max(0.04, f.pct / 100)})` } })),
+        h("span", { class: "trend-l", "aria-hidden": "true" }, f.icon)))),
+    h("p", { class: "trend-msg" }, msg));
+}
+
+export function chronoScreen({ go, args = [] }) {
   const date = toKey(), set = store.settings;
   const period = periodOf(set.fichePeriod, date), rhythm = rhythmById(set.ficheRhythm);
   const root = h("main", { class: "screen chrono" });
   let phase = "ready", problems = [], answers = [], i = 0, seen = new Set();
-  const total = rhythm.secs * 1000; let used = 0, startedAt = null, tick = null, timeUp = false;
+  let total = rhythm.secs * 1000, runKind = "fiche", used = 0, startedAt = null, tick = null, timeUp = false;
   const remaining = () => total - used - (startedAt ? Date.now() - startedAt : 0);
   const stopClock = () => { if (startedAt) { used += Date.now() - startedAt; startedAt = null; } clearInterval(tick); tick = null; };
   const blanks = () => answers.map((a, k) => (a === "" ? k : -1)).filter((k) => k >= 0);
@@ -50,16 +67,19 @@ export function chronoScreen({ go }) {
             h("li", {}, "Un point par réponse juste."),
             h("li", {}, "Tu peux passer un calcul et y revenir : touche son numéro."),
             h("li", {}, "La correction et les astuces arrivent à la fin."))),
-        h("button", { class: "btn big green ch-go", type: "button", onclick: start }, "Je commence ▶"),
+        trendCard(store.state),
+        h("button", { class: "btn big green ch-go", type: "button", onclick: () => start() }, "Je commence ▶"),
         h("button", { class: "btn ghost", type: "button", onclick: () => { store.set("game", "chrono"); go("exercices"); } }, "Changer de rythme ou de période"),
         h("div", { class: "kbd-hint" }, "Clavier : chiffres et virgule · Entrée ou Tab pour le suivant · ← → pour naviguer · Échap pour la pause")));
   }
 
   // ---------- l'épreuve ----------
   let timeEl, barEl, countEl, cellsEl, cardEl, noteEl, finishBtn, mainEl;
-  function start() {
+  // list / secs / kind (v0.19) : la revanche de 2 minutes réutilise l'épreuve avec ses propres calculs et son temps.
+  function start(list = null, secs = rhythm.secs, kind = "fiche") {
     sfx.tap();
-    problems = makeFiche(period, rhythm.id); answers = problems.map(() => ""); i = 0; seen = new Set([0]); used = 0; timeUp = false;
+    runKind = kind; total = secs * 1000;
+    problems = list || makeFiche(period, rhythm.id); answers = problems.map(() => ""); i = 0; seen = new Set([0]); used = 0; timeUp = false;
     root._sheet = problems; // pour les parcours automatiques (tools/flow-chrono.mjs)
     phase = "run";
     timeEl = h("span", { class: "ch-time", role: "timer", "aria-label": "Temps restant" }, "");
@@ -152,7 +172,13 @@ export function chronoScreen({ go }) {
     if (phase === "end") return;
     stopClock(); phase = "end";
     score = scoreFiche(problems, answers);
-    const secs = Math.min(rhythm.secs, Math.round(used / 1000)), now = new Date();
+    const secs = Math.min(total / 1000, Math.round(used / 1000)), now = new Date();
+    if (runKind === "revanche") {
+      let r; store.update((s) => { r = afterPractice(s, score.rows, date); });
+      sfx.level(); revengeResults(r, secs);
+      if (r.creatures.length) playEvolutions(r.creatures);
+      return;
+    }
     const stamp = `${date}T${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
     let r; store.update((s) => { r = afterFiche(s, { period, rhythm: rhythm.id, score, secs, date, stamp }); });
     sfx.level();
@@ -195,17 +221,47 @@ export function chronoScreen({ go }) {
       r.missions.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), r.missions.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
       miss.length ? h("div", { class: "card ch-fixes" }, h("h2", {}, `🔧 À reprendre (${miss.length})`), h("p", { class: "muted small" }, "Regarde l'astuce, puis refais-les tranquillement, sans chrono."), miss.map((row) => fixRow(row, idx(row)))) : null,
       miss.length ? h("button", { class: "btn big green ch-redo", type: "button", onclick: () => redo(miss, "Je refais mes erreurs") }, `🔁 Refaire mes erreurs (${miss.length})`) : null,
+      revengeBtn(),
       todo.length ? h("div", { class: "card ch-todos" }, h("h2", {}, `⏳ Pas encore faits (${todo.length})`), h("p", { class: "muted small" }, "Ils ne comptent pas comme des erreurs. Tu peux les faire maintenant, sans chrono."),
         h("button", { class: "btn light ch-do-todo", type: "button", onclick: () => redo(todo, "Je finis ma fiche") }, `✏️ Les faire maintenant (${todo.length})`), todoBtn, todoBox) : null,
+      trendCard(store.state),
+      h("button", { class: "btn big " + (miss.length ? "light" : "green") + " ch-again", type: "button", onclick: () => { ready(); } }, "Nouvelle fiche"),
+      h("button", { class: "btn ghost big", type: "button", onclick: () => go("exercices") }, "Retour")));
+  }
+
+  // ---------- v0.19 : la revanche de 2 minutes — 10 calculs des mêmes types que ceux qui ont résisté ----------
+  function revengeBtn() {
+    const types = revengeTypes(score);
+    if (!types.length) return null;
+    return h("button", { class: "btn big light ch-revenge", type: "button", onclick: () => start(practiceSet(period, types, REVENGE.n), REVENGE.secs, "revanche") },
+      h("span", { class: "rv-t" }, "⚡ Ma revanche de 2 minutes"), h("span", { class: "rv-s" }, `${REVENGE.n} calculs du même genre que ceux qui t'ont résisté`));
+  }
+  function revengeResults(r, secs) {
+    const idx = (row) => score.rows.indexOf(row);
+    const miss = score.rows.filter((x) => x.state === "miss"), todo = score.rows.filter((x) => x.state === "todo");
+    const good = score.ok >= Math.ceil(score.total * 0.7);
+    root.replaceChildren(h("div", { class: "screen-body result ch-result" },
+      h("h1", { class: "result-title" }, good ? "⚡ Revanche gagnée !" : "⚡ Revanche terminée !"),
+      h("div", { class: "card center ch-points" }, h("div", { class: "ch-points-l" }, "Ma revanche"), h("div", { class: "big-num" }, `${score.ok}`),
+        h("p", {}, `sur ${score.total} · ${timeUp ? "tout le temps utilisé" : "en " + longTime(secs)}`),
+        h("p", { class: "ch-meta" }, good ? "Ces calculs-là ne te font plus peur !" : "Ces calculs sont les plus durs : regarde les astuces, ils vont venir.")),
+      r.trophies.length ? h("div", { class: "card" }, h("h2", {}, "🏆 Nouveau trophée !"), r.trophies.map((t) => h("p", { class: "note" }, trophyLabel(t.line, t.tier)))) : null,
+      r.creatures.length ? h("div", { class: "card center" }, h("h2", {}, r.creatures.some((e) => e.from === 0) ? "🥚 Une créature est née !" : "🌟 Ta créature évolue !"), r.creatures.map((e) => creatureCard(e))) : null,
+      r.missions.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), r.missions.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
+      miss.length ? h("div", { class: "card ch-fixes" }, h("h2", {}, `🔧 À reprendre (${miss.length})`), miss.map((row) => fixRow(row, idx(row)))) : null,
+      miss.length ? h("button", { class: "btn big green ch-redo", type: "button", onclick: () => redo(miss, "Je refais mes erreurs") }, `🔁 Refaire mes erreurs (${miss.length})`) : null,
+      todo.length && !miss.length ? h("div", { class: "card center" }, h("p", { class: "note" }, `⏳ ${todo.length} calcul${todo.length > 1 ? "s" : ""} pas encore fait${todo.length > 1 ? "s" : ""} : ce n'est pas grave !`)) : null,
+      revengeBtn(),
       h("button", { class: "btn big " + (miss.length ? "light" : "green") + " ch-again", type: "button", onclick: () => { ready(); } }, "Nouvelle fiche"),
       h("button", { class: "btn ghost big", type: "button", onclick: () => go("exercices") }, "Retour")));
   }
 
   // ---------- refaire sans chrono : réponse vérifiée tout de suite, astuce si besoin ----------
   let redoS = null;
-  function redo(rows, title) {
+  // exit (v0.19) : où mène ✕ et la fin (la fiche chrono, ou la fiche « Apprendre » pour l'entraînement).
+  function redo(rows, title, exit = null) {
     sfx.tap(); phase = "redo";
-    redoS = { list: rows.map((x) => x.p), k: 0, input: "", locked: false, ok: 0, title };
+    redoS = { list: rows.map((x) => x.p), k: 0, input: "", locked: false, ok: 0, title, res: [], exit };
     drawRedo();
   }
   function drawRedo() {
@@ -216,7 +272,7 @@ export function chronoScreen({ go }) {
     const pad = h("div", { class: "keypad ch-pad" }, [1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => key(String(d), String(d))),
       key(",", ",", "key-comma", "Virgule"), key("0", "0"), key("⌫", "del", "key-del", "Effacer"));
     root.replaceChildren(
-      h("div", { class: "topbar ch-top" }, iconBtn("close", "Arrêter", () => ready()), h("div", { class: "bar" }, h("div", { class: "bar-fill", style: { width: 100 * R.k / R.list.length + "%" } })), h("span", { class: "pill" }, `${R.k + 1} / ${R.list.length}`)),
+      h("div", { class: "topbar ch-top" }, iconBtn("close", "Arrêter", () => { saveRedo(); R.exit ? R.exit.back() : ready(); }), h("div", { class: "bar" }, h("div", { class: "bar-fill", style: { width: 100 * R.k / R.list.length + "%" } })), h("span", { class: "pill" }, `${R.k + 1} / ${R.list.length}`)),
       h("div", { class: "ch-main ch-redo-main" }, h("div", { class: "ch-work" }, card, pad,
         h("button", { class: "btn big green ch-check", type: "button", onclick: redoCheck }, "Valider ✓"))));
     R.card = card; R.hole = hole;
@@ -226,14 +282,25 @@ export function chronoScreen({ go }) {
     R.input = typeKey(R.input, k);
     R.hole.className = "ch-hole" + (R.input ? "" : " empty"); R.hole.firstChild.textContent = R.input || "?";
   }
+  // Les réponses (du premier essai) comptent pour la journée, les créatures et les missions — une seule fois.
+  function saveRedo() {
+    const R = redoS; if (!R || R.saved || !R.res.length) return null;
+    R.saved = true; let r; store.update((s) => { r = afterPractice(s, R.res, date); });
+    return r;
+  }
   function redoNext() {
     const R = redoS; clearTimeout(R.timer);
     if (R.k + 1 >= R.list.length) {
+      const r = saveRedo() || { trophies: [], missions: [], creatures: [] };
       root.replaceChildren(h("div", { class: "screen-body result" },
-        h("h1", { class: "result-title" }, "Bravo, tout est repris ! 🎉"),
-        h("div", { class: "card center" }, h("div", { class: "big-num" }, `${R.ok} / ${R.list.length}`), h("p", {}, "réussis du premier coup cette fois-ci")),
-        h("button", { class: "btn big green", type: "button", onclick: () => ready() }, "Nouvelle fiche"),
-        h("button", { class: "btn ghost big", type: "button", onclick: () => go("exercices") }, "Retour")));
+        h("h1", { class: "result-title" }, R.exit ? "Entraînement terminé ! 🎉" : "Bravo, tout est repris ! 🎉"),
+        h("div", { class: "card center" }, h("div", { class: "big-num" }, `${R.ok} / ${R.list.length}`), h("p", {}, R.exit ? "réussis du premier coup" : "réussis du premier coup cette fois-ci")),
+        r.trophies.length ? h("div", { class: "card" }, h("h2", {}, "🏆 Nouveau trophée !"), r.trophies.map((t) => h("p", { class: "note" }, trophyLabel(t.line, t.tier)))) : null,
+        r.missions.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), r.missions.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
+        R.exit ? h("button", { class: "btn big green ch-again", type: "button", onclick: R.exit.again }, "Encore 10 calculs") : h("button", { class: "btn big green", type: "button", onclick: () => ready() }, "Nouvelle fiche"),
+        R.exit ? h("button", { class: "btn big light", type: "button", onclick: R.exit.back }, "Retour à la fiche") : null,
+        h("button", { class: "btn ghost big", type: "button", onclick: () => go(R.exit ? "apprendre" : "exercices") }, "Retour")));
+      if (r.creatures.length) playEvolutions(r.creatures);
       phase = "after"; return;
     }
     R.k++; R.input = ""; R.locked = false; drawRedo();
@@ -242,6 +309,7 @@ export function chronoScreen({ go }) {
     const R = redoS; if (!R || R.locked || !R.input) return;
     R.locked = true;
     const p = R.list[R.k], ok = sameValue(parseAnswer(R.input), p.a);
+    R.res.push({ p, state: ok ? "ok" : "miss" });
     if (ok) {
       R.ok++; sfx.ok(); R.card.classList.add("good"); R.card.querySelector(".q-flash").textContent = "✓ Bravo !";
       R.timer = setTimeout(redoNext, 800);
@@ -278,6 +346,12 @@ export function chronoScreen({ go }) {
   document.addEventListener("keydown", onKey);
   document.addEventListener("visibilitychange", onHide);
 
-  ready();
-  return { el: root, destroy: () => { clearInterval(tick); if (redoS) clearTimeout(redoS.timer); document.removeEventListener("keydown", onKey); document.removeEventListener("visibilitychange", onHide); } };
+  // v0.19 : « Je m'entraîne » d'une fiche Apprendre à virgule → #/chrono/train/<id> : 10 calculs sans chrono.
+  const tf = args[0] === "train" ? ficheById(args[1]) : null;
+  if (tf && tf.chrono) {
+    const train = () => redo(practiceSet(period, tf.chrono.types, 10).map((p) => ({ p })), "Je m'entraîne",
+      { back: () => go("fiche/" + tf.id), again: () => train() });
+    train();
+  } else ready();
+  return { el: root, destroy: () => { clearInterval(tick); if (redoS) clearTimeout(redoS.timer); saveRedo(); document.removeEventListener("keydown", onKey); document.removeEventListener("visibilitychange", onHide); } };
 }

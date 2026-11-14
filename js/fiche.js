@@ -30,8 +30,9 @@ export function typeKey(text, key) {
 }
 export const sameValue = (a, b) => a != null && b != null && Math.abs(a - b) < 1e-7;
 
-const R = (r, a, b) => a + Math.floor(r() * (b - a + 1));
-const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
+// r.vals (v0.19) : des valeurs imposées, dans l'ordre des tirages — pour les exemples écrits à l'avance des fiches « Apprendre ».
+const R = (r, a, b) => (r.vals ? r.vals.shift() : a + Math.floor(r() * (b - a + 1)));
+const pick = (r, arr) => (r.vals ? r.vals.shift() : arr[Math.floor(r() * arr.length)]);
 const until = (gen, ok) => { for (let i = 0; i < 500; i++) { const v = gen(); if (ok(v)) return v; } throw new Error("tirage impossible"); };
 const H = (stem, steps, a) => ({ text: `${stem} = ${F(a)}`, steps });
 const plural = (n, word) => (n > 1 ? word.replace(/^(\S+)/, "$1s") : word); // dizaine de mille → dizaines de mille
@@ -321,6 +322,46 @@ export const SHEETS = { 1: P1, 2: P2, 3: P3, 4: P4, 5: P5 };
 export const PERIODS = [1, 2, 3, 4, 5];
 export const LINES = 50;
 
+// ---------- v0.19 : exemples exacts et entraînement par type de calcul ----------
+const GENS = { dmul, ddiv, addd, dadd, gapone: gapOne, gapten: gapTen, num, addn, subn, half, dbl, gapcomp: gapComp, gapmul: gapMul };
+// exampleOf("dmul", { div: 10, pows: [100] }, 76, 100) → 7,6 × 100 (les valeurs sont celles des tirages, dans l'ordre).
+export function exampleOf(t, opts = {}, ...vals) {
+  const r = Object.assign(() => 0, { vals: [...vals] });
+  const p = GENS[t](r, { lo: 0, hi: 0, gen: (x) => R(x, 0, 0), ...opts });
+  if (r.vals.length) throw new Error(`exemple ${t} : valeurs en trop`);
+  return p;
+}
+// Les numéros de ligne de chaque type, période par période (calculé une fois : le type d'une ligne ne dépend pas du tirage).
+const LINE_TYPES = {};
+function linesOfType(period) {
+  if (!LINE_TYPES[period]) {
+    const map = {}, sheet = SHEETS[period];
+    for (let i = 1; i <= LINES; i++) { const t = sheet[i](mkRng(i)).t; (map[t] ||= []).push(i); }
+    LINE_TYPES[period] = map;
+  }
+  return LINE_TYPES[period];
+}
+function mkRng(seed) { let x = seed * 2654435761 % 4294967296 || 1; return () => ((x = (x * 1664525 + 1013904223) % 4294967296) / 4294967296); }
+export const typesOf = (period) => Object.keys(linesOfType(period));
+// n calculs des types demandés, avec les nombres de la période (sinon ceux de la période la plus proche qui a ce type).
+// Jamais deux fois le même énoncé ; utilisé par « Je m'entraîne » (fiches Apprendre) et la revanche de 2 minutes.
+export function practiceSet(period, types, n = 10, rng = Math.random) {
+  const pool = [];
+  for (const t of new Set(types)) {
+    const order = [period, ...PERIODS.filter((q) => q !== period).sort((a, b) => Math.abs(a - period) - Math.abs(b - period))];
+    const q = order.find((x) => linesOfType(x)[t]);
+    if (q) for (const line of linesOfType(q)[t]) pool.push({ period: q, line });
+  }
+  if (!pool.length) return [];
+  const out = [], seen = new Set();
+  for (let k = 0; out.length < n && k < n * 40; k++) {
+    const { period: q, line } = pool[Math.floor(rng() * pool.length)];
+    const p = SHEETS[q][line](rng);
+    if (!seen.has(p.q)) { seen.add(p.q); out.push({ line: out.length + 1, ...p }); }
+  }
+  return out;
+}
+
 // La fiche complète d'une période : 50 calculs numérotés comme en classe.
 export function buildSheet(period, rng = Math.random) {
   const sheet = SHEETS[period] || SHEETS[1], out = [];
@@ -381,15 +422,20 @@ export const solved = (p) => filled(p, F(p.a));
 // Enregistre une fiche terminée dans l'état (additif) : compteurs du jour et des familles pour les calculs RÉPONDUS,
 // la fiche elle-même (nouvelle clé fiche), le record (rec, maximum à la fusion). Ne touche ni au niveau adaptatif ni aux calculs à revoir.
 // stamp : « AAAA-MM-JJThh:mm:ss ». Retourne { stars, perfect, record: { best, before, beaten, first } }.
-export function recordFiche(s, { period, rhythm, score, secs, date, stamp }) {
-  const x = rhythmById(rhythm), d = dayRec(s, date);
-  for (const row of score.rows) {
+// Compte des réponses données (rows : { p, state: "ok" | "miss" | "todo" }) : jour, familles (créatures), compteurs.
+export function countAnswers(s, rows, date) {
+  const d = dayRec(s, date);
+  for (const row of rows) {
     if (row.state === "todo") continue;
     s.c.tot++; d.tot++;
     const known = FAMILIES.some((f) => f.id === row.p.fam), fs = known ? famState(s, row.p.fam) : null;
     if (fs) fs.n++;
     if (row.state === "ok") { s.c.ok++; d.ok++; if (fs) { fs.xp++; d.fam[row.p.fam] = (d.fam[row.p.fam] || 0) + 1; } }
   }
+}
+export function recordFiche(s, { period, rhythm, score, secs, date, stamp }) {
+  const x = rhythmById(rhythm);
+  countAnswers(s, score.rows, date);
   const stars = starsFor(score.ok, score.total);
   s.c.sessions++; s.c.stars += stars;
   const perfect = score.ok === score.total;
@@ -409,3 +455,14 @@ export function ficheHistory(s) {
   return Object.entries(s.fiche || {}).filter(([, v]) => v && typeof v === "object").map(([k, v]) => ({ key: k, date: k.slice(0, 10), p: v.p, r: v.r, ok: Number(v.ok) || 0, n: Number(v.n) || 0, tot: Number(v.tot) || 0, t: Number(v.t) || 0, miss: Array.isArray(v.miss) ? v.miss : [] }))
     .sort((a, b) => (a.key < b.key ? 1 : -1));
 }
+
+// « Mes fiches » (v0.19) : les n dernières fiches, de la plus ancienne à la plus récente, pour la courbe de progrès.
+export function ficheTrend(s, n = 8) {
+  return ficheHistory(s).slice(0, n).reverse().map((f) => ({ ...f, pct: f.tot ? Math.round((100 * f.ok) / f.tot) : 0, icon: rhythmById(f.r).icon }));
+}
+// Les types de calcul à travailler après une fiche : ceux des erreurs d'abord, puis (s'il en manque) ceux des calculs pas faits.
+export function revengeTypes(score, max = 3) {
+  const by = (st) => [...new Set(score.rows.filter((x) => x.state === st).map((x) => x.p.t))];
+  return [...new Set([...by("miss"), ...by("todo")])].slice(0, max);
+}
+export const REVENGE = { n: 10, secs: 120 };
