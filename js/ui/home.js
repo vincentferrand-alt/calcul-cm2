@@ -15,6 +15,7 @@ import { homeCreature, homeGoal } from "../goal.js";
 import { whatNext, launchFor } from "../next.js";
 import { famPills } from "./badges.js";
 import { VERSION } from "../version.js";
+import { makeInteractive } from "./pet.js";
 
 export function homeScreen({ go }) {
   const s = store.state, date = toKey();
@@ -25,6 +26,7 @@ export function homeScreen({ go }) {
   const hour = new Date().getHours(), sleepy = hour >= EVENING_HOUR && eveningDone(s, date);
   const p = hc.stage > 0 ? scenePick(s, hc.id) : null;
   const mascot = sceneEl({ id: hc.id, stage: p ? p.st : 0, xp, pick: p || {}, variant: "home", sleepy: !!p && sleepy });
+  makeInteractive(mascot, { stage: hc.stage }); // un appui : la créature réagit (v0.14)
   // Petit nuage : la synchro est-elle à jour ? (n'apparaît que si elle est activée)
   const cloud = h("button", { class: "pill cloud", type: "button", "aria-label": "Synchronisation", onclick: () => go("reglages") });
   const drawCloud = () => {

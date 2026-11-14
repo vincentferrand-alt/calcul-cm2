@@ -1,7 +1,9 @@
+// Album des créatures (v0.14) : des cartes courtes en grille (scène, nom, barre, famille) ; un appui ouvre la page de la créature
+// (#/album/<id>) avec l'histoire de ses 4 formes, le choix de la forme affichée et les raccourcis. Le carnet de rêves est à côté.
 import { h } from "../dom.js";
 import { store } from "../store.js";
 import { sfx } from "../audio.js";
-import { CREATURES, STAGE_XP, creatureById, progressInfo } from "../creatures.js";
+import { CREATURES, STAGE_XP, creatureById } from "../creatures.js";
 import { famById } from "../generator.js";
 import { topbar } from "./common.js";
 import { scenePick, setPick } from "../shop.js";
@@ -9,6 +11,8 @@ import { creatureArt } from "./art.js";
 import { sceneEl } from "./scene.js";
 import { playEvolution } from "./evolve.js";
 import { session } from "./play.js";
+import { growthOf, unit } from "../goal.js";
+import { famPill } from "./badges.js";
 
 export { creatureArt };
 
@@ -20,50 +24,78 @@ export function creatureCard(e) {
     h("p", { class: "creature-story" }, c.story[e.to - 1]));
 }
 
-export function albumScreen({ go }) {
+const stageOf = (s, id) => Math.max(0, s.cre[id] ? s.cre[id].s : 0);
+const xpOf = (s, c) => (s.fam[c.fam] ? s.fam[c.fam].xp : 0);
+
+export function albumScreen({ go, args = [] }) {
+  const id = args[0] && creatureById(args[0]) ? args[0] : null;
   const root = h("main", { class: "screen" });
-  const redraw = () => root.replaceChildren(...build().children);
-  const build = () => albumBody(go, redraw);
-  root.append(...build().children);
+  const draw = () => root.replaceChildren(...(id ? detail(go, id, draw) : grid(go)));
+  draw();
   return { el: root };
 }
 
-function albumBody(go, redraw) {
+// Ce qui reste à faire, en clair (famille de calcul comprise : n'importe quel mode compte).
+function growLine(s, c) {
+  const g = growthOf(s, c.id);
+  if (g.max) return "Stade maximum atteint, bravo ! 🌟";
+  return g.stage === 0 ? `Encore ${unit(c.fam, g.remaining)} pour faire éclore l'œuf` : `Encore ${unit(c.fam, g.remaining)} pour devenir : ${c.forms[g.stage].toLowerCase()}`;
+}
+
+function grid(go) {
   const s = store.state;
-  const nb = CREATURES.filter((c) => s.cre[c.id] && s.cre[c.id].s > 0).length;
+  const nb = CREATURES.filter((c) => stageOf(s, c.id) > 0).length, nights = Object.keys(s.eve || {}).length;
   const cards = CREATURES.map((c) => {
-    const f = famById(c.fam), xp = s.fam[c.fam] ? s.fam[c.fam].xp : 0;
-    const st = Math.max(s.cre[c.id] ? s.cre[c.id].s : 0, 0), pi = progressInfo(xp);
-    const shown = Math.max(st, 0), pick = shown ? scenePick(s, c.id) : null;
-    const art = shown ? sceneEl({ id: c.id, stage: pick.st, xp, pick, variant: "album", lite: true }) : creatureArt(c.id, 0, xp, "al");
-    if (!shown) art.classList.add("egg");
-    // Ce qui fait grandir : les bonnes réponses dans SA famille de calcul, dans n'importe quel mode (défi du jour, exercices, dictée, fiches).
-    const n = pi.remaining, br = `${n} bonne${n > 1 ? "s" : ""} réponse${n > 1 ? "s" : ""}`, fam = f.name.toLowerCase();
-    const line = shown >= 4 ? "Stade maximum atteint, bravo ! 🌟"
-      : shown === 0 ? `Encore ${br} en ${fam} pour faire éclore l'œuf`
-      : `Encore ${br} en ${fam} pour devenir : ${c.forms[shown].toLowerCase()}`;
-    const grow = shown >= 4 ? null : h("button", { class: "pet-grow", type: "button", onclick: () => {
-      session.opts = { families: [c.fam], count: store.settings.count || 10, mode: store.settings.answer === "qcm" ? "qcm" : "input", back: "album" };
-      go("jouer", true);
-    } }, `🎯 ${shown ? "Faire grandir " + c.name : "Faire éclore"} : ${fam}`);
-    // Les points des stades : un appui sur un stade débloqué choisit la forme affichée (partout dans l'appli).
-    const dots = [1, 2, 3, 4].map((n) => h("button", { class: "dot" + (n <= shown ? " on" : "") + (pick && n === pick.st ? " sel" : ""), type: "button", disabled: n > shown,
-      "aria-label": n <= shown ? `Afficher : ${c.forms[n - 1]}` : `Stade ${n} pas encore atteint`,
-      onclick: () => { sfx.tap(); store.update((x) => { setPick(x, c.id, "st", n); }); redraw(); } }));
-    return h("div", { class: "pet", style: { "--fam": f.color, "--fam-ink": f.ink } },
+    const f = famById(c.fam), st = stageOf(s, c.id), g = growthOf(s, c.id), pick = st ? scenePick(s, c.id) : null;
+    const art = st ? sceneEl({ id: c.id, stage: pick.st, xp: xpOf(s, c), pick, variant: "album", lite: true }) : h("div", { class: "pet-egg" }, creatureArt(c.id, 0, xpOf(s, c), "al" + c.id));
+    return h("button", { class: "pet pet-card", type: "button", style: { "--fam": f.color, "--fam-ink": f.ink }, "aria-label": `${st ? c.name : "Œuf mystère"} : ${growLine(s, c)}`,
+      onclick: () => { sfx.tap(); go("album/" + c.id); } },
       art,
-      h("div", { class: "pet-name" }, shown ? c.name : "Mystère…"),
-      h("div", { class: "pet-fam" }, shown ? c.forms[pick.st - 1] : f.name),
-      h("div", { class: "pet-dots" }, dots),
-      shown >= 4 ? null : h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: pi.pct + "%" } })),
-      h("div", { class: "pet-line" }, line), grow,
-      shown ? h("div", { class: "pet-desc" }, c.story[pick.st - 1]) : null,
-      shown ? h("button", { class: "pet-replay", type: "button", "aria-label": `Revoir l'évolution : ${c.forms[pick.st - 1]}`, onclick: () => playEvolution(c.id, pick.st - 1, pick.st) }, "▶ Revoir l'évolution") : null,
-      shown ? h("button", { class: "pet-pick" + (store.settings.companion === c.id ? " on" : ""), type: "button", onclick: () => { store.set("companion", store.settings.companion === c.id ? null : c.id); redraw(); } },
-        store.settings.companion === c.id ? "⭐ Mon compagnon" : "☆ Choisir comme compagnon") : null);
+      h("span", { class: "pet-name" }, st ? c.name : "Mystère…"),
+      h("span", { class: "bar small" }, h("span", { class: "bar-fill", style: { width: g.pct + "%" } })),
+      h("span", { class: "pet-fam" }, famPill(c.fam, "tiny"), st ? c.forms[pick.st - 1] : f.name));
   });
-  return h("div", {}, topbar("Mes créatures", null),
+  return [topbar("Mes créatures", null),
     h("div", { class: "screen-body" },
-      h("div", { class: "card center" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Chaque créature grandit avec les bonnes réponses de SA famille de calculs (le dragon avec les additions, le chat avec les soustractions…), dans n'importe quel mode. Touche les points pour choisir sa forme.")),
-      h("div", { class: "pets" }, cards)));
+      h("div", { class: "album-head" },
+        h("div", { class: "card center album-count" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Touche une créature pour voir son histoire.")),
+        h("button", { class: "card dream-link", type: "button", onclick: () => { sfx.tap(); go("carnet"); } },
+          h("span", { class: "dream-moon", "aria-hidden": "true" }, "🌙"), h("span", { class: "grow" }, h("b", {}, "Carnet de rêves"), h("small", {}, nights ? `${nights} souvenir${nights > 1 ? "s" : ""} du soir` : "Les souvenirs des énigmes du soir")), h("span", { class: "nb-go" }, "›"))),
+      h("div", { class: "pets" }, cards))];
+}
+
+function detail(go, id, redraw) {
+  const s = store.state, c = creatureById(id), f = famById(c.fam), st = stageOf(s, id), g = growthOf(s, id), xp = xpOf(s, c);
+  const pick = st ? scenePick(s, id) : null;
+  const scene = st ? sceneEl({ id, stage: pick.st, xp, pick, variant: "shop" }) : sceneEl({ id, stage: 0, xp, variant: "shop" });
+  const grow = g.max ? null : h("button", { class: "btn big green", type: "button", onclick: () => {
+    session.opts = { families: [c.fam], count: store.settings.count || 10, mode: store.settings.answer === "qcm" ? "qcm" : "input", back: "album/" + id };
+    go("jouer", true);
+  } }, st ? `🎯 Faire grandir ${c.name} : ${f.name.toLowerCase()}` : `🥚 Faire éclore : ${f.name.toLowerCase()}`);
+  const comp = store.settings.companion === id;
+  const actions = st ? h("div", { class: "pet-actions" },
+    h("button", { class: "btn light", type: "button", onclick: () => playEvolution(id, pick.st - 1, pick.st) }, "▶ Revoir l'évolution"),
+    h("button", { class: "btn" + (comp ? "" : " light"), type: "button", onclick: () => { sfx.tap(); store.set("companion", comp ? null : id); redraw(); } }, comp ? "⭐ Mon compagnon" : "☆ Choisir comme compagnon"),
+    h("button", { class: "btn light", type: "button", onclick: () => go("boutique/" + id) }, "🛍️ Ses décors")) : null;
+  // L'histoire des 4 formes : celles pas encore atteintes restent en silhouette ; un appui sur une forme atteinte l'affiche partout.
+  const forms = [1, 2, 3, 4].map((n) => {
+    const got = n <= st, sel = pick && pick.st === n, next = n === st + 1;
+    const art = creatureArt(id, n, 0, `hf${id}${n}`); if (!got) art.classList.add("silhouette");
+    const body = h("span", { class: "form-body" },
+      h("span", { class: "form-name" }, got ? c.forms[n - 1] : "Forme mystère", sel ? h("span", { class: "form-sel" }, "affichée") : null),
+      h("span", { class: "form-story" }, got ? c.story[n - 1] : next ? `Encore ${unit(c.fam, g.remaining)} pour la découvrir !` : "Un secret pour plus tard…"));
+    return got ? h("button", { class: "form-row" + (sel ? " sel" : ""), type: "button", "aria-pressed": sel ? "true" : "false",
+      onclick: () => { sfx.tap(); store.update((x) => { setPick(x, id, "st", n); }); redraw(); } }, h("span", { class: "form-art" }, art), body)
+      : h("div", { class: "form-row locked" }, h("span", { class: "form-art" }, art), body);
+  });
+  return [topbar(st ? c.name : "Œuf mystère", () => go("album")),
+    h("div", { class: "screen-body pet-page", style: { "--fam": f.color, "--fam-ink": f.ink } },
+      h("div", { class: "pet-page-a" }, scene,
+        h("div", { class: "card pet-sum" },
+          h("div", { class: "pet-sum-t" }, famPill(c.fam), h("b", {}, st ? `${f.name} · ${c.forms[pick.st - 1]}` : f.name)),
+          st ? h("p", { class: "pet-desc" }, c.desc) : null,
+          h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: g.pct + "%" } })),
+          h("p", { class: "pet-line" }, growLine(s, c)), grow),
+        actions),
+      h("div", { class: "pet-page-b card" }, h("h2", {}, "📖 Son histoire"), h("div", { class: "forms" }, forms)))];
 }

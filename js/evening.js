@@ -21,8 +21,9 @@ export function eveningRiddle(s, date, creatureId) {
   return { creature: c.id, prob, options: choices(prob, rng) };
 }
 
-export function completeEvening(s, date, ok, tries) {
+// v0.14 : memo = souvenir pour le carnet de rêves { c (créature), st (forme affichée, 0 = œuf), bg (décor), q, a, eq (le calcul) } — ajout additif.
+export function completeEvening(s, date, ok, tries, memo = null) {
   if (eveningDone(s, date)) return false;
-  (s.eve ||= {})[date] = { ok: !!ok, n: tries };
+  (s.eve ||= {})[date] = { ok: !!ok, n: tries, ...(memo || {}) };
   return true;
 }

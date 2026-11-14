@@ -12,9 +12,11 @@ import { albumScreen } from "./ui/album.js";
 import { reglagesScreen } from "./ui/reglages.js";
 import { boutiqueScreen } from "./ui/boutique.js";
 import { showSplash } from "./ui/splash.js";
+import { carnetScreen } from "./ui/carnet.js";
 import { startSyncing, setSyncHook } from "./syncer.js";
 import { refreshState } from "./game.js";
 import { toKey } from "./dates.js";
+import { eveningDone } from "./evening.js";
 import { newsBanner, bannerEl, closeBanner } from "./ui/notify.js";
 import { applyMotion } from "./motion.js";
 import { tabBar, showsTabs } from "./ui/tabs.js";
@@ -24,7 +26,7 @@ applyMotion(store.settings.motion);
 
 const app = document.getElementById("app");
 
-const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, reglages: reglagesScreen, boutique: boutiqueScreen, profil: profilScreen };
+const routes = { "": homeScreen, exercices: exercicesScreen, jouer: playScreen, apprendre: apprendreScreen, fiche: ficheScreen, trophees: trophiesScreen, album: albumScreen, reglages: reglagesScreen, boutique: boutiqueScreen, profil: profilScreen, carnet: carnetScreen };
 let current = null, shown = null; // shown = nom de l'écran réellement affiché
 let pending = emptyNews(); // nouvelles en attente d'affichage
 
@@ -71,9 +73,10 @@ function flushNews() {
 }
 // Écran d'ouverture : une fois par ouverture de l'appli, seulement si on arrive sur l'accueil (pas en rouvrant un écran précis).
 const opening = !!store.profile && shown === "";
-if (opening) showSplash(() => announce(fresh)); else announce(fresh);
+// Si l'énigme du soir vient d'être faite sur l'écran d'ouverture, l'accueil est redessiné (créature endormie, plus de bouton 🌙).
+if (opening) showSplash(() => { if (shown === "" && eveningDone(store.state, toKey())) render(); announce(fresh); }); else announce(fresh);
 // Synchronisation (si elle est activée) : quand l'autre appareil a apporté du nouveau, on redessine l'accueil / l'album / les trophées (jamais en pleine partie).
-setSyncHook((news) => { if (["", "album", "trophees", "reglages"].includes(shown)) render(); announce(news); });
+setSyncHook((news) => { if (["", "album", "trophees", "reglages", "carnet"].includes(shown)) render(); announce(news); });
 startSyncing();
 demanderStockagePersistant();
 export { go };

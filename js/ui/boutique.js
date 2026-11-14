@@ -18,11 +18,11 @@ import { famById } from "../generator.js";
 
 const TABS = [...KINDS, { id: "st", name: "Forme", emoji: "🐣" }];
 
-export function boutiqueScreen({ go }) {
+export function boutiqueScreen({ go, args = [] }) {
   const root = h("main", { class: "screen" });
   const hatched = () => CREATURES.filter((c) => (store.state.cre[c.id] || { s: 0 }).s > 0);
   const first = () => { const comp = store.settings.companion; if (comp && hatched().some((c) => c.id === comp)) return comp; const f = featured(store.state); return f ? f.c.id : null; };
-  let who = first(), tab = "bg", trying = null; // trying = décor essayé (pas encore acheté)
+  let who = args[0] && hatched().some((c) => c.id === args[0]) ? args[0] : first(), tab = "bg", trying = null; // #/boutique/<id> : depuis la page d'une créature (v0.14) // trying = décor essayé (pas encore acheté)
 
   function draw() {
     const s = store.state, bal = balance(s), list = hatched();

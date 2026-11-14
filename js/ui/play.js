@@ -104,6 +104,8 @@ export function playScreen({ go }) {
     body.replaceChildren(card);
     if (store.settings.answer === "qcm") renderChoices(prob, card);
     else renderInput(prob, card);
+    // v0.14 : raccourcis clavier, visibles en petit sur grand écran (iMac)
+    body.append(h("div", { class: "kbd-hint" }, store.settings.answer === "qcm" ? "Clavier : 1 à 4 pour choisir · Entrée pour continuer" : "Clavier : chiffres · Retour arrière pour effacer · Entrée pour valider"));
     clearTimeout(S.nudgeT);
     S.nudgeT = setTimeout(() => showNudge(prob, card), NUDGE_DELAY[store.settings.answer === "qcm" ? "qcm" : "input"]);
   }
@@ -167,7 +169,7 @@ export function playScreen({ go }) {
     const hear = () => speak(hintSpeech(prob), { rate: store.settings.rate });
     if (talk && (opts.mode === "dictee" || store.settings.readAloud)) setTimeout(hear, 400);
     body.replaceChildren(card, h("div", { class: "wrong-zone" }, hintPanel(prob),
-      talk && (opts.mode === "dictee" || store.settings.readAloud) ? h("button", { class: "btn light", type: "button", onclick: () => { sfx.tap(); hear(); } }, "🔊 Écouter l'astuce") : null, h("p", { class: "muted center small" }, "On le reverra bientôt, pour bien l'apprendre."), next_));
+      talk && (opts.mode === "dictee" || store.settings.readAloud) ? h("button", { class: "btn light", type: "button", onclick: () => { sfx.tap(); hear(); } }, "🔊 Écouter l'astuce") : null, h("p", { class: "muted center small" }, "On le reverra bientôt, pour bien l'apprendre."), next_, h("div", { class: "kbd-hint" }, "Clavier : Entrée pour continuer")));
   }
 
   function next() {

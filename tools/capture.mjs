@@ -27,13 +27,27 @@ for (const [label, w, hh] of SIZES) for (const [tl, time] of TIMES) {
   await page.goto(url);
   await page.waitForTimeout(500);
   if (label === "phone") await page.screenshot({ path: `${out}/${label}-${tl}-splash.png` });
-  const plusTard = page.locator(".splash .btn", { hasText: "Plus tard" });
-  if (await plusTard.count()) await plusTard.click(); else if (await page.locator(".splash").count()) await page.locator(".splash").click();
-  await page.waitForTimeout(700);
+  const enter = async () => { // écran d'ouverture : « Plus tard » (énigme du soir) ou un appui hors de la créature
+    const plusTard = page.locator(".splash .btn", { hasText: "Plus tard" });
+    if (await plusTard.count()) await plusTard.click(); else if (await page.locator(".splash").count()) await page.locator(".splash-hello").click();
+    await page.waitForTimeout(700);
+  };
+  await enter();
   for (const sc of SCREENS) {
+    if (sc === "play") { // une série lancée depuis l'objectif de l'accueil (QCM), puis la même en saisie
+      for (const answer of ["qcm", "input"]) {
+        await page.evaluate((a) => { const st = JSON.parse(localStorage.getItem("ccm2:settings")); st.answer = a; localStorage.setItem("ccm2:settings", JSON.stringify(st)); location.hash = "#/"; }, answer);
+        await page.reload(); await page.waitForTimeout(400);
+        await enter();
+        await page.locator(".goal").click(); await page.waitForTimeout(700);
+        await page.screenshot({ path: `${out}/${label}-${tl}-play-${answer}.png` });
+        await page.locator(".icon-btn").first().click(); await page.waitForTimeout(400);
+      }
+      continue;
+    }
     await page.evaluate((h) => { location.hash = h; }, sc === "home" ? "#/" : "#/" + sc);
     await page.waitForTimeout(700);
-    await page.screenshot({ path: `${out}/${label}-${tl}-${sc}.png` });
+    await page.screenshot({ path: `${out}/${label}-${tl}-${sc.replace(/\//g, "-")}.png` });
   }
   await ctx.close();
 }

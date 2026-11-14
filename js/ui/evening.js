@@ -26,7 +26,12 @@ export function riddlePanel(creatureId, onDone) {
   function finish(ok) {
     over = true;
     let fresh = [];
-    store.update((s) => { completeEvening(s, date, ok, tries); fresh = checkTrophies(s, date); });
+    store.update((s) => {
+      const hatched = s.cre[c.id] && s.cre[c.id].s > 0, p = hatched ? scenePick(s, c.id) : null;
+      // souvenir pour le carnet de rêves (v0.14) : la créature, sa forme, son décor et le calcul de l'énigme
+      completeEvening(s, date, ok, tries, { c: c.id, st: p ? p.st : 0, bg: p ? p.bg : "bg_prairie", q: prob.q, a: prob.a, eq: !!prob.showEq });
+      fresh = checkTrophies(s, date);
+    });
     sfx.star(2); confetti(20);
     toast("Une étoile en cadeau pour l'énigme du soir !", { icon: "⭐", sound: false });
     fresh.forEach((t) => toast("Nouveau trophée : " + trophyLabel(t.line, t.tier)));
@@ -55,10 +60,15 @@ export function openRiddle(creatureId, onClose) {
   const s = store.state, p = creatureId && s.cre[creatureId] && s.cre[creatureId].s > 0 ? scenePick(s, creatureId) : null;
   const scene = sceneEl({ id: creatureId, stage: p ? p.st : 0, pick: p || {}, variant: "shop" });
   const close = () => { box.remove(); document.removeEventListener("keydown", onKey); if (onClose) onClose(); };
-  const onKey = (e) => { if (e.key === "Escape") close(); };
+  const onKey = (e) => { // Échap ferme la fenêtre ; 1 à 4 choisissent une réponse (clavier de l'iMac)
+    if (e.key === "Escape") return close();
+    const i = "1234".indexOf(e.key), b = box.querySelectorAll(".riddle-choices .choice")[i];
+    if (i >= 0 && b) { e.preventDefault(); b.click(); }
+  };
   const panel = riddlePanel(creatureId, (ok, end) => { scene.classList.add("sleepy"); end.append(h("button", { class: "btn green", type: "button", onclick: close }, "Bonne nuit !")); });
   const box = h("div", { class: "modal", role: "dialog", "aria-label": "Énigme du soir" },
-    h("div", { class: "modal-in" }, h("button", { class: "modal-x", type: "button", "aria-label": "Fermer", onclick: close }, "✕"), scene, panel));
+    h("div", { class: "modal-in" }, h("button", { class: "modal-x", type: "button", "aria-label": "Fermer", onclick: close }, "✕"), scene, panel,
+      h("div", { class: "kbd-hint" }, "Clavier : 1 à 4 pour répondre · Échap pour fermer")));
   document.addEventListener("keydown", onKey);
   document.body.append(box);
 }

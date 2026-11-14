@@ -3,7 +3,9 @@
 import { h } from "../dom.js";
 import { store } from "../store.js";
 import { toKey } from "../dates.js";
-import { CREATURES, featured, creatureById } from "../creatures.js";
+import { creatureById } from "../creatures.js";
+import { homeCreature } from "../goal.js";
+import { makeInteractive } from "./pet.js";
 import { scenePick } from "../shop.js";
 import { sceneEl } from "./scene.js";
 import { computeStreak } from "../streak.js";
@@ -26,19 +28,21 @@ export function showSplash(onEnter) {
   shownOnce = true;
   const s = store.state, date = toKey(), hour = new Date().getHours();
   const streak = computeStreak(s, date).current, done = !!(s.daily[date] && s.daily[date].done);
-  const compId = store.settings.companion && s.cre[store.settings.companion] && s.cre[store.settings.companion].s > 0 ? store.settings.companion : null;
-  const feat = compId ? { c: { id: compId }, st: s.cre[compId].s, xp: (s.fam[creatureById(compId).fam] || { xp: 0 }).xp } : featured(s);
-  const cid = feat ? feat.c.id : CREATURES[0].id, riddle = eveningOpen(s, date, hour);
+  const hc = homeCreature(s, store.settings.companion), feat = hc.stage > 0 ? hc : null;
+  const cid = hc.id, riddle = eveningOpen(s, date, hour);
   const sleepy = hour >= EVENING_HOUR && eveningDone(s, date);
   const art = h("div", { class: "splash-art scene-wrap" });
   let scene;
-  if (feat) { const p = scenePick(s, feat.c.id); scene = sceneEl({ id: feat.c.id, stage: p.st, xp: feat.xp, pick: p, variant: "splash", sleepy }); }
-  else scene = sceneEl({ id: CREATURES[0].id, stage: 0, variant: "splash" });
+  const xp = (s.fam[creatureById(cid).fam] || { xp: 0 }).xp;
+  if (feat) { const p = scenePick(s, cid); scene = sceneEl({ id: cid, stage: p.st, xp, pick: p, variant: "splash", sleepy }); }
+  else scene = sceneEl({ id: cid, stage: 0, xp, variant: "splash" });
+  // v0.14 : un appui sur la créature la fait réagir (bulle), puis on entre tout seul ~3 s plus tard ; ailleurs, on entre tout de suite.
+  makeInteractive(scene, { stage: feat ? scenePick(s, cid).st : 0, onReact: () => { if (!riddle && !over) { clearTimeout(timer); timer = setTimeout(leave, 2800); } } });
   art.append(scene);
   const g = greeting(hour, store.profile && store.profile.name, streak, done);
   let over = false, timer;
   const leave = () => {
-    if (over) return; over = true; clearTimeout(timer); sfx.tap();
+    if (over) return; over = true; clearTimeout(timer); sfx.tap(); document.removeEventListener("keydown", onKey);
     box.classList.add("out"); setTimeout(() => { box.remove(); if (onEnter) onEnter(); }, 420);
   };
   const name = feat ? creatureById(cid).name : "Ton œuf";
@@ -63,5 +67,7 @@ export function showSplash(onEnter) {
     riddle ? null : h("div", { class: "splash-tap" }, "Touche l'écran pour commencer"));
   document.body.append(box);
   if (!riddle) timer = setTimeout(leave, 4500); // avec l'énigme, on attend son choix
+  const onKey = (e) => { if (e.key === "Escape" || (!riddle && e.key === "Enter")) { document.removeEventListener("keydown", onKey); leave(); } };
+  document.addEventListener("keydown", onKey);
   return true;
 }
