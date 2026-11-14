@@ -17,7 +17,7 @@ const browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome"
 const errors = [];
 const SIZES = (process.env.SIZES ? JSON.parse(process.env.SIZES) : [["phone", 384, 824], ["small", 360, 780], ["desk", 1200, 800], ["wide", 1600, 1000]]);
 const TIMES = [["jour", "2026-11-14T10:00:00"], ["soir", "2026-11-14T19:00:00"]];
-const SCREENS = (process.env.SCREENS || "home,exercices,album,boutique,trophees").split(",");
+const SCREENS = (process.env.SCREENS || "home,exercices,apprendre,album,carnet,trophees,boutique").split(",");
 for (const [label, w, hh] of SIZES) for (const [tl, time] of TIMES) {
   const ctx = await browser.newContext({ viewport: { width: w, height: hh }, deviceScaleFactor: w < 500 ? 2 : 1, serviceWorkers: "block" });
   await ctx.addInitScript(([st]) => { if (!localStorage.getItem("ccm2:profile")) { localStorage.setItem("ccm2:profile", JSON.stringify({ name: "Test", id: null })); localStorage.setItem("ccm2:state", st); localStorage.setItem("ccm2:settings", JSON.stringify({ companion: "add" })); } }, [state]);

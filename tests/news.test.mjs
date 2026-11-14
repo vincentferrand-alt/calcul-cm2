@@ -27,7 +27,8 @@ test("nouvelles : un appui mène au bon écran", () => {
 });
 
 test("onglets : sous-écrans rattachés, cachés pendant une partie", () => {
-  assert.equal(tabFor(""), ""); assert.equal(tabFor("fiche"), "exercices"); assert.equal(tabFor("apprendre"), "exercices");
+  assert.equal(tabFor(""), ""); assert.equal(tabFor("fiche"), "apprendre"); assert.equal(tabFor("apprendre"), "apprendre"); assert.equal(tabFor("exercices"), "exercices");
+  assert.equal(tabFor("trophees"), "album"); assert.equal(tabFor("carnet"), "album"); assert.equal(tabFor("boutique"), "boutique"); // v0.17 : Collection
   assert.equal(tabFor("album"), "album"); assert.equal(tabFor("reglages"), null);
   assert.equal(showsTabs("jouer"), false); assert.equal(showsTabs("profil"), false); assert.equal(showsTabs("trophees"), true);
 });

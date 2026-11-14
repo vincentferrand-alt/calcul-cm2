@@ -12,14 +12,14 @@ const ctx = await browser.newContext({ viewport: { width: +w, height: +hh }, dev
 const page = await ctx.newPage(); const errors = [];
 page.on("pageerror", (e) => errors.push("pageerror: " + e.message)); page.on("console", (m) => { if (m.type() === "error") errors.push("console: " + m.text()); });
 await page.goto(`http://localhost:${port}/`); await page.waitForTimeout(400);
-await page.click("text=Exercices"); await page.waitForTimeout(300);
+await page.evaluate(() => { location.hash = "#/exercices"; }); await page.waitForTimeout(300); // v0.17 : onglet « Jouer »
 await page.click("text=Je tape"); await page.click("text=Additions"); await page.waitForTimeout(500);
 await page.screenshot({ path: pre + "-input.png" });
 // réponse fausse volontaire
 await page.keyboard.type("1"); await page.keyboard.press("Enter"); await page.waitForTimeout(1500);
 await page.screenshot({ path: pre + "-wrong.png" });
 await page.click("text=J'ai compris"); await page.waitForTimeout(300);
-await page.click("text=Exercices").catch(() => {});
+await page.evaluate(() => { location.hash = "#/exercices"; }).catch(() => {});
 console.log(errors.length ? errors.join("\n") : "pas d'erreur JS");
 // QCM + fin de série en jouant les bonnes réponses via le DOM
 await page.goto(`http://localhost:${port}/#/exercices`); await page.waitForTimeout(300);

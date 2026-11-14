@@ -30,8 +30,8 @@ assert.match(await page.evaluate(() => window.__said.at(-1)), /Quarante-sept plu
 await page.waitForTimeout(400); await page.screenshot({ path: `${out}/dictee-reglages.png` });
 await page.locator(".icon-btn").click(); await page.waitForSelector(".home-hero");
 // dictée
-await page.locator("text=Exercices").first().click(); await page.waitForSelector(".fam-grid");
-await page.locator("text=Dictée").click(); await page.waitForSelector(".dict-play");
+await page.locator(".tab-b", { hasText: "Jouer" }).click(); await page.waitForSelector(".fam-grid");
+await page.locator('.game-tile[data-game="dictee"]').click(); await page.locator('.fam-card[data-theme="mix"]').click(); await page.waitForSelector(".dict-play"); // v0.17 : jeu puis thème
 await page.waitForTimeout(600);
 const said = await page.evaluate(() => window.__said.slice());
 assert.ok(said.length >= 2 && /\D/.test(said.at(-1)) && !/\d/.test(said.at(-1)), "la phrase de dictée est lue en toutes lettres : " + said.at(-1));

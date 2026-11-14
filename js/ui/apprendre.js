@@ -11,17 +11,24 @@ import { toast } from "./notify.js";
 import { session } from "./play.js";
 import { topbar } from "./common.js";
 
+// v0.17 : « Apprendre » est un onglet à part entière : toutes les fiches en tuiles sur deux colonnes (rangées par famille,
+// la couleur et le symbole de la famille sur chaque tuile), avec le compteur des astuces découvertes.
 export function apprendreScreen({ go }) {
   const s = store.state;
-  const groups = FAMILIES.map((fam) => {
-    const items = FICHES.filter((f) => f.fam === fam.id);
-    return h("div", { class: "learn-group" },
-      h("div", { class: "learn-fam", style: { "--fam": fam.color, "--fam-ink": fam.ink } }, h("span", { class: "fam-dot" }, fam.short), fam.name),
-      items.map((f) => h("button", { class: "learn-item", onclick: () => go("fiche/" + f.id) },
-        h("span", { class: "learn-emoji" }, f.emoji), h("span", { class: "grow" }, f.title), s.learn[f.id] ? h("span", { class: "learn-done" }, "✓") : h("span", { class: "learn-go" }, "›"))));
-  });
-  return { el: h("main", { class: "screen" }, topbar("Apprendre", () => go("exercices")),
-    h("div", { class: "screen-body" }, h("p", { class: "lead" }, "Une astuce, un exemple, et c'est parti !"), groups)) };
+  const seen = FICHES.filter((f) => s.learn[f.id]).length, pct = Math.round(100 * seen / FICHES.length);
+  const ordered = FAMILIES.flatMap((fam) => FICHES.filter((f) => f.fam === fam.id).map((f) => ({ f, fam })));
+  const tiles = ordered.map(({ f, fam }) => h("button", { class: "learn-item" + (s.learn[f.id] ? " seen" : ""), type: "button", style: { "--fam": fam.color, "--fam-ink": fam.ink },
+    "aria-label": `${f.title} (${fam.name})${s.learn[f.id] ? ", déjà vue" : ""}`, onclick: () => { sfx.tap(); go("fiche/" + f.id); } },
+    h("span", { class: "learn-top" }, h("span", { class: "learn-emoji", "aria-hidden": "true" }, f.emoji), h("span", { class: "fam-dot", "aria-hidden": "true" }, fam.short)),
+    h("span", { class: "learn-t" }, f.title),
+    s.learn[f.id] ? h("span", { class: "learn-done", "aria-hidden": "true" }, "✓") : null));
+  return { el: h("main", { class: "screen" }, topbar("Apprendre", null),
+    h("div", { class: "screen-body apprendre" },
+      h("div", { class: "card learn-head" },
+        h("div", { class: "row" }, h("span", { class: "learn-bulb", "aria-hidden": "true" }, "💡"),
+          h("div", { class: "grow" }, h("b", {}, `${seen} / ${FICHES.length} astuces découvertes`), h("p", {}, seen === FICHES.length ? "Tu les connais toutes, bravo ! Tu peux les revoir quand tu veux." : "Une astuce, un exemple, et c'est parti !"))),
+        h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: pct + "%" } }))),
+      h("div", { class: "learn-grid" }, tiles))) };
 }
 
 const fill = (el, ...kids) => el.replaceChildren(...kids.flat(Infinity).filter(Boolean));

@@ -23,7 +23,7 @@ await page.screenshot({ path: `${out}/flow-1-home.png` });
 // 2. défi du jour : on répond (saisie) à tout, puis « Retour » ramène à l'accueil
 await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("ccm2:settings") || "{}"); s.answer = "qcm"; localStorage.setItem("ccm2:settings", JSON.stringify(s)); });
 await page.reload(); await page.waitForSelector(".splash"); await (await page.locator(".splash .btn", { hasText: "Plus tard" }).count() ? page.locator(".splash .btn", { hasText: "Plus tard" }) : page.locator(".splash")).click(); await page.waitForSelector(".splash", { state: "detached" }); await page.waitForSelector(".home-hero");
-await tap("text=C'est parti");
+await tap('.tchip[data-chip="daily"]'); // v0.17 : la pastille « Défi du jour » de l'accueil
 await page.waitForSelector(".choice");
 await page.waitForTimeout(12500); // hésitation : le coup de pouce doit apparaître
 await page.waitForSelector(".nudge-btn", { timeout: 2000 });
@@ -42,13 +42,38 @@ await page.screenshot({ path: `${out}/flow-3-after-daily.png` });
 // 3. barre d'onglets (v0.13) : chaque onglet ouvre son écran, l'onglet actif est allumé ; pas de barre pendant une partie
 const tab = (label) => page.locator(".tab-b", { hasText: label }).click();
 assert.ok(!(await page.locator(".next-l").innerText()).includes("Défi du jour"), "défi fait : « Que faire maintenant ? » propose autre chose");
-await tab("Exercices"); await page.waitForSelector(".fam-grid");
-assert.equal(await page.locator(".tab-b.on").innerText(), "🎯\nExercices");
-await page.screenshot({ path: `${out}/flow-4-exercices.png` });
-await page.locator("text=Apprendre : les fiches").click(); await page.waitForSelector(".learn-item");
-assert.match(await page.locator(".tab-b.on").innerText(), /Exercices/, "Apprendre est rangé sous Exercices");
-await tab("Créatures"); await page.waitForSelector(".pets");
-await tab("Trophées"); await page.waitForSelector(".trophy");
+// v0.17 : l'accueil tient sur UN écran (rien à faire défiler) ; les missions se déplient depuis leur pastille
+assert.deepEqual(await page.locator(".tab-l").allInnerTexts(), ["Accueil", "Jouer", "Apprendre", "Collection", "Boutique"]);
+await page.locator(".nb-x").click({ timeout: 800 }).catch(() => {}); await page.waitForTimeout(400);
+const fits = await page.locator(".home .screen-body").evaluate((e) => e.scrollHeight <= e.clientHeight + 1);
+assert.ok(fits, "l'accueil tient sur un écran de téléphone");
+assert.equal(await page.locator(".today-panel.open").count(), 0, "missions repliées au départ");
+assert.match(await page.locator('.tchip[data-chip="daily"]').innerText(), /Fait/);
+await tap('.tchip[data-chip="missions"]'); await page.waitForSelector(".today-panel.open .mission");
+assert.equal(await page.locator(".today-panel .mission").count(), 3, "3 missions");
+await page.screenshot({ path: `${out}/flow-3b-missions.png` });
+await tap('.tchip[data-chip="week"]'); await page.waitForSelector(".today-panel.open .week-days");
+await tap('.tchip[data-chip="week"]'); assert.equal(await page.locator(".today-panel.open").count(), 0, "un second appui replie");
+// « Jouer » : 1. le jeu (tuiles), 2. le thème (une seule grille) ; les réglages seulement pour la série et la dictée
+await tab("Jouer"); await page.waitForSelector(".fam-grid");
+assert.equal(await page.locator(".tab-b.on").innerText(), "🎮\nJouer");
+assert.equal(await page.locator(".game-tile").count(), 3); assert.equal(await page.locator(".theme-grid .fam-card").count(), 9, "mélange + 8 familles");
+assert.equal(await page.locator(".game-tile.on").getAttribute("data-game"), "serie");
+assert.equal(await page.locator(".play-opts").count(), 1);
+await tap('.game-tile[data-game="course"]'); assert.equal(await page.locator(".play-opts").count(), 0, "pas de réglages pour la course");
+await tap('.game-tile[data-game="serie"]'); await page.waitForSelector(".play-opts");
+await page.screenshot({ path: `${out}/flow-4-jouer.png` });
+await tab("Apprendre"); await page.waitForSelector(".learn-item");
+assert.match(await page.locator(".tab-b.on").innerText(), /Apprendre/, "Apprendre est un onglet à part");
+assert.equal(await page.locator(".learn-item").count(), 17);
+await page.locator(".learn-item").first().click(); await page.waitForSelector(".fiche-head");
+assert.match(await page.locator(".tab-b.on").innerText(), /Apprendre/, "une fiche reste sous l'onglet Apprendre");
+await tap(".icon-btn"); await page.waitForSelector(".learn-grid");
+await tab("Collection"); await page.waitForSelector(".pets");
+await page.locator(".sub-tabs .seg-b", { hasText: "Trophées" }).click(); await page.waitForSelector(".trophy");
+assert.match(await page.locator(".tab-b.on").innerText(), /Collection/, "les trophées sont rangés dans Collection");
+await page.locator(".sub-tabs .seg-b", { hasText: "Carnet" }).click(); await page.waitForSelector(".carnet");
+await page.locator(".sub-tabs .seg-b", { hasText: "Créatures" }).click(); await page.waitForSelector(".pets");
 await tab("Boutique"); await page.waitForSelector(".items");
 await tab("Accueil"); await page.waitForSelector(".home-hero");
 // 4. l'objectif sous la scène lance une série de la bonne famille ; fin de série « Encore 10 additions et Braise évolue ! » + Continuer
@@ -71,7 +96,7 @@ await page.screenshot({ path: `${out}/flow-5-near.png` });
 await page.locator(".near .btn", { hasText: "Continuer" }).click(); await page.waitForSelector(".keypad");
 assert.match(await page.locator(".q-fam").innerText(), /Additions/, "Continuer relance une série de la même famille");
 await tap(".icon-btn"); await page.waitForSelector(".home-hero");
-// 5. v0.14.1 : calculs à revoir visibles — pastille « 4 » sur l'onglet Exercices, carte en haut de l'écran, série « à revoir »
+// 5. v0.14.1 : calculs à revoir visibles — pastille « 4 » sur l'onglet Jouer, ligne en haut de l'écran (v0.17), série « à revoir »
 assert.equal(await page.locator(".tab-badge").count(), 0, "pas de pastille sans calcul à revoir");
 const tabFont = await page.locator(".tab-b").first().evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
 assert.ok(tabFont >= 12.5, "libellés des onglets ≈ .8rem : " + tabFont);
@@ -80,12 +105,12 @@ await page.evaluate(async () => {
   store.update((s) => { let n = 0; for (let i = 0; i < 40 && n < 4; i++) { const p = generate("sub", 1); if (s.review[p.key]) continue; s.review[p.key] = { k: p.k, p: p.p, box: 0, due: addDays(toKey(), -1), miss: 1, done: false }; n++; } });
   location.hash = "#/exercices";
 });
-await page.waitForSelector(".review-card");
+await page.waitForSelector(".review-row");
 assert.equal(await page.locator(".tab-badge").innerText(), "4");
-assert.match(await page.locator(".tab-b", { hasText: "Exercices" }).getAttribute("aria-label"), /4 calculs à revoir/);
-assert.match(await page.locator(".review-card h2").innerText(), /Calculs à revoir \(4\)/);
+assert.match(await page.locator(".tab-b", { hasText: "Jouer" }).getAttribute("aria-label"), /4 calculs à revoir/);
+assert.match(await page.locator(".review-row b").innerText(), /Calculs à revoir \(4\)/);
 await page.screenshot({ path: `${out}/flow-6-a-revoir.png` });
-await page.locator(".review-card .btn").click(); await page.waitForSelector(".q-tag");
+await page.locator(".review-row").click(); await page.waitForSelector(".q-tag");
 assert.match(await page.locator(".q-tag").innerText(), /Un calcul à revoir/);
 assert.match(await page.locator(".q-fam").innerText(), /Soustractions/);
 assert.equal(await page.locator(".pill").first().innerText(), "1 / 4", "une série faite seulement des 4 calculs à revoir");

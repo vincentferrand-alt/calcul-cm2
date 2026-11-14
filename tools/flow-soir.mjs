@@ -47,7 +47,7 @@ await page.clock.runFor(2100);
 await page.locator(".home .sc-tap").click(); await page.waitForTimeout(50);
 assert.notEqual(await page.locator(".home .sc-bubble").innerText(), first, "après 2 s : nouvelle phrase");
 // album → page de la créature → ses décors → carnet de rêves
-await page.locator(".tab-b", { hasText: "Créatures" }).click(); await page.waitForSelector(".pet-card");
+await page.locator(".tab-b", { hasText: "Collection" }).click(); await page.waitForSelector(".pet-card");
 await page.locator(".pet-card").first().click(); await page.waitForSelector(".form-row");
 assert.equal(await page.locator(".form-row.locked").count(), 2, "formes 3 et 4 en silhouette");
 await page.locator(".form-row:not(.locked)").first().click(); await page.waitForSelector(".form-row.sel");
@@ -55,8 +55,8 @@ assert.match(await page.locator(".form-row.sel").innerText(), /Dragonneau/);
 await page.screenshot({ path: `${out}/soir-3-fiche-creature.png` });
 await page.locator("text=Ses décors").click(); await page.waitForSelector(".shop-who");
 assert.match(await page.locator(".shop-who").innerText(), /Braise/);
-await page.locator(".tab-b", { hasText: "Créatures" }).click(); await page.waitForSelector(".dream-link");
-await page.locator(".dream-link").click(); await page.waitForSelector(".dream");
+await page.locator(".tab-b", { hasText: "Collection" }).click(); await page.waitForSelector(".sub-tabs");
+await page.locator(".sub-tabs .seg-b", { hasText: "Carnet" }).click(); await page.waitForSelector(".dream"); // v0.17 : le carnet est un sous-onglet
 assert.equal(await page.locator(".dream").count(), 2, "deux cartes : ce soir et l'ancienne");
 assert.equal(await page.locator(".dream-calc").first().innerText(), `${q.replace(" = ?", "")} ${(await page.evaluate(() => JSON.parse(localStorage.getItem("ccm2:state")).eve["2026-11-14"].eq)) ? "=" : ":"} ${st.a}`.replace(/\s+/g, " "));
 await page.screenshot({ path: `${out}/soir-4-carnet.png` });

@@ -6,6 +6,7 @@ import { sfx } from "../audio.js";
 import { CREATURES, STAGE_XP, creatureById } from "../creatures.js";
 import { famById } from "../generator.js";
 import { topbar } from "./common.js";
+import { collectionTabs } from "./tabs.js";
 import { scenePick, setPick } from "../shop.js";
 import { creatureArt } from "./art.js";
 import { sceneEl } from "./scene.js";
@@ -55,12 +56,12 @@ function grid(go) {
       h("span", { class: "bar small" }, h("span", { class: "bar-fill", style: { width: g.pct + "%" } })),
       h("span", { class: "pet-fam" }, famPill(c.fam, "tiny"), st ? c.forms[pick.st - 1] : f.name));
   });
-  return [topbar("Mes créatures", null),
+  // v0.17 : « Collection » = créatures, carnet de rêves et trophées en sous-onglets (le carnet n'a plus besoin de sa grande carte).
+  const memo = nights + runs;
+  return [topbar("Ma collection", null),
     h("div", { class: "screen-body" },
-      h("div", { class: "album-head" },
-        h("div", { class: "card center album-count" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Touche une créature pour voir son histoire.")),
-        h("button", { class: "card dream-link", type: "button", onclick: () => { sfx.tap(); go("carnet"); } },
-          h("span", { class: "dream-moon", "aria-hidden": "true" }, "🌙"), h("span", { class: "grow" }, h("b", {}, "Carnet de rêves"), h("small", {}, nights + runs ? [nights ? `${nights} soir${nights > 1 ? "s" : ""}` : null, runs ? `${runs} course${runs > 1 ? "s" : ""}` : null].filter(Boolean).join(" · ") : "Les souvenirs des énigmes du soir et des courses")), h("span", { class: "nb-go" }, "›"))),
+      collectionTabs("album", go),
+      h("p", { class: "album-line" }, h("b", {}, `🥚 ${nb} / ${CREATURES.length} créatures`), memo ? ` · 🌙 ${memo} souvenir${memo > 1 ? "s" : ""}` : "", h("br"), "Touche une créature pour voir son histoire."),
       h("div", { class: "pets" }, cards))];
 }
 

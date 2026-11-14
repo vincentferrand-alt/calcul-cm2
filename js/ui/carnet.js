@@ -10,6 +10,7 @@ import { memoryCards } from "../dreams.js";
 import { homeCreature } from "../goal.js";
 import { sceneEl } from "./scene.js";
 import { topbar } from "./common.js";
+import { collectionTabs } from "./tabs.js";
 import { famPill } from "./badges.js";
 import { carnetFrame } from "../shop.js";
 
@@ -29,7 +30,7 @@ export function carnetScreen({ go, args = [] }) {
   const fallback = homeCreature(s, store.settings.companion).id;
   let filter = args[0] === "courses" ? "run" : args[0] === "soirs" ? "eve" : "all";
   const body = h("div", { class: "screen-body carnet" });
-  const root = h("main", { class: "screen" }, topbar("Carnet de rêves", () => go("album")), body);
+  const root = h("main", { class: "screen" }, topbar("Ma collection", null), body); // v0.17 : le carnet est un sous-onglet de « Collection »
   let onKey = null;
   function draw() {
     if (onKey) document.removeEventListener("keydown", onKey);
@@ -39,7 +40,7 @@ export function carnetScreen({ go, args = [] }) {
     const seg = all.some((d) => d.type === "run") ? h("div", { class: "seg dream-filter" }, FILTERS.map(([id, label]) =>
       h("button", { class: "seg-b" + (id === filter ? " on" : ""), type: "button", "aria-pressed": id === filter ? "true" : "false", onclick: () => { filter = id; sfx.tap(); draw(); } }, label))) : null;
     if (!cards.length) {
-      body.replaceChildren(...[seg, h("div", { class: "card center" }, h("div", { class: "dream-empty", "aria-hidden": "true" }, filter === "run" ? "🏃" : "🌙"),
+      body.replaceChildren(...[collectionTabs("carnet", go), seg, h("div", { class: "card center" }, h("div", { class: "dream-empty", "aria-hidden": "true" }, filter === "run" ? "🏃" : "🌙"),
         h("h2", {}, "Ton carnet t'attend"),
         h("p", {}, filter === "run" ? "Chaque course des réponses terminée ajoute ici une photo-souvenir : ta créature en plein saut dans son décor."
           : "Chaque soir, à partir de 18 h, ta créature te pose une petite énigme avant de dormir. Chaque énigme faite ajoute ici une carte souvenir : ta créature endormie dans son décor, la date et le calcul. Les courses des réponses y ajoutent aussi leurs photos !"))].filter(Boolean));
@@ -69,7 +70,7 @@ export function carnetScreen({ go, args = [] }) {
       h("button", { class: "icon-round", type: "button", "aria-label": "Carte suivante", onclick: () => to(at() + 1) }, "›"));
     const nE = cards.filter((d) => d.type === "eve").length, nR = cards.length - nE;
     const lead = [nE ? `${nE} soir${nE > 1 ? "s" : ""} de rêves` : null, nR ? `${nR} course${nR > 1 ? "s" : ""}` : null].filter(Boolean).join(" et ");
-    body.replaceChildren(...[seg, h("p", { class: "lead center" }, `${cap(lead)}, du plus récent au plus ancien`), strip, nav,
+    body.replaceChildren(...[collectionTabs("carnet", go), seg, h("p", { class: "lead center" }, `${cap(lead)}, du plus récent au plus ancien`), strip, nav,
       h("div", { class: "kbd-hint" }, "Clavier : ← → pour feuilleter")].filter(Boolean));
     onKey = (e) => { if (e.key === "ArrowLeft") { e.preventDefault(); to(at() - 1); } else if (e.key === "ArrowRight") { e.preventDefault(); to(at() + 1); } };
     document.addEventListener("keydown", onKey);

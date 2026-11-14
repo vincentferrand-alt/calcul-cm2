@@ -2,6 +2,7 @@ import { h, svgEl } from "../dom.js";
 import { store } from "../store.js";
 import { LINES, TIER_NAMES, TIER_COLORS, nextTier, earnedTier } from "../trophies.js";
 import { topbar } from "./common.js";
+import { collectionTabs } from "./tabs.js";
 
 export function medalSVG(tier) {
   const c = tier ? TIER_COLORS[tier - 1] : "#7b8db3";
@@ -23,6 +24,6 @@ export function trophiesScreen({ go }) {
         nt ? h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: pct + "%" } })) : null,
         nt ? h("div", { class: "trophy-count" }, `${Math.min(v, nt.target)} / ${nt.target}`) : null));
   });
-  return { el: h("main", { class: "screen" }, topbar("Trophées", null),
-    h("div", { class: "screen-body" }, h("div", { class: "card center" }, h("div", { class: "big-num" }, `🏆 ${total}`), h("p", {}, total === 1 ? "trophée gagné" : "trophées gagnés")), cards)) };
+  return { el: h("main", { class: "screen" }, topbar("Ma collection", null),
+    h("div", { class: "screen-body" }, collectionTabs("trophees", go), h("div", { class: "card center" }, h("div", { class: "big-num" }, `🏆 ${total}`), h("p", {}, total === 1 ? "trophée gagné" : "trophées gagnés")), cards)) };
 }

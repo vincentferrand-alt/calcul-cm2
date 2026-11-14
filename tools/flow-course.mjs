@@ -52,14 +52,15 @@ async function answerKey(page, ok = true) {
   await waitPass(page);
 }
 const toCourse = async (page, fam = null) => {
-  await page.locator(".tab-b", { hasText: "Exercices" }).click(); await page.waitForSelector(".course-card");
-  if (fam) await page.locator(".course-fam", { hasText: fam }).click(); else await page.locator(".course-mix").click();
+  await page.locator(".tab-b", { hasText: "Jouer" }).click(); await page.waitForSelector(".game-grid"); // v0.17 : le jeu, puis le thème
+  await page.locator('.game-tile[data-game="course"]').click();
+  if (fam) await page.locator(".theme-grid .fam-card", { hasText: fam }).click(); else await page.locator('.fam-card[data-theme="mix"]').click();
   await page.waitForSelector(".cr-track"); await page.clock.runFor(300);
 };
 
 // ---------- téléphone, jour ----------
 const page = await open({ width: 384, height: 824 }, "2026-11-14T10:00:00");
-await page.locator(".tab-b", { hasText: "Exercices" }).click(); await page.waitForSelector(".course-card");
+await page.locator(".tab-b", { hasText: "Jouer" }).click(); await page.waitForSelector(".game-grid"); await page.locator('.game-tile[data-game="course"]').click();
 await page.waitForTimeout(450); await page.screenshot({ path: `${out}/course-0-exercices.png` });
 await toCourse(page);
 assert.equal(await page.locator(".tabbar").count(), 0, "pas de barre d'onglets pendant la course");
