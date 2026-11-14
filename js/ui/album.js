@@ -62,7 +62,7 @@ function albumBody(go, redraw) {
       shown ? h("button", { class: "pet-pick" + (store.settings.companion === c.id ? " on" : ""), type: "button", onclick: () => { store.set("companion", store.settings.companion === c.id ? null : c.id); redraw(); } },
         store.settings.companion === c.id ? "⭐ Mon compagnon" : "☆ Choisir comme compagnon") : null);
   });
-  return h("div", {}, topbar("Mes créatures", () => go("")),
+  return h("div", {}, topbar("Mes créatures", null),
     h("div", { class: "screen-body" },
       h("div", { class: "card center" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Chaque créature grandit avec les bonnes réponses de SA famille de calculs (le dragon avec les additions, le chat avec les soustractions…), dans n'importe quel mode. Touche les points pour choisir sa forme.")),
       h("div", { class: "pets" }, cards)));

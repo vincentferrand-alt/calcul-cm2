@@ -20,7 +20,7 @@ export function apprendreScreen({ go }) {
       items.map((f) => h("button", { class: "learn-item", onclick: () => go("fiche/" + f.id) },
         h("span", { class: "learn-emoji" }, f.emoji), h("span", { class: "grow" }, f.title), s.learn[f.id] ? h("span", { class: "learn-done" }, "✓") : h("span", { class: "learn-go" }, "›"))));
   });
-  return { el: h("main", { class: "screen" }, topbar("Apprendre", () => go("")),
+  return { el: h("main", { class: "screen" }, topbar("Apprendre", () => go("exercices")),
     h("div", { class: "screen-body" }, h("p", { class: "lead" }, "Une astuce, un exemple, et c'est parti !"), groups)) };
 }
 

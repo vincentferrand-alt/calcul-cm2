@@ -23,6 +23,6 @@ export function trophiesScreen({ go }) {
         nt ? h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: pct + "%" } })) : null,
         nt ? h("div", { class: "trophy-count" }, `${Math.min(v, nt.target)} / ${nt.target}`) : null));
   });
-  return { el: h("main", { class: "screen" }, topbar("Trophées", () => go("")),
+  return { el: h("main", { class: "screen" }, topbar("Trophées", null),
     h("div", { class: "screen-body" }, h("div", { class: "card center" }, h("div", { class: "big-num" }, `🏆 ${total}`), h("p", {}, total === 1 ? "trophée gagné" : "trophées gagnés")), cards)) };
 }

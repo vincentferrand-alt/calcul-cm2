@@ -68,11 +68,13 @@ export function buildSession(s, opts, rng = Math.random, date) {
   const count = opts.count || 10, list = [], keys = new Set();
   if (!opts.noReview) {
     const kindOk = (k) => (!opts.kinds || opts.kinds.includes(k)) && fams.includes(KINDS[k].fam);
-    const due = shuffle(dueReviews(s, date).filter((r) => kindOk(r.k)), rng).slice(0, Math.round(count * 0.25));
+    // « Calculs à revoir » (v0.13) : la série n'est faite QUE de calculs à revoir (s'il y en a) ; sinon environ 1 sur 4.
+    const due = shuffle(dueReviews(s, date).filter((r) => kindOk(r.k)), rng).slice(0, opts.reviewOnly ? count : Math.round(count * 0.25));
     for (const r of due) { const p = build(r.k, r.p); if (!keys.has(p.key)) { keys.add(p.key); list.push({ ...p, lvl: s.fam[p.fam]?.lvl || 1, review: true }); } }
   }
   const order = shuffle(fams, rng); let i = 0, guard = 0;
-  while (list.length < count && guard++ < count * 40) {
+  const target = opts.reviewOnly && list.length ? list.length : count;
+  while (list.length < target && guard++ < count * 40) {
     const fam = order[i++ % order.length];
     const own = s.fam[fam]?.lvl || 1;
     // Défi du jour : il démarre doucement (les premiers calculs sont d'un cran plus faciles que son niveau).

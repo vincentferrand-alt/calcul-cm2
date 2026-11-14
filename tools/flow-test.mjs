@@ -39,9 +39,37 @@ await page.waitForSelector(".result", { timeout: 5000 });
 await tap("text=Retour");
 await page.waitForSelector(".home-hero", { timeout: 3000 });
 await page.screenshot({ path: `${out}/flow-3-after-daily.png` });
-// 3. exercices : la flèche de retour
-await tap("text=Exercices"); await page.waitForSelector(".fam-grid");
+// 3. barre d'onglets (v0.13) : chaque onglet ouvre son écran, l'onglet actif est allumé ; pas de barre pendant une partie
+const tab = (label) => page.locator(".tab-b", { hasText: label }).click();
+assert.ok(!(await page.locator(".next-l").innerText()).includes("Défi du jour"), "défi fait : « Que faire maintenant ? » propose autre chose");
+await tab("Exercices"); await page.waitForSelector(".fam-grid");
+assert.equal(await page.locator(".tab-b.on").innerText(), "🎯\nExercices");
 await page.screenshot({ path: `${out}/flow-4-exercices.png` });
+await page.locator("text=Apprendre : les fiches").click(); await page.waitForSelector(".learn-item");
+assert.match(await page.locator(".tab-b.on").innerText(), /Exercices/, "Apprendre est rangé sous Exercices");
+await tab("Créatures"); await page.waitForSelector(".pets");
+await tab("Trophées"); await page.waitForSelector(".trophy");
+await tab("Boutique"); await page.waitForSelector(".items");
+await tab("Accueil"); await page.waitForSelector(".home-hero");
+// 4. l'objectif sous la scène lance une série de la bonne famille ; fin de série « Encore 10 additions et Braise évolue ! » + Continuer
+await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("ccm2:state")); s.fam.add = { ...(s.fam.add || { n: 40, lvl: 1, maxLvl: 1, recent: [] }), xp: 40 }; localStorage.setItem("ccm2:state", JSON.stringify(s));
+  const st = JSON.parse(localStorage.getItem("ccm2:settings") || "{}"); st.answer = "input"; localStorage.setItem("ccm2:settings", JSON.stringify(st)); });
+await page.reload(); await page.waitForSelector(".splash"); await page.locator(".splash").click(); await page.waitForSelector(".splash", { state: "detached" });
+assert.match(await page.locator(".goal-t").innerText(), /Prochaine évolution de Braise : encore 10 additions/);
+await page.locator(".goal").click(); await page.waitForSelector(".keypad");
+assert.equal(await page.locator(".tabbar").count(), 0, "pas de barre d'onglets pendant une partie");
+assert.match(await page.locator(".q-fam").innerText(), /Additions/);
+for (let i = 0; i < 80; i++) { // on répond 0 (toujours faux) : Braise ne grandit pas, il reste à 10 bonnes réponses
+  if (await page.locator(".result").count()) break;
+  if (await page.locator(".wrong-zone").count()) { await tap(".wrong-zone .btn.green"); continue; }
+  if (await page.locator(".key-ok").count()) { await page.locator(".key", { hasText: /^0$/ }).click(); await page.locator(".key-ok").click(); }
+  await page.waitForTimeout(150);
+}
+await page.waitForSelector(".near", { timeout: 4000 });
+assert.equal(await page.locator(".near-t").innerText(), "Encore 10 additions et Braise évolue !");
+await page.screenshot({ path: `${out}/flow-5-near.png` });
+await page.locator(".near .btn", { hasText: "Continuer" }).click(); await page.waitForSelector(".keypad");
+assert.match(await page.locator(".q-fam").innerText(), /Additions/, "Continuer relance une série de la même famille");
 await tap(".icon-btn"); await page.waitForSelector(".home-hero");
 console.log(errors.length ? "ERREURS : " + errors.join("\n") : "parcours OK, pas d'erreur JS");
 await browser.close(); srv.close();

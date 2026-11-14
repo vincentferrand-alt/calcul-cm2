@@ -50,7 +50,7 @@ export function boutiqueScreen({ go }) {
     const tabs = h("div", { class: "seg kinds" }, TABS.map((t) => h("button", { class: "seg-b" + (t.id === tab ? " on" : ""), type: "button",
       onclick: () => { tab = t.id; trying = null; sfx.tap(); draw(); } }, h("b", {}, t.emoji), t.name)));
     const cards = tab === "st" ? stageCards(s, pick) : itemCards(s, pick, bal);
-    root.replaceChildren(topbar("Boutique de décors", () => go(""), h("span", { class: "pill big-pill" }, `⭐ ${bal}`)),
+    root.replaceChildren(topbar("Boutique de décors", null, h("span", { class: "pill big-pill" }, `⭐ ${bal}`)),
       h("div", { class: "screen-body" }, card, tabs, h("div", { class: "items" }, cards),
         h("p", { class: "muted center small", style: { color: "#dff3ff" } }, "Tu gagnes des étoiles à chaque série de calculs : ★ 1 à 3 par série. Le ciel suit l'heure : jour, soir et nuit !")));
   }

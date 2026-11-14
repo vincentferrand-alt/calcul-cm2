@@ -45,6 +45,12 @@ await imac.page.waitForTimeout(2000);
 const a = JSON.parse(docs.get(ID).data), nTro = Object.keys(a.tro).length;
 assert.ok(nTro >= before, "rien de perdu en ligne");
 assert.equal(await trophies(imac.page), nTro, "l'iMac a récupéré les trophées du téléphone");
+// v0.13 : ce qui arrive de l'autre appareil est annoncé dans UN bandeau en bas (au-dessus des onglets), le nuage passe à ✓
+await imac.page.waitForSelector(".news-banner", { timeout: 4000 });
+assert.equal(await imac.page.locator(".news-banner").count(), 1, "un seul bandeau");
+assert.equal(await imac.page.locator(".toast-item").count(), 0, "plus de pile de messages en haut");
+await imac.page.waitForFunction(() => document.querySelector(".pill.cloud") && document.querySelector(".pill.cloud").textContent.includes("✓"), null, { timeout: 4000 });
+await imac.page.screenshot({ path: `${out}/sync-imac-banner.png` });
 // le téléphone récupère à son tour ce que l'iMac a apporté
 await phone.page.evaluate(() => document.dispatchEvent(new Event("visibilitychange"))); // (visible : programme une synchro)
 await phone.page.goto(phone.page.url().split("#")[0] + "#/reglages"); await phone.page.waitForSelector("text=Synchronisation");

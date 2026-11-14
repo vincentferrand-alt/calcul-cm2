@@ -10,7 +10,8 @@ import { missionText } from "../missions.js";
 import { keypad } from "./keypad.js";
 import { toast, confetti } from "./notify.js";
 import { creatureById, STAGE_NAMES } from "../creatures.js";
-import { creatureCard } from "./album.js";
+import { creatureCard, creatureArt } from "./album.js";
+import { nearEvolution } from "../goal.js";
 import { playEvolutions } from "./evolve.js";
 import { iconBtn } from "./common.js";
 import { nudgeLines, NUDGE_DELAY, hintSpeech } from "../hints.js";
@@ -137,7 +138,7 @@ export function playScreen({ go }) {
     const run = ok ? S.run + 1 : 0;
     store.update((s) => { res = afterAnswer(s, { prob, ok, hinted: S.hinted, review: !!prob.review, run, date, mode: opts.mode, adapt: opts.adapt !== false }); });
     const ev = res.ev; S.tro.push(...res.trophies); S.mis.push(...res.missions); S.cre.push(...res.creatures);
-    res.creatures.forEach((e) => { sfx.hatch(); confetti(); toast(e.from === 0 ? `${creatureById(e.id).name} est né !` : `${creatureById(e.id).name} évolue : ${creatureById(e.id).forms[e.to - 1]} !`, { icon: "🥚", sound: false }); });
+    res.creatures.forEach((e) => { sfx.hatch(); confetti(); toast(e.from === 0 ? `${creatureById(e.id).name} est né !` : `${creatureById(e.id).name} évolue : ${creatureById(e.id).forms[e.to - 1]} !`, { icon: "🥚", sound: false, discreet: true }); });
     if (ev.levelUp) S.up.push(ev.levelUp);
     if (ev.mastered) S.mastered++;
     if (!prob.retry) { S.n++; if (ok) S.ok++; }
@@ -194,6 +195,7 @@ export function playScreen({ go }) {
     if (S.best >= 3) notes.push(`🔥 Meilleure série : ${S.best} bonnes réponses d'affilée`);
     if (r.perfect) notes.push("💯 Zéro faute !");
     if (opts.daily && r.streak) notes.push(`🔥 Série : ${r.streak.current} jour${r.streak.current > 1 ? "s" : ""}`);
+    const near = nearCard();
     root.replaceChildren(h("div", { class: "screen-body result" },
       h("h1", { class: "result-title" }, titre),
       stars,
@@ -202,10 +204,26 @@ export function playScreen({ go }) {
       S.tro.length ? h("div", { class: "card" }, h("h2", {}, "🏆 Nouveau" + (S.tro.length > 1 ? "x" : "") + " trophée" + (S.tro.length > 1 ? "s" : "") + " !"), S.tro.map((t) => h("p", { class: "note" }, trophyLabel(t.line, t.tier)))) : null,
       S.cre.length ? h("div", { class: "card center" }, h("h2", {}, S.cre.some((e) => e.from === 0) ? "🥚 Une créature est née !" : "🌟 Ta créature évolue !"), S.cre.map((e) => creatureCard(e))) : null,
       S.mis.length ? h("div", { class: "card" }, h("h2", {}, "🧭 Mission accomplie !"), S.mis.map((m) => h("p", { class: "note" }, missionText(m, date)))) : null,
-      h("button", { class: "btn green big", onclick: () => go("jouer", true) }, "Rejouer (nouveaux calculs)"),
+      near,
+      h("button", { class: "btn big " + (near ? "light" : "green"), onclick: () => go("jouer", true) }, "Rejouer (nouveaux calculs)"),
       h("button", { class: "btn ghost big", onclick: () => go(opts.back ?? "exercices") }, "Retour")));
     // Éclosion / évolution pendant la série : la transformation se joue maintenant, par-dessus le résultat.
     if (S.cre.length) playEvolutions(S.cre);
+  }
+
+  // v0.13 : une créature (des familles jouées) est à ≤ 10 bonnes réponses de grandir → « Encore 5 additions et Braise évolue ! »
+  function nearCard() {
+    const near = nearEvolution(store.state, opts.families && opts.families !== "mix" ? opts.families : "mix");
+    if (!near) return null;
+    const xp = store.state.fam[near.fam] ? store.state.fam[near.fam].xp : 0;
+    const again = () => {
+      session.opts = { families: [near.fam], count: store.settings.count || 10, mode: opts.mode === "dictee" ? "dictee" : store.settings.answer === "qcm" ? "qcm" : "input", back: opts.back ?? "exercices" };
+      go("jouer", true);
+    };
+    return h("div", { class: "card near", style: { "--fam": famById(near.fam).color } },
+      h("div", { class: "row" }, h("div", { class: "near-art" }, creatureArt(near.id, near.stage, xp, "near")),
+        h("div", { class: "grow" }, h("p", { class: "near-t" }, near.text), h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: near.pct + "%" } })))),
+      h("button", { class: "btn big green", type: "button", onclick: again }, "Continuer ›"));
   }
 
   const onKey = (e) => {

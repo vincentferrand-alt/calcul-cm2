@@ -12,3 +12,6 @@ export const THEMES = [
 ];
 export const themeFor = (date) => THEMES[dayNumber(date) % THEMES.length];
 export const DAILY_COUNT = 20;
+// v0.13 : l'icône du défi = les symboles de ses familles en pastilles colorées (l'ancien « ✖️ » ressemblait à une erreur).
+// Le grand mélange montre les 4 opérations.
+export const themeFams = (t) => (t.families === "mix" ? ["add", "sub", "mul", "div"] : t.families).slice(0, 4);
