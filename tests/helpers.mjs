@@ -75,6 +75,9 @@ export function randState(rng) {
   s.decor = { owned: {}, pick: {} };
   for (const it of ["bg_lac", "wx_neige", "fx_aura", "pet_lapin", "bg_nuit"]) if (rng() < 0.5) s.decor.owned[it] = `2026-11-1${R(9)}`;
   for (const c of ["add", "sub"]) if (rng() < 0.6) s.decor.pick[c] = { bg: { id: rng() < 0.5 ? "bg_lac" : "bg_prairie", t: 2000 + R(1000) }, wx: { id: rng() < 0.5 ? "wx_neige" : null, t: 2000 + R(1000) }, st: { id: 1 + R(4), t: 2000 + R(1000) } };
+  for (const it of ["sky_lune", "obj_banc", "obj_lanterne", "frame_or", "season_noel"]) if (it === "sky_lune" || it === "obj_banc" || rng() < 0.5) s.decor.owned[it] = `2026-12-1${R(9)}`; // v0.16
+  if (rng() < 0.9) s.decor.pick.add = { ...(s.decor.pick.add || {}), sky: { id: "sky_lune", t: 3000 + R(1000) }, o1: { id: "obj_banc", t: 3000 + R(1000) }, o2: { id: rng() < 0.5 ? "obj_lanterne" : null, t: 3000 + R(1000) } };
+  if (rng() < 0.9) s.decor.pick._carnet = { frame: { id: "frame_or", t: 3000 + R(1000) } };
   s.eve = {}; for (let i = 0; i < 3; i++) if (rng() < 0.5) s.eve[`2026-11-${String(1 + R(28)).padStart(2, "0")}`] = { ok: rng() < 0.5, n: 1 + R(2) };
   s.run = {}; for (let i = 0; i < 3; i++) if (rng() < 0.5) s.run[`2026-11-${String(1 + R(28)).padStart(2, "0")}T1${R(10)}:${String(R(60)).padStart(2, "0")}`] = { c: rng() < 0.5 ? "add" : "sub", st: R(5), bg: "bg_prairie", ok: R(11), n: 10, fam: "mix" }; // v0.15
   if (rng() < 0.5) s.futureKey = { n: R(9), list: [R(3), 3 + R(3)] }; // clé inconnue d'une version future

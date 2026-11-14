@@ -2,11 +2,18 @@
 // Tout est dessiné ici, en SVG/CSS original (aucune image externe). Les IDENTIFIANTS sont stables : ce sont les clés de la
 // sauvegarde (decor.owned / decor.pick). On peut en AJOUTER ; on ne renomme ni ne supprime jamais un id existant.
 
+import { SEASON_LANDS, SEASON_SKY, extraIcon } from "./decor-extra.js";
+export { skyHTML, objectHTML, objectWidth, SEASON_GROUND } from "./decor-extra.js";
+
 export const KINDS = [
   { id: "bg", name: "Fonds", emoji: "🏞️" },
   { id: "wx", name: "Météo", emoji: "🌦️" },
   { id: "fx", name: "Effets", emoji: "✨" },
   { id: "pet", name: "Animaux", emoji: "🦋" },
+  // v0.16 : nouveaux emplacements (un ciel ; deux objets o1/o2 posés au sol ; un cadre pour tout le carnet)
+  { id: "sky", name: "Ciel", emoji: "🌈" },
+  { id: "obj", name: "Objets", emoji: "🏮" },
+  { id: "frame", name: "Cadres", emoji: "🖼️" },
 ];
 export const DEFAULT_BG = "bg_prairie";
 
@@ -37,10 +44,68 @@ export const DECOR = [
   { id: "pet_lapin", kind: "pet", name: "Petit lapin", price: 8 },
   { id: "pet_poissons", kind: "pet", name: "Poissons volants", price: 9 },
   { id: "pet_chouette", kind: "pet", name: "Chouette", price: 11 },
+  // v0.16 — rayon « Ciel et lumières » : un par créature, il s'ajoute au ciel du jour / soir / nuit.
+  { id: "sky_aurore", kind: "sky", name: "Aurore boréale", price: 25 },
+  { id: "sky_arcenciel", kind: "sky", name: "Arc-en-ciel", price: 28 },
+  { id: "sky_filantes", kind: "sky", name: "Pluie d'étoiles filantes", price: 32 },
+  { id: "sky_lanternes", kind: "sky", name: "Lanternes flottantes", price: 36 },
+  { id: "sky_lune", kind: "sky", name: "Grande lune dorée", price: 40 },
+  // v0.16 — rayon « Objets » : deux emplacements par créature (à gauche et à droite, posés au sol).
+  { id: "obj_lanterne", kind: "obj", name: "Lanterne", price: 8 },
+  { id: "obj_coussin", kind: "obj", name: "Coussin moelleux", price: 9 },
+  { id: "obj_cristaux", kind: "obj", name: "Cristaux", price: 11 },
+  { id: "obj_cerfvolant", kind: "obj", name: "Cerf-volant", price: 12 },
+  { id: "obj_cabane", kind: "obj", name: "Petite cabane", price: 14 },
+  { id: "obj_feu", kind: "obj", name: "Feu de camp doux", price: 16 },
+  { id: "obj_panier", kind: "obj", name: "Panier de fruits", price: 18 },
+  { id: "obj_banc", kind: "obj", name: "Banc de bois", price: 20 },
+  // v0.16 — décors de saison : des FONDS vendus seulement pendant leur saison (qui revient chaque année) ; une fois achetés, gardés toute l'année.
+  { id: "season_halloween", kind: "bg", rayon: "season", season: "halloween", name: "Halloween douce", price: 16 },
+  { id: "season_noel", kind: "bg", rayon: "season", season: "noel", name: "Noël", price: 18 },
+  { id: "season_printemps", kind: "bg", rayon: "season", season: "printemps", name: "Printemps", price: 20 },
+  { id: "season_ete", kind: "bg", rayon: "season", season: "ete", name: "Été", price: 22 },
+  // v0.16 — cadres du carnet de rêves : un choix pour tout le carnet (decor.pick._carnet.frame).
+  { id: "frame_bois", kind: "frame", name: "Cadre en bois", price: 6 },
+  { id: "frame_etoiles", kind: "frame", name: "Cadre étoilé", price: 8 },
+  { id: "frame_givre", kind: "frame", name: "Cadre de givre", price: 10 },
+  { id: "frame_or", kind: "frame", name: "Cadre doré", price: 12 },
+  { id: "frame_nuages", kind: "frame", name: "Cadre de nuages", price: 15 },
+];
+export const rayonOf = (d) => d.rayon || d.kind;
+// Rayons de la boutique (ordre des onglets) ; « col » et « st » sont des onglets sans objets à vendre.
+export const RAYONS = [
+  { id: "bg", name: "Fonds", emoji: "🏞️" }, { id: "sky", name: "Ciel", emoji: "🌈" }, { id: "wx", name: "Météo", emoji: "🌦️" },
+  { id: "fx", name: "Effets", emoji: "✨" }, { id: "pet", name: "Animaux", emoji: "🦋" }, { id: "obj", name: "Objets", emoji: "🏮" },
+  { id: "season", name: "Saison", emoji: "🍂" }, { id: "frame", name: "Cadres", emoji: "🖼️" },
+];
+export const CARNET = "_carnet"; // « créature » fictive qui porte le choix du cadre du carnet
+
+// ---------- saisons (v0.16) : elles reviennent CHAQUE année ; aucune « dernière chance », aucun compte à rebours ----------
+// date : "AAAA-MM-JJ". Halloween douce 10 oct → 10 nov ; Noël 1er déc → 6 janv ; Printemps 20 mars → 30 avril ; Été 21 juin → 31 août.
+export const SEASONS = {
+  halloween: { name: "Halloween douce", from: "10-10", to: "11-10", back: "octobre" },
+  noel: { name: "Noël", from: "12-01", to: "01-06", back: "décembre" },
+  printemps: { name: "Printemps", from: "03-20", to: "04-30", back: "mars" },
+  ete: { name: "Été", from: "06-21", to: "08-31", back: "juin" },
+};
+export const inSeason = (id, date) => {
+  const z = SEASONS[id], md = String(date).slice(5, 10);
+  if (!z || !/^\d{4}-\d{2}-\d{2}/.test(String(date))) return false;
+  return z.from <= z.to ? md >= z.from && md <= z.to : md >= z.from || md <= z.to; // Noël passe d'une année à l'autre
+};
+export const saisonDe = (date) => Object.keys(SEASONS).find((id) => inSeason(id, date)) || null;
+export const seasonBack = (id) => (SEASONS[id] ? `Revient en ${SEASONS[id].back}` : "");
+
+// ---------- collections (v0.16) : 4 décors qui vont ensemble ----------
+export const COLLECTIONS = [
+  { id: "hiver", name: "Hiver", emoji: "❄️", items: ["bg_banquise", "wx_neige", "fx_aura", "pet_chouette"] },
+  { id: "foret", name: "Forêt", emoji: "🌲", items: ["bg_foret", "wx_feuilles", "wx_lucioles", "pet_lapin"] },
+  { id: "nuit", name: "Nuit magique", emoji: "🌌", items: ["bg_nuit", "sky_filantes", "sky_lanternes", "fx_etincelles"] },
+  { id: "eau", name: "Bord de l'eau", emoji: "💧", items: ["bg_lac", "pet_poissons", "pet_libellules", "wx_pluie"] },
 ];
 export const decorById = (id) => DECOR.find((d) => d.id === id);
 // Libellé « rien » pour chaque type facultatif.
-export const NONE_LABEL = { wx: "Ciel calme", fx: "Sans effet", pet: "Personne" };
+export const NONE_LABEL = { wx: "Ciel calme", fx: "Sans effet", pet: "Personne", sky: "Ciel simple", obj: "Rien", frame: "Sans cadre" };
 
 // Jour / soir / nuit selon l'heure réelle (sans rien acheter).
 export function timeOfDay(hour) {
@@ -121,6 +186,7 @@ const LANDS = {
     ${[[96, 262], [128, 274], [250, 268], [210, 280], [160, 258]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${2.6 + (i % 2)}" fill="#8ff0ff" opacity=".85"/>`).join("")}`;
   },
 };
+Object.assign(LANDS, SEASON_LANDS); // v0.16 : fonds de saison
 export const landSVG = (id) => `<svg class="sc-land" viewBox="0 0 400 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${(LANDS[id] || LANDS[DEFAULT_BG])()}</svg>`;
 
 // ---------- formes réutilisées (icônes et scène) ----------
@@ -191,7 +257,7 @@ export function petHTML(id) {
 export function decorIcon(id) {
   const d = decorById(id);
   if (!d) return "";
-  if (d.kind === "bg") return `<svg viewBox="40 120 320 180" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><rect x="0" y="0" width="400" height="300" fill="${id === "bg_nuit" ? "#1a2f6b" : id === "bg_desert" ? "#ffd9a0" : "#9fdcff"}"/>${(LANDS[id])().replace(/class="sc-[a-z]+"/g, "")}</svg>`;
+  if (d.kind === "bg") return `<svg viewBox="40 120 320 180" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><rect x="0" y="0" width="400" height="300" fill="${SEASON_SKY[id] || (id === "bg_nuit" ? "#1a2f6b" : id === "bg_desert" ? "#ffd9a0" : "#9fdcff")}"/>${(LANDS[id])().replace(/class="sc-[a-z]+"/g, "")}</svg>`;
   const ic = {
     wx_neige: `<svg viewBox="0 0 40 40" aria-hidden="true">${[[10, 10, 3.5], [26, 8, 2.5], [18, 22, 4], [32, 24, 3], [8, 30, 2.5], [24, 34, 3]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" stroke="#9cc9ee" stroke-width="1"/>`).join("")}</svg>`,
     wx_pluie: `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M10 6l-3 10M22 4l-3 10M32 10l-3 10M14 22l-3 10M27 22l-3 10" stroke="#4cc9f0" stroke-width="3" stroke-linecap="round"/></svg>`,
@@ -207,6 +273,6 @@ export function decorIcon(id) {
   }[id];
   if (ic) return ic;
   const pet = { pet_papillons: SH.butterfly(), pet_oiseaux: SH.bird(), pet_poissons: SH.fish(), pet_libellules: SH.dragonfly(), pet_lapin: SH.rabbit(), pet_chouette: SH.owl() }[id];
-  return pet || "";
+  return pet || extraIcon(id) || "";
 }
 export const noneIcon = () => `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" fill="none" stroke="#9fb0cc" stroke-width="3" stroke-dasharray="5 4"/></svg>`;

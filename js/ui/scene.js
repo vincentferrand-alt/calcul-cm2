@@ -4,7 +4,7 @@
 // arrêtées si « réduire les animations » est demandé, et en pause quand l'appli passe en arrière-plan.
 import { h } from "../dom.js";
 import { creatureById } from "../creatures.js";
-import { landSVG, weatherHTML, effectHTML, petHTML, timeOfDay, seeded, decorById, TOD_NAMES, DEFAULT_BG } from "../decor.js";
+import { landSVG, weatherHTML, effectHTML, petHTML, skyHTML, objectHTML, timeOfDay, seeded, decorById, TOD_NAMES, DEFAULT_BG } from "../decor.js";
 import { creatureArt } from "./art.js";
 
 const f1 = (n) => Number(n.toFixed(1));
@@ -23,12 +23,15 @@ export function sceneEl({ id = null, stage = 0, xp = 0, pick = {}, variant = "ho
   const tod = bg === "bg_nuit" ? "night" : timeOfDay(hour);
   const c = id ? creatureById(id) : null;
   const fx = effectHTML(pick.fx, c ? c.aura || c.c2 : "#ffd84a");
-  const parts = [bg, pick.wx, pick.fx, pick.pet].filter(Boolean).map((d) => decorById(d) && decorById(d).name.toLowerCase());
+  const parts = [bg, pick.sky, pick.wx, pick.fx, pick.pet, pick.o1, pick.o2].filter(Boolean).map((d) => decorById(d) && decorById(d).name.toLowerCase());
   const label = (c ? `${c.name}${stage > 0 ? ", " + c.forms[stage - 1] : ", dans son œuf"}` : "Un œuf") + ` : ${parts.join(", ")} (${TOD_NAMES[tod]})`;
   const el = h("div", { class: `scene v-${variant} tod-${tod} ${bg.replace("_", "-")}${lite ? " lite" : ""}`, role: "img", "aria-label": label, "data-tod": tod, "data-bg": bg });
   const seed = (id ? id.charCodeAt(0) + id.length * 7 : 1) + (variant === "album" ? 11 : 0);
-  el.innerHTML = `<div class="sc-sky"></div><div class="sc-astro" aria-hidden="true">${astroHTML(tod, bg, lite)}</div>${landSVG(bg)}`
-    + `<div class="sc-pets" aria-hidden="true">${pick.pet ? petHTML(pick.pet) : ""}</div><div class="sc-shade"></div>`
+  // v0.16 : ciel et lumières (entre le ciel et le paysage) ; deux objets posés au sol, à gauche et à droite de la créature
+  el.innerHTML = `<div class="sc-sky"></div><div class="sc-astro" aria-hidden="true">${astroHTML(tod, bg, lite)}</div>${pick.sky === "sky_arcenciel" ? skyHTML(pick.sky, lite) : ""}${landSVG(bg)}`
+    + `<div class="sc-pets" aria-hidden="true">${pick.pet ? petHTML(pick.pet) : ""}</div>`
+    + (pick.o1 || pick.o2 ? `<div class="sc-objs" aria-hidden="true">${pick.o1 ? objectHTML(pick.o1, "left") : ""}${pick.o2 ? objectHTML(pick.o2, "right") : ""}</div>` : "")
+    + `<div class="sc-shade"></div>${pick.sky && pick.sky !== "sky_arcenciel" ? skyHTML(pick.sky, lite) : ""}` // les lumières du ciel brillent par-dessus le voile du soir
     + `<div class="sc-box sc-fxb" aria-hidden="true">${fx.back}</div><div class="sc-box sc-cre"></div><div class="sc-box sc-fxf" aria-hidden="true">${fx.front}</div>`
     + (pick.wx ? weatherHTML(pick.wx, lite, seed) : "") + '<div class="sc-sleep" aria-hidden="true"><i class="sc-zzz">z z Z</i></div>';
   if (sleepy) el.classList.add("sleepy");

@@ -835,3 +835,74 @@ html.calm .cr-bob, html.calm .cr-runner.hop .cr-bob { animation: none; }
 }
 .dream-filter .seg-b { white-space: nowrap; padding: 10px 4px; }
 #app:has(.course) .badge-version { display: none; }
+
+/* ===== v0.16 — boutique agrandie : ciel et lumières, objets, saisons, cadres, collections ===== */
+.sc-skyx svg { width: 100%; height: 100%; }
+.sx-wave { animation: sx-wave 9s ease-in-out infinite alternate; }
+.sx-w2 { animation-duration: 12s; animation-direction: alternate-reverse; }
+@keyframes sx-wave { from { transform: translateX(-3%); opacity: .75 } to { transform: translateX(3%); opacity: 1 } }
+.tod-day .sky-aurore, .tod-day .sky-filantes { opacity: .45; }
+.tod-eve .sky-aurore { opacity: .8; }
+.tod-night .sky-arcenciel { opacity: .35; } .tod-eve .sky-arcenciel { opacity: .75; } .sky-arcenciel { opacity: .9; }
+.tod-day .sky-lune { opacity: .6; }
+.sky-lune .sx-halo { animation: sx-halo 4s ease-in-out infinite alternate; transform-origin: 23% 25%; }
+@keyframes sx-halo { from { opacity: .14 } to { opacity: .3 } }
+.sx-shoot { width: 20%; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, #fff); opacity: 0; transform: rotate(20deg); animation: sx-shoot 8s ease-in infinite; }
+@keyframes sx-shoot { 0%, 70% { opacity: 0; transform: rotate(20deg) translateX(0) } 74% { opacity: 1 } 88% { opacity: 0; transform: rotate(20deg) translateX(160%) } 100% { opacity: 0 } }
+.sx-dot { width: 3px; height: 3px; border-radius: 50%; background: #fff6b0; box-shadow: 0 0 6px 2px rgba(255, 246, 176, .7); animation: sc-twinkle 2.4s ease-in-out infinite alternate; }
+.sx-lan { top: 0; height: 100%; transform: translate3d(0, 0, 0); animation: sx-rise var(--d) linear var(--dl) infinite; }
+.sx-lan > svg { position: absolute; left: 0; top: 62%; width: 100%; filter: drop-shadow(0 0 6px rgba(255, 190, 80, .8)); }
+@keyframes sx-rise { 0% { transform: translate3d(0, 10%, 0); opacity: 0 } 15% { opacity: 1 } 80% { opacity: .9 } 100% { transform: translate3d(8%, -62%, 0); opacity: 0 } }
+html.calm .sx-lan { animation: none !important; } html.calm .sx-lan > svg { top: 30%; }
+html.calm .sx-shoot { display: none; }
+.scene > .sc-objs { z-index: 0; }
+.sc-obj { bottom: 4%; }
+.sc-obj > svg { width: 100%; display: block; }
+.sc-obj.o-left { left: 3%; } .sc-obj.o-right { right: 3%; }
+.v-album .sc-obj, .v-dream .sc-obj { bottom: 3%; }
+.ob-glow { animation: ob-glow 2.4s ease-in-out infinite alternate; }
+@keyframes ob-glow { from { opacity: .18 } to { opacity: .45 } }
+.ob-flick { transform-origin: 50% 90%; animation: sc-flick .7s ease-in-out infinite alternate; transform-box: fill-box; }
+.ob-sway { transform-origin: 50% 100%; transform-box: fill-box; animation: ob-sway 3s ease-in-out infinite alternate; }
+@keyframes ob-sway { from { transform: rotate(-6deg) } to { transform: rotate(6deg) } }
+.sc-gold circle { animation: sc-twinkle 2.6s ease-in-out infinite alternate; }
+.sc-gold circle:nth-child(2n) { animation-delay: -1.3s; }
+
+/* boutique : onglets sur 2 rangées de 5, emplacements d'objets, saisons, collections, aperçu des cadres */
+.seg.kinds { grid-template-columns: repeat(5, 1fr); }
+.seg.kinds .seg-b { font-size: .7rem; min-width: 0; white-space: nowrap; letter-spacing: -.01em; }
+.slots { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.slot-b { font: inherit; font-weight: 800; font-size: .85rem; padding: 8px 6px; border-radius: 14px; border: 3px solid #d5e2f5; background: #fff; color: var(--ink); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1.2; }
+.slot-b small { font-weight: 700; color: var(--ink-soft); font-size: .76rem; }
+.slot-b.on { border-color: var(--sun); background: #fff8dc; }
+.item.off .item-ic { filter: grayscale(.85); opacity: .6; }
+.item-note.back { color: #5b6b8a; font-size: .8rem; }
+.col-card { grid-column: 1 / -1; background: #fff; border-radius: 18px; padding: 12px 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px; color: var(--ink); }
+.col-card.done { box-shadow: 0 0 0 3px var(--sun), var(--shadow); }
+.col-head { display: flex; align-items: center; gap: 8px; font-weight: 900; }
+.col-head .grow { flex: 1; }
+.col-badge { font-size: .78rem; background: var(--sun); color: #5b3b00; border-radius: 99px; padding: 2px 10px; white-space: nowrap; }
+.col-n { font-weight: 800; color: var(--ink-soft); font-size: .88rem; }
+.col-items { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.col-it { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: .7rem; font-weight: 800; text-align: center; color: var(--ink-soft); line-height: 1.15; }
+.col-it .item-ic { width: 100%; max-width: 64px; aspect-ratio: 1; }
+.col-it.miss .item-ic { filter: grayscale(1); opacity: .45; }
+.frame-prev { margin: 0 auto; width: min(100%, 300px); }
+.frame-prev .scene { aspect-ratio: 1; border-radius: 16px; }
+.shop-col-badges { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+
+/* cadres du carnet de rêves (choix global) */
+.dream { position: relative; --dbg: linear-gradient(#22306f, #141d4d); background: var(--dbg); }
+.dream.run { --dbg: linear-gradient(#1f6a8f, #18406e); }
+.dream[class*="frame-"] { border: 10px solid transparent; box-shadow: none; }
+.dream.frame-bois { background: var(--dbg) padding-box, repeating-linear-gradient(35deg, #a86a32 0 6px, #b9803f 6px 13px, #8c5426 13px 16px) border-box; box-shadow: inset 0 0 0 2px rgba(60, 30, 10, .35); }
+.dream.frame-etoiles { background: var(--dbg) padding-box, radial-gradient(circle, #ffd84a 0 1.6px, transparent 2.2px) 0 0 / 14px 14px border-box, #24326f border-box; }
+.dream.frame-givre { background: var(--dbg) padding-box, linear-gradient(135deg, #ffffff, #bfe6ff 30%, #e8f7ff 50%, #9fd4f5 75%, #ffffff) border-box; }
+.dream.frame-or { background: var(--dbg) padding-box, linear-gradient(135deg, #ffe9a0, #e0a100 25%, #fff3c0 50%, #c98a00 75%, #ffd84a) border-box; box-shadow: 0 0 18px rgba(255, 210, 90, .35); }
+.dream.frame-nuages { border-width: 12px; background: var(--dbg) padding-box, radial-gradient(circle at 50% 50%, #fff 0 7px, transparent 7.5px) 0 0 / 18px 18px border-box, #dff1ff border-box; }
+.dream[class*="frame-"]::before, .dream[class*="frame-"]::after { content: ""; position: absolute; width: 26px; height: 26px; pointer-events: none; }
+.dream.frame-etoiles::before, .dream.frame-etoiles::after { content: "★"; color: #ffd84a; font-size: 22px; line-height: 1; text-shadow: 0 0 6px rgba(255, 216, 74, .8); }
+.dream.frame-givre::before, .dream.frame-givre::after { content: "❄"; color: #ffffff; font-size: 22px; line-height: 1; text-shadow: 0 0 4px #7fc8ff; }
+.dream[class*="frame-"]::before { left: -9px; top: -9px; } .dream[class*="frame-"]::after { right: -9px; bottom: -9px; }
+.carnet-frame-note { color: #dff3ff; font-size: .82rem; text-align: center; margin: 0; }
+@media (min-width: 900px) { .shop-card > .scene { max-width: 640px; margin-inline: auto; } }

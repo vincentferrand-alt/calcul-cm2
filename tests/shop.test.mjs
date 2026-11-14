@@ -32,13 +32,15 @@ test("anciens accessoires : toujours lisibles (ids stables), dessins valides", (
 test("décors : ids uniques et stables, types connus, prix croissants, un fond gratuit par défaut, dessins valides", () => {
   assert.equal(new Set(DECOR.map((d) => d.id)).size, DECOR.length);
   for (const d of DECOR) {
-    assert.ok(KINDS.some((k) => k.id === d.kind), d.id); assert.ok(d.id.startsWith(d.kind + "_"), d.id);
+    assert.ok(KINDS.some((k) => k.id === d.kind), d.id); assert.ok(d.id.startsWith((d.rayon || d.kind) + "_"), d.id); // v0.16 : season_… sont des fonds
     assert.ok(Number.isInteger(d.price) && d.price >= 0);
     assert.match(decorIcon(d.id), /^<svg/); assert.ok(!bad.test(decorIcon(d.id)), d.id);
   }
   assert.equal(decorById(DEFAULT_BG).price, 0);
   assert.deepEqual(DECOR.filter((d) => d.price === 0).map((d) => d.id), [DEFAULT_BG], "un seul décor offert : le fond par défaut");
-  for (const k of KINDS) { const p = DECOR.filter((d) => d.kind === k.id).map((d) => d.price); assert.deepEqual(p, [...p].sort((a, b) => a - b), `prix croissants (${k.id})`); assert.ok(Math.min(...p.filter(Boolean)) <= 6, "début abordable"); }
+  // v0.16 : prix croissants dans chaque RAYON ; les 4 premiers rayons gardent un début abordable
+  for (const r of ["bg", "wx", "fx", "pet", "sky", "obj", "season", "frame"]) { const p = DECOR.filter((d) => (d.rayon || d.kind) === r).map((d) => d.price); assert.ok(p.length >= 4, r); assert.deepEqual(p, [...p].sort((a, b) => a - b), `prix croissants (${r})`); }
+  for (const k of ["bg", "wx", "fx", "pet"]) assert.ok(Math.min(...DECOR.filter((d) => d.kind === k && !d.rayon && d.price).map((d) => d.price)) <= 6, "début abordable");
   // Les ids publiés ne disparaissent jamais (sauvegardes) : liste figée.
   const f = path.join(path.resolve(new URL(".", import.meta.url).pathname), "decor-ids.json");
   for (const id of JSON.parse(fs.readFileSync(f, "utf8"))) assert.ok(decorById(id), `décor disparu : ${id}`);
@@ -86,14 +88,14 @@ test("remboursement automatique des accessoires (v0.10) sans rien perdre", () =>
 
 test("choix de la scène : fond, météo, effet, animal, forme parmi les stades débloqués", () => {
   const s = emptyState(); s.c.stars = 99; s.cre.add = { s: 3, d: {} };
-  assert.deepEqual(scenePick(s, "add"), { st: 3, bg: DEFAULT_BG, wx: null, fx: null, pet: null });
+  assert.deepEqual(scenePick(s, "add"), { st: 3, bg: DEFAULT_BG, wx: null, fx: null, pet: null, sky: null, o1: null, o2: null }); // v0.16 : ciel et objets en plus (additif)
   assert.equal(setPick(s, "add", "bg", "bg_lac", 1), false, "pas acheté");
   buyDecor(s, "bg_lac", "d"); buyDecor(s, "wx_neige", "d");
   assert.equal(setPick(s, "add", "bg", "bg_lac", 2), true); assert.equal(setPick(s, "add", "wx", "wx_neige", 2), true);
   assert.equal(setPick(s, "add", "wx", "bg_lac", 3), false, "mauvais type");
   assert.equal(setPick(s, "add", "bg", null, 3), false, "toujours un fond");
   assert.equal(setPick(s, "add", "st", 4, 3), false, "stade pas encore atteint"); assert.equal(setPick(s, "add", "st", 1, 3), true);
-  assert.deepEqual(scenePick(s, "add"), { st: 1, bg: "bg_lac", wx: "wx_neige", fx: null, pet: null });
+  assert.deepEqual(scenePick(s, "add"), { st: 1, bg: "bg_lac", wx: "wx_neige", fx: null, pet: null, sky: null, o1: null, o2: null });
   assert.equal(setPick(s, "add", "wx", null, 4), true); assert.equal(scenePick(s, "add").wx, null);
   // Un choix abîmé ou inconnu (version future) retombe sur une valeur sûre.
   s.decor.pick.add.fx = { id: "fx_futur", t: 9 }; s.decor.pick.add.st = { id: 9, t: 9 };

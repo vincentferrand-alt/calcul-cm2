@@ -2,7 +2,7 @@
 // IDENTIFIANTS STABLES : "t_xxx:palier" ne sont jamais renommés ni supprimés (tests/trophy-ids.json le vérifie).
 // On peut AJOUTER des lignes ou des paliers ; on ne change jamais ce qui existe.
 import { FAMILIES } from "./generator.js";
-import { ownedCount, decorCount, starsEarned } from "./shop.js";
+import { ownedCount, decorCount, starsEarned, collectionsDone } from "./shop.js";
 import { de } from "./fr.js";
 
 export const TIER_NAMES = ["Bronze", "Argent", "Or", "Platine", "Diamant"];
@@ -27,7 +27,8 @@ export const LINES = [
   { id: "t_hatch", name: "Éclosions", emoji: "🥚", tiers: [1, 4, 8], value: (s) => cre(s, 1), desc: (n) => `Faire éclore ${n} créature${n > 1 ? "s" : ""}` },
   // v0.10, retirée de la boutique en v0.11 : les paliers déjà gagnés restent, plus de nouvel objectif (retired).
   { id: "t_shop", name: "Garde-robe", emoji: "👒", tiers: [1, 4, 8, 12], retired: true, value: (s) => ownedCount(s), desc: (n) => `Avoir ${n} accessoire${n > 1 ? "s" : ""} dans ta garde-robe` },
-  { id: "t_decor", name: "Décorateur", emoji: "🏞️", tiers: [1, 5, 12, 20], value: (s) => decorCount(s), desc: (n) => `Avoir ${n} décor${n > 1 ? "s" : ""} pour tes créatures` },
+  { id: "t_decor", name: "Décorateur", emoji: "🏞️", tiers: [1, 5, 12, 20, 35], value: (s) => decorCount(s), desc: (n) => `Avoir ${n} décor${n > 1 ? "s" : ""} pour tes créatures` },
+  { id: "t_collec", name: "Collectionneur", emoji: "🏅", tiers: [1, 2, 3, 4], value: (s) => collectionsDone(s), desc: (n) => `Compléter ${n} collection${n > 1 ? "s" : ""} de décors` }, // v0.16
   { id: "t_legend", name: "Légendes", emoji: "👑", tiers: [1, 3, 8], value: (s) => cre(s, 4), desc: (n) => `Amener ${n} créature${n > 1 ? "s" : ""} au dernier stade` },
   ...FAMILIES.map((f) => ({ id: "t_fam_" + f.id, name: f.name, emoji: f.short, tiers: [20, 80, 250, 700], value: (s) => (s.fam[f.id] ? s.fam[f.id].xp : 0), desc: (n) => `Réussir ${n} calculs ${de(f.name.toLowerCase())}` })),
 ];

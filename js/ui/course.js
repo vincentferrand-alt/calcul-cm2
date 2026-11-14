@@ -9,7 +9,7 @@ import { sfx } from "../audio.js";
 import { toKey } from "../dates.js";
 import { famById, fmt } from "../generator.js";
 import { creatureById } from "../creatures.js";
-import { landSVG, weatherHTML, effectHTML, petHTML, timeOfDay, DEFAULT_BG } from "../decor.js";
+import { landSVG, weatherHTML, effectHTML, petHTML, timeOfDay, DEFAULT_BG, SEASON_GROUND } from "../decor.js";
 import { scenePick } from "../shop.js";
 import { homeCreature } from "../goal.js";
 import { isCalm } from "../motion.js";
@@ -21,7 +21,7 @@ import { hintPanel, session, showResults } from "./play.js";
 import { runPhotoEl } from "./carnet.js";
 
 // Couleur du sol de la piste, selon le fond acheté (le paysage du fond défile par-dessus, au loin).
-const GROUND = { bg_prairie: "#6cc65f", bg_lac: "#5aa860", bg_foret: "#4f9b58", bg_plage: "#f1cf86", bg_montagne: "#69bb5c", bg_desert: "#eaa85a", bg_banquise: "#e3f1fb", bg_nuit: "#1d3a63" };
+const GROUND = { bg_prairie: "#6cc65f", bg_lac: "#5aa860", bg_foret: "#4f9b58", bg_plage: "#f1cf86", bg_montagne: "#69bb5c", bg_desert: "#eaa85a", bg_banquise: "#e3f1fb", bg_nuit: "#1d3a63", ...SEASON_GROUND };
 // La piste devant : 3 couloirs (lignes en pointillés) et quelques touffes d'herbe, en tuile répétée.
 const trackTile = (dark) => `<svg viewBox="0 0 300 225" preserveAspectRatio="none" aria-hidden="true">
   <path d="M100 0V225M200 0V225" stroke="${dark ? "rgba(190,220,255,.45)" : "rgba(255,255,255,.7)"}" stroke-width="3" stroke-dasharray="16 14"/>

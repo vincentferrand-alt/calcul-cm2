@@ -11,6 +11,7 @@ import { homeCreature } from "../goal.js";
 import { sceneEl } from "./scene.js";
 import { topbar } from "./common.js";
 import { famPill } from "./badges.js";
+import { carnetFrame } from "../shop.js";
 
 const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
 // La photo d'une course : la créature en plein saut dans son décor, à l'heure de la course, avec le score.
@@ -34,6 +35,7 @@ export function carnetScreen({ go, args = [] }) {
     if (onKey) document.removeEventListener("keydown", onKey);
     onKey = null;
     const all = memoryCards(s, fallback, "all"), cards = memoryCards(s, fallback, filter);
+    const fr = carnetFrame(s), fcls = fr ? " frame-" + fr.replace("frame_", "") : ""; // v0.16 : le cadre choisi dans la boutique
     const seg = all.some((d) => d.type === "run") ? h("div", { class: "seg dream-filter" }, FILTERS.map(([id, label]) =>
       h("button", { class: "seg-b" + (id === filter ? " on" : ""), type: "button", "aria-pressed": id === filter ? "true" : "false", onclick: () => { filter = id; sfx.tap(); draw(); } }, label))) : null;
     if (!cards.length) {
@@ -47,13 +49,13 @@ export function carnetScreen({ go, args = [] }) {
       const c = creatureById(d.c), day = `${cap(jourLong(d.date))} ${dateLongue(d.date)}`;
       if (d.type === "run") {
         const f = d.fam !== "mix" && famById(d.fam);
-        return h("article", { class: "dream run" }, runPhotoEl(d),
+        return h("article", { class: "dream run" + fcls }, runPhotoEl(d),
           h("div", { class: "dream-date" }, `${day} · ${d.key.slice(11, 16).replace(":", " h ")}`),
           h("div", { class: "dream-calc" }, `🏃 ${d.ok} / ${d.n}`),
           h("div", { class: "dream-who" }, f ? famPill(d.fam, "tiny") : null, ` Course des réponses · ${f ? f.name : "Mélange"}`));
       }
       const scene = sceneEl({ id: d.c, stage: d.st, pick: { bg: d.bg }, variant: "dream", lite: true, hour: 22, sleepy: true });
-      return h("article", { class: "dream" }, scene,
+      return h("article", { class: "dream" + fcls }, scene,
         h("div", { class: "dream-date" }, day),
         h("div", { class: "dream-calc" }, d.calc),
         h("div", { class: "dream-who" }, d.st > 0 ? `💤 ${c.name} s'est endormi${c.id === "trick" ? "e" : ""} après l'énigme` : "💤 Ton œuf s'est endormi au chaud"));
