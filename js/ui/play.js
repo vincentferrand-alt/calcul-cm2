@@ -82,7 +82,7 @@ export function playScreen({ go }) {
     const dict = opts.mode === "dictee", canSpeak = voiceStatus() === "ok";
     const qMain = h("div", { class: "q-main" });
     const sayIt = () => speak(prob.say, { rate: store.settings.rate });
-    const reveal = () => qMain.replaceChildren(...questionText(prob));
+    const reveal = () => qMain.replaceChildren(...questionText(prob).filter(Boolean)); // v0.14.1 : plus de « null » sous un calcul sans « = ? »
     S.reveal = reveal;
     if (dict && canSpeak) {
       qMain.append(

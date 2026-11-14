@@ -5,7 +5,7 @@ import { syncOnce, syncConfigured, stable } from "./sync.js";
 import { merge } from "./state.js";
 import { refreshState } from "./game.js";
 import { toKey } from "./dates.js";
-import { starsEarned } from "./shop.js";
+import { starsEarned, overspendNotice } from "./shop.js";
 
 export const sync = { state: syncConfigured(FIREBASE) ? "idle" : "off", at: null, message: "", news: null };
 const listeners = new Set();
@@ -29,9 +29,10 @@ export async function runSync() {
       const next = merge(store.state, r.merged);
       if (stable(next) !== stable(store.state)) {
         let news = null; applying = true;
-        const starsBefore = starsEarned(store.state);
+        const starsBefore = starsEarned(store.state), before = store.state;
         try { store.replaceState(next); store.update((s) => { news = refreshState(s, toKey()); }); } finally { applying = false; }
         news.stars = Math.max(0, starsEarned(store.state) - starsBefore); // étoiles gagnées sur l'autre appareil
+        news.overspent = overspendNotice(before, store.state); // v0.14.1 : achats en même temps sur les deux appareils
         if (r.changedLocal) { sync.news = news; if (hook) hook(news); }
       }
       // du nouveau localement : on repousse (au plus 3 fois d'affilée, pour ne jamais tourner en boucle)

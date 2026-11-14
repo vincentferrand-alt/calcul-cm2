@@ -2,7 +2,9 @@
 // dans UN seul bandeau court. Logique pure, testée (tests/news.test.mjs).
 import { creatureById } from "./creatures.js";
 
-export const emptyNews = () => ({ trophies: [], creatures: [], stars: 0 });
+import { OVERSPENT_TEXT } from "./shop.js";
+
+export const emptyNews = () => ({ trophies: [], creatures: [], stars: 0, overspent: false });
 
 // Ajoute de nouvelles annonces à celles qui attendent : trophées sans doublon, une évolution par créature (du premier
 // au dernier stade), étoiles additionnées.
@@ -16,10 +18,10 @@ export function mergeNews(a, b) {
     const p = cre.get(e.id);
     cre.set(e.id, p ? { id: e.id, from: Math.min(p.from, e.from), to: Math.max(p.to, e.to) } : { id: e.id, from: e.from, to: e.to });
   }
-  return { trophies: [...tro.values()], creatures: [...cre.values()], stars: Math.max(0, (a.stars || 0) + (b.stars || 0)) };
+  return { trophies: [...tro.values()], creatures: [...cre.values()], stars: Math.max(0, (a.stars || 0) + (b.stars || 0)), overspent: !!(a.overspent || b.overspent) };
 }
 
-export const isEmpty = (n) => !n || (!(n.trophies || []).length && !(n.creatures || []).length && !(n.stars > 0));
+export const isEmpty = (n) => !n || (!(n.trophies || []).length && !(n.creatures || []).length && !(n.stars > 0) && !n.overspent);
 
 // Le texte du bandeau, son icône et l'écran où mène un appui (créatures d'abord, puis trophées, puis la boutique pour les étoiles).
 export function newsSummary(raw) {
@@ -30,6 +32,7 @@ export function newsSummary(raw) {
   else if (cre.length > 1) parts.push(`${cre.length} créatures ont grandi !`);
   if (tro.length) parts.push(tro.length === 1 ? "1 nouveau trophée" : `${tro.length} nouveaux trophées`);
   if (n.stars > 0) parts.push(`+${n.stars} ⭐`);
+  if (n.overspent) parts.unshift(OVERSPENT_TEXT); // v0.14.1 : expliqué une fois, gentiment, en premier
   const target = cre.length ? "album" : tro.length ? "trophees" : "boutique";
-  return { text: parts.join(" · "), icon: cre.length ? "🥚" : tro.length ? "🏆" : "⭐", target };
+  return { text: parts.join(" · "), icon: cre.length ? "🥚" : tro.length ? "🏆" : n.overspent ? "🛍️" : "⭐", target, long: n.overspent };
 }

@@ -4,6 +4,7 @@
 //  - nearEvolution : en fin de série, la créature à ≤ 10 bonnes réponses de son évolution (« Encore 5 additions et Braise évolue ! »).
 import { CREATURES, STAGE_XP, creatureById, featured, stageForXp } from "./creatures.js";
 import { famById } from "./generator.js";
+import { de } from "./fr.js";
 
 // Ce qu'il faut réussir pour faire grandir chaque créature (1 = singulier, sinon pluriel).
 export const UNITS = {
@@ -53,7 +54,7 @@ export function homeGoal(s, id) {
   const c = creatureById(id) || CREATURES[0], g = growthOf(s, c.id);
   if (!g.max) {
     const text = g.stage === 0 ? `Encore ${unit(c.fam, g.remaining)} pour faire éclore l'œuf`
-      : `Prochaine évolution de ${c.name} : encore ${unit(c.fam, g.remaining)}`;
+      : `Prochaine évolution ${de(c.name)} : encore ${unit(c.fam, g.remaining)}`;
     return { ...g, target: c.id, text, label: g.stage === 0 ? `🥚 Faire éclore : ${famLow(c.fam)}` : `🎯 Faire grandir ${c.name}` };
   }
   const o = closestToGrow(s, { exclude: [c.id] });

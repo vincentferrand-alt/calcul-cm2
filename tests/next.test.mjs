@@ -64,3 +64,32 @@ test("défi du jour : l'icône devient des pastilles de familles (plus de « ✖
   assert.deepEqual(themeFams(THEMES.find((t) => t.id === "tables")), ["mul", "div"]);
   assert.deepEqual(themeFams(THEMES.find((t) => t.id === "grand-melange")), ["add", "sub", "mul", "div"]);
 });
+
+test("v0.14.1 : une mission presque finie (≥ 60 %) passe avant « faire grandir »", () => {
+  const s = stateWith({ daily: true, xp: { add: 46 } });
+  s.m.active = [{ id: "m-a", tpl: "fam", params: { fam: "mul" }, target: 10, progress: 6, done: false }, { id: "m-b", tpl: "today", params: {}, target: 20, progress: 2, done: false }];
+  const n = whatNext(s, D);
+  assert.equal(n.kind, "mission"); assert.equal(n.mission.id, "m-a"); assert.equal(n.label, "Réussis 10 calculs de multiplications");
+  s.m.active[0].progress = 5; // 50 % : pas encore « presque finie »
+  assert.equal(whatNext(s, D).kind, "grow");
+  s.m.active[0].progress = 10; s.m.active[0].done = true; // déjà faite : ignorée
+  assert.equal(whatNext(s, D).kind, "grow");
+});
+
+test("v0.14.1 : on alterne « faire grandir » et une mission jouable, ce jour-là", () => {
+  const s = stateWith({ daily: true, xp: { add: 46 } });
+  s.m.active = [{ id: "m-a", tpl: "fam", params: { fam: "sub" }, target: 10, progress: 1, done: false }];
+  const a = whatNext(s, D, { last: null });
+  assert.equal(a.kind, "grow");
+  const b = whatNext(s, D, { last: a.kind });
+  assert.equal(b.kind, "mission"); assert.equal(b.label, "Réussis 10 calculs de soustractions");
+  assert.equal(whatNext(s, D, { last: b.kind }).kind, "grow", "puis de nouveau « faire grandir »");
+  // pas de mission jouable : on garde « faire grandir »
+  s.m.active = [{ id: "m-d", tpl: "dictee", params: {}, target: 1, progress: 0, done: false }];
+  assert.equal(whatNext(s, D, { last: "grow", speech: false }).kind, "grow", "dictée impossible sans voix");
+  assert.equal(whatNext(s, D, { last: "grow", speech: true }).kind, "mission");
+  s.m.active = [{ id: "m-r", tpl: "review", params: {}, target: 2, progress: 0, done: false }];
+  assert.equal(whatNext(s, D, { last: "grow" }).kind, "grow", "rien à revoir : la mission « à revoir » n'est pas jouable");
+  s.m.active = [];
+  assert.equal(whatNext(s, D, { last: "grow" }).kind, "grow");
+});

@@ -1,6 +1,6 @@
 // « Que faire maintenant ? » (v0.13) : logique pure, testée (tests/next.test.mjs).
-// Dans l'ordre : le défi du jour s'il n'est pas fait, sinon les calculs à revoir, sinon la créature la plus proche d'évoluer,
-// sinon une mission. Le bouton dit ce qu'il va lancer ; launchFor() traduit la proposition en série à jouer (ou en écran).
+// Dans l'ordre : le défi du jour s'il n'est pas fait, sinon les calculs à revoir, sinon une mission presque finie (≥ 60 %),
+// sinon la créature la plus proche d'évoluer — en alternant avec une mission (v0.14.1) —, sinon une mission. Le bouton dit ce qu'il va lancer ; launchFor() traduit la proposition en série à jouer (ou en écran).
 import { themeFor, DAILY_COUNT } from "./daily.js";
 import { dueReviews } from "./progress.js";
 import { closestToGrow, unit } from "./goal.js";
@@ -10,7 +10,23 @@ import { missionText } from "./missions.js";
 
 export const REVIEW_MAX = 10; // une série « à revoir » : au plus 10 calculs
 
-export function whatNext(s, date) {
+// Missions qu'on peut lancer tout de suite (v0.14.1) : pas terminées, et dont la série a un sens maintenant.
+export const NEAR_DONE = 0.6; // une mission à 60 % ou plus passe avant « faire grandir »
+const ratio = (m) => (m.target ? Math.min(1, (m.progress || 0) / m.target) : 0);
+export function playableMissions(s, date, { speech = true } = {}) {
+  const due = dueReviews(s, date).length, dailyDone = !!(s.daily[date] && s.daily[date].done);
+  return [...(s.m.active || [])].filter((m) => {
+    if (!m || m.done || (m.progress || 0) >= (m.target || 0)) return false;
+    if (m.tpl === "review") return due > 0;
+    if (m.tpl === "daily") return !dailyDone;
+    if (m.tpl === "dictee") return speech;
+    return ["fam", "run", "today", "mode", "perfect", "learn"].includes(m.tpl);
+  }).sort((a, b) => ratio(b) - ratio(a) || (a.id < b.id ? -1 : 1));
+}
+const missionNext = (m, date) => ({ kind: "mission", icon: "🧭", label: missionText(m, date), mission: m });
+
+// opts.last : ce que le bouton proposait la fois précédente CE JOUR-LÀ (pour alterner « faire grandir » et une mission).
+export function whatNext(s, date, { last = null, speech = true } = {}) {
   if (!(s.daily[date] && s.daily[date].done)) {
     const t = themeFor(date);
     return { kind: "daily", icon: "🏁", label: `Défi du jour : ${t.label}`, theme: t.id };
@@ -20,6 +36,10 @@ export function whatNext(s, date) {
     const n = Math.min(due, REVIEW_MAX);
     return { kind: "review", icon: "🎯", label: `${n} calcul${n > 1 ? "s" : ""} à revoir`, n };
   }
+  const missions = playableMissions(s, date, { speech });
+  // Une mission presque finie passe avant ; sinon on alterne avec « faire grandir » pour ne pas proposer toujours la même chose.
+  if (missions.length && ratio(missions[0]) >= NEAR_DONE) return missionNext(missions[0], date);
+  if (missions.length && last === "grow") return missionNext(missions[0], date);
   const g = closestToGrow(s);
   if (g) {
     const c = creatureById(g.id);
@@ -27,10 +47,8 @@ export function whatNext(s, date) {
       ? { kind: "grow", icon: "🥚", label: `Faire éclore un œuf : encore ${unit(g.fam, g.remaining)}`, id: g.id, fam: g.fam }
       : { kind: "grow", icon: "🌱", label: `Faire grandir ${c.name} : encore ${unit(g.fam, g.remaining)}`, id: g.id, fam: g.fam };
   }
-  const ratio = (m) => (m.target ? Math.min(1, (m.progress || 0) / m.target) : 0);
-  const m = [...(s.m.active || [])].filter((x) => !x.done).sort((a, b) => ratio(b) - ratio(a) || (a.id < b.id ? -1 : 1))[0];
-  if (m) return { kind: "mission", icon: "🧭", label: missionText(m, date), mission: m };
-  return { kind: "mix", icon: "🎲", label: "Un mélange de tout", };
+  if (missions.length) return missionNext(missions[0], date);
+  return { kind: "mix", icon: "🎲", label: "Un mélange de tout" };
 }
 
 // Traduit la proposition en action : { route: "jouer", opts } (série à jouer) ou { route: "apprendre" }.

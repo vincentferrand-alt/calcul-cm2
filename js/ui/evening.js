@@ -5,6 +5,7 @@ import { sfx } from "../audio.js";
 import { toKey } from "../dates.js";
 import { fmt } from "../generator.js";
 import { creatureById } from "../creatures.js";
+import { de } from "../fr.js";
 import { nudgeLines } from "../hints.js";
 import { eveningRiddle, completeEvening } from "../evening.js";
 import { checkTrophies, trophyLabel } from "../trophies.js";
@@ -20,7 +21,7 @@ export function riddlePanel(creatureId, onDone) {
   const btns = r.options.map((v) => h("button", { class: "choice", type: "button", "data-v": v, onclick: (e) => pickIt(v, e.currentTarget) }, fmt(v)));
   const end = h("div", { class: "riddle-end" });
   const panel = h("div", { class: "riddle", onclick: (e) => e.stopPropagation() },
-    h("div", { class: "riddle-who" }, store.state.cre[c.id] && store.state.cre[c.id].s > 0 ? `🌙 L'énigme de ${c.name}` : "🌙 L'énigme du soir"),
+    h("div", { class: "riddle-who" }, store.state.cre[c.id] && store.state.cre[c.id].s > 0 ? `🌙 L'énigme ${de(c.name)}` : "🌙 L'énigme du soir"),
     h("div", { class: "riddle-q" }, prob.q, prob.showEq ? h("span", { class: "q-eq" }, " = ?") : null),
     h("div", { class: "choices riddle-choices" }, btns), msg, end);
   function finish(ok) {

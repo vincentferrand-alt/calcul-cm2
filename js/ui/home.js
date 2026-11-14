@@ -16,6 +16,16 @@ import { whatNext, launchFor } from "../next.js";
 import { famPills } from "./badges.js";
 import { VERSION } from "../version.js";
 import { makeInteractive } from "./pet.js";
+import { weekSummary } from "../week.js";
+
+// « Ma semaine » en petit (v0.14.1), sous la scène et l'objectif — visible seulement sur grand écran (iMac).
+function weekCard(s, date) {
+  const w = weekSummary(s, date);
+  return h("div", { class: "card week-card", "aria-label": `Ma semaine : ${w.played} jour${w.played > 1 ? "s" : ""} joué${w.played > 1 ? "s" : ""}, ${w.ok} bonnes réponses` },
+    h("div", { class: "week-head" }, h("b", {}, "📅 Ma semaine"), h("span", { class: "week-ok" }, `✅ ${w.ok} bonne${w.ok > 1 ? "s" : ""} réponse${w.ok > 1 ? "s" : ""}`)),
+    h("div", { class: "week-days" }, w.days.map((d) => h("span", { class: "week-day" + (d.played ? " on" : "") + (d.today ? " today" : "") + (d.future ? " future" : ""), title: d.played ? `${d.ok} bonnes réponses` : "" },
+      h("span", { class: "week-dot" }, d.played ? "✓" : ""), h("span", { class: "week-l" }, d.letter)))));
+}
 
 export function homeScreen({ go }) {
   const s = store.state, date = toKey();
@@ -49,7 +59,9 @@ export function homeScreen({ go }) {
     : h("div", { class: "goal" }, h("span", { class: "goal-t" }, g.text));
 
   // « Que faire maintenant ? » : le bouton dit ce qu'il va lancer.
-  const nx = whatNext(s, date);
+  const ln = store.settings.lastNext; // ce que proposait le bouton la fois précédente (ce jour-là) : on alterne (v0.14.1)
+  const nx = whatNext(s, date, { last: ln && ln.date === date ? ln.kind : null, speech: typeof speechSynthesis !== "undefined" });
+  if (!ln || ln.date !== date || ln.kind !== nx.kind) store.set("lastNext", { date, kind: nx.kind });
   const nextBtn = h("button", { class: "btn big green next-btn", type: "button", onclick: () => launch(launchFor(nx, date, settings, "")) },
     h("span", { class: "next-q" }, "Que faire maintenant ?"), h("span", { class: "next-l" }, `${nx.icon} ${nx.label}`));
 
@@ -71,7 +83,7 @@ export function homeScreen({ go }) {
             h("span", { class: "pill" }, `⭐ ${starsEarned(s)}`), cloud,
             eveningOpen(s, date, hour) ? h("button", { class: "pill eve-pill", type: "button", onclick: () => openRiddle(hc.id, () => go("", true)) }, "🌙 Énigme du soir") : null),
           mascot),
-        goal),
+        goal, weekCard(s, date)),
       h("div", { class: "home-right" },
         nextBtn,
         h("div", { class: "card daily" }, h("div", { class: "row" }, famPills(themeFams(theme)),

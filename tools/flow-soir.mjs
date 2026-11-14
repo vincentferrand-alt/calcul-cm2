@@ -71,6 +71,14 @@ assert.ok(await mac.locator(".modal .kbd-hint").isVisible(), "raccourcis visible
 await mac.keyboard.press("1"); await mac.waitForTimeout(200);
 assert.ok(await mac.locator(".riddle-choices .choice.good, .riddle-choices .choice.soft").count() >= 1, "la touche 1 répond");
 await mac.keyboard.press("Escape"); await mac.waitForSelector(".modal", { state: "detached" });
+// v0.14.1 : « Ma semaine » en petit dans la colonne de gauche (iMac seulement)
+assert.ok(await mac.locator(".week-card").isVisible(), "Ma semaine visible sur l'iMac");
+assert.equal(await mac.locator(".week-day").count(), 7);
+assert.equal(await mac.locator(".week-day.today").count(), 1);
+const leftHasWeek = await mac.locator(".home-left .week-card").count();
+assert.equal(leftHasWeek, 1, "sous la scène et l'objectif, colonne de gauche");
+assert.equal(await page.evaluate(() => { location.hash = "#/"; return true; }), true); await page.waitForSelector(".home-hero");
+assert.equal(await page.locator(".week-card").isVisible(), false, "pas sur le téléphone");
 await mac.screenshot({ path: `${out}/soir-5-imac.png` });
 console.log(errors.length ? "ERREURS : " + errors.join("\n") : "parcours du soir OK, pas d'erreur JS");
 await browser.close(); srv.close(); if (errors.length) process.exit(1);

@@ -3,6 +3,9 @@ import { store } from "../store.js";
 import { FAMILIES } from "../generator.js";
 import { session, lvlStars } from "./play.js";
 import { topbar } from "./common.js";
+import { dueReviews } from "../progress.js";
+import { launchFor, REVIEW_MAX } from "../next.js";
+import { toKey } from "../dates.js";
 
 export function exercicesScreen({ go }) {
   const root = h("main", { class: "screen" });
@@ -19,9 +22,17 @@ export function exercicesScreen({ go }) {
     const set = store.settings;
     const seg = (key, options) => h("div", { class: "seg" }, options.map(([val, label]) =>
       h("button", { class: "seg-b" + (set[key] === val || (key === "count" && !set.count && val === 10) ? " on" : ""), type: "button", onclick: () => { store.set(key, val); draw(); } }, label)));
+    // v0.14.1 : les calculs à revoir, bien visibles (rien s'il n'y en a pas)
+    const date = toKey(), due = dueReviews(s, date).length, n = Math.min(due, REVIEW_MAX);
+    const review = due ? h("div", { class: "card review-card" },
+      h("div", { class: "row" }, h("span", { class: "review-ic", "aria-hidden": "true" }, "🎯"),
+        h("div", { class: "grow" }, h("h2", {}, `Calculs à revoir (${due})`), h("p", {}, "Ceux qui t'ont résisté : on les retravaille pour qu'ils deviennent faciles."))),
+      h("button", { class: "btn big green", type: "button", onclick: () => {
+        session.opts = launchFor({ kind: "review", n }, date, { answer: set.answer, count: set.count }, "exercices").opts; go("jouer", true);
+      } }, `🎯 Revoir ${n} calcul${n > 1 ? "s" : ""}`)) : null;
     root.replaceChildren(
       topbar("Exercices", null),
-      h("div", { class: "screen-body" },
+      h("div", { class: "screen-body" }, review,
         h("div", { class: "card" }, h("h2", {}, "Comment veux-tu répondre ?"), seg("answer", [["qcm", "4 choix"], ["input", "Je tape"]]),
           h("h2", { style: { marginTop: "12px" } }, "Combien de calculs ?"), seg("count", [[10, "10"], [15, "15"], [20, "20"]])),
         h("button", { class: "btn big green", onclick: () => start("mix") }, "🎲 Mélange de tout"),

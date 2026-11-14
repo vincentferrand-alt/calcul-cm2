@@ -23,6 +23,11 @@ export const spent = (s) => DECOR.reduce((t, d) => t + (d.price > 0 && hasDecor(
 // Étoiles gagnées : celles des séries (compteur) + une par énigme du soir (comptées à part : elles s'additionnent entre appareils).
 export const starsEarned = (s) => (s.c.stars || 0) + Object.keys(s.eve || {}).length;
 export const balance = (s) => Math.max(0, starsEarned(s) - spent(s));
+// v0.14.1 — double dépense entre appareils : les deux appareils ont acheté avec les mêmes étoiles. Rien n'est retiré (les achats
+// restent), le solde est à 0 ; on l'explique UNE fois, au moment où la fusion le provoque (avant : pas en dépassement ; après : oui).
+export const overspent = (s) => spent(s) > starsEarned(s);
+export const overspendNotice = (before, after) => !overspent(before) && overspent(after);
+export const OVERSPENT_TEXT = "Tes deux appareils ont fait des achats en même temps : ton solde repart de 0, tu gardes tout ce que tu as acheté.";
 
 export function buyDecor(s, id, date) {
   const d = decorById(id);

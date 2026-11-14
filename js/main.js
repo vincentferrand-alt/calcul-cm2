@@ -21,6 +21,7 @@ import { newsBanner, bannerEl, closeBanner } from "./ui/notify.js";
 import { applyMotion } from "./motion.js";
 import { tabBar, showsTabs } from "./ui/tabs.js";
 import { emptyNews, mergeNews, isEmpty } from "./news.js";
+import { dueReviews } from "./progress.js";
 
 applyMotion(store.settings.motion);
 
@@ -52,7 +53,7 @@ function render() {
   const keep = tabs ? bannerEl() : null; // le bandeau des nouvelles reste d'un onglet à l'autre (pas pendant une partie)
   if (!tabs) closeBanner();
   app.classList.toggle("has-tabs", tabs);
-  app.replaceChildren(...[screen.el, tabs ? tabBar(name, go) : null, h("div", { class: "badge-version" }, "v" + VERSION), keep].filter(Boolean));
+  app.replaceChildren(...[screen.el, tabs ? tabBar(name, go, { exercices: dueReviews(store.state, toKey()).length }) : null, h("div", { class: "badge-version" }, "v" + VERSION), keep].filter(Boolean));
   flushNews();
 }
 addEventListener("hashchange", render);
@@ -63,7 +64,7 @@ render();
 // court, en bas (v0.13). Pendant une partie ou sur l'écran d'ouverture, elles attendent et s'affichent ensuite.
 function announce(news) {
   if (!news) return;
-  pending = mergeNews(pending, { trophies: news.trophies || [], creatures: news.creatures || [], stars: news.stars || 0 });
+  pending = mergeNews(pending, { trophies: news.trophies || [], creatures: news.creatures || [], stars: news.stars || 0, overspent: !!news.overspent });
   flushNews();
 }
 function flushNews() {
@@ -76,7 +77,7 @@ const opening = !!store.profile && shown === "";
 // Si l'énigme du soir vient d'être faite sur l'écran d'ouverture, l'accueil est redessiné (créature endormie, plus de bouton 🌙).
 if (opening) showSplash(() => { if (shown === "" && eveningDone(store.state, toKey())) render(); announce(fresh); }); else announce(fresh);
 // Synchronisation (si elle est activée) : quand l'autre appareil a apporté du nouveau, on redessine l'accueil / l'album / les trophées (jamais en pleine partie).
-setSyncHook((news) => { if (["", "album", "trophees", "reglages", "carnet"].includes(shown)) render(); announce(news); });
+setSyncHook((news) => { if (["", "album", "trophees", "reglages", "carnet", "boutique"].includes(shown)) render(); announce(news); });
 startSyncing();
 demanderStockagePersistant();
 export { go };

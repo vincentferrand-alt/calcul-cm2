@@ -15,10 +15,13 @@ export const showsTabs = (screen) => !NO_TABS.includes(screen);
 // L'onglet allumé pour un écran (les sous-écrans allument leur onglet parent ; les réglages n'en allument aucun).
 export const tabFor = (screen) => { const t = TABS.find((x) => x.id === screen || (x.also || []).includes(screen)); return t ? t.id : null; };
 
-export function tabBar(screen, go) {
+// badges : { idOnglet: nombre } — v0.14.1 : « 🎯 4 » sur Exercices quand il y a des calculs à revoir (rien si 0).
+export function tabBar(screen, go, badges = {}) {
   const on = tabFor(screen);
   return h("nav", { class: "tabbar", "aria-label": "Navigation" }, TABS.map((t) =>
     h("button", { class: "tab-b" + (t.id === on ? " on" : ""), type: "button", "aria-current": t.id === on ? "page" : null,
+      "aria-label": badges[t.id] > 0 ? `${t.label} : ${badges[t.id]} calcul${badges[t.id] > 1 ? "s" : ""} à revoir` : null,
       onclick: () => { sfx.tap(); if (t.id === screen) go(t.id, true); else go(t.id); } },
-      h("span", { class: "tab-i", "aria-hidden": "true" }, t.icon), h("span", { class: "tab-l" }, t.label))));
+      h("span", { class: "tab-i", "aria-hidden": "true" }, t.icon, badges[t.id] > 0 ? h("span", { class: "tab-badge" }, String(Math.min(99, badges[t.id]))) : null),
+      h("span", { class: "tab-l" }, t.label))));
 }

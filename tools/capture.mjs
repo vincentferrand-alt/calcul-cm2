@@ -15,11 +15,11 @@ const url = `http://localhost:${srv.address().port}/`;
 const state = fs.readFileSync(path.join(root, "tests/fixtures", fixture), "utf8");
 const browser = await chromium.launch({ executablePath: "/usr/bin/google-chrome", args: ["--no-sandbox"] });
 const errors = [];
-const SIZES = [["phone", 384, 824], ["desk", 1200, 800], ["wide", 1600, 1000]];
+const SIZES = (process.env.SIZES ? JSON.parse(process.env.SIZES) : [["phone", 384, 824], ["small", 360, 780], ["desk", 1200, 800], ["wide", 1600, 1000]]);
 const TIMES = [["jour", "2026-11-14T10:00:00"], ["soir", "2026-11-14T19:00:00"]];
 const SCREENS = (process.env.SCREENS || "home,exercices,album,boutique,trophees").split(",");
 for (const [label, w, hh] of SIZES) for (const [tl, time] of TIMES) {
-  const ctx = await browser.newContext({ viewport: { width: w, height: hh }, deviceScaleFactor: label === "phone" ? 2 : 1, serviceWorkers: "block" });
+  const ctx = await browser.newContext({ viewport: { width: w, height: hh }, deviceScaleFactor: w < 500 ? 2 : 1, serviceWorkers: "block" });
   await ctx.addInitScript(([st]) => { if (!localStorage.getItem("ccm2:profile")) { localStorage.setItem("ccm2:profile", JSON.stringify({ name: "Test", id: null })); localStorage.setItem("ccm2:state", st); localStorage.setItem("ccm2:settings", JSON.stringify({ companion: "add" })); } }, [state]);
   const page = await ctx.newPage();
   await page.clock.install({ time: new Date(time) });
@@ -48,6 +48,10 @@ for (const [label, w, hh] of SIZES) for (const [tl, time] of TIMES) {
     await page.evaluate((h) => { location.hash = h; }, sc === "home" ? "#/" : "#/" + sc);
     await page.waitForTimeout(700);
     await page.screenshot({ path: `${out}/${label}-${tl}-${sc.replace(/\//g, "-")}.png` });
+    // v0.14.1 : les libellés des onglets ne débordent jamais (360 px compris), rien ne dépasse en largeur
+    const over = await page.evaluate(() => [...document.querySelectorAll(".tab-l")].filter((l) => l.getBoundingClientRect().width > l.parentElement.getBoundingClientRect().width + 0.5).map((l) => l.textContent)
+      .concat(document.documentElement.scrollWidth > innerWidth + 1 ? ["page plus large que l'écran"] : []));
+    if (over.length) errors.push(`${label}/${tl}/${sc}: débordement ${over.join(", ")}`);
   }
   await ctx.close();
 }

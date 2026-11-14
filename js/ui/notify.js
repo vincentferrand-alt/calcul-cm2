@@ -33,7 +33,7 @@ export function newsBanner(news, go, { ms = 8000 } = {}) {
     h("button", { class: "nb-x", type: "button", "aria-label": "Fermer", onclick: closeBanner }, "✕"));
   host.append(el); banner = el;
   sfx.trophy();
-  hideT = setTimeout(closeBanner, ms);
+  hideT = setTimeout(closeBanner, sum.long ? Math.max(ms, 14000) : ms); // un message plus long reste plus longtemps
   return el;
 }
 export const bannerEl = () => banner;

@@ -3,6 +3,7 @@
 // On peut AJOUTER des lignes ou des paliers ; on ne change jamais ce qui existe.
 import { FAMILIES } from "./generator.js";
 import { ownedCount, decorCount, starsEarned } from "./shop.js";
+import { de } from "./fr.js";
 
 export const TIER_NAMES = ["Bronze", "Argent", "Or", "Platine", "Diamant"];
 export const TIER_COLORS = ["#cd7f32", "#c3cad5", "#ffc933", "#8fd6e6", "#6fb7ff"];
@@ -27,7 +28,7 @@ export const LINES = [
   { id: "t_shop", name: "Garde-robe", emoji: "👒", tiers: [1, 4, 8, 12], retired: true, value: (s) => ownedCount(s), desc: (n) => `Avoir ${n} accessoire${n > 1 ? "s" : ""} dans ta garde-robe` },
   { id: "t_decor", name: "Décorateur", emoji: "🏞️", tiers: [1, 5, 12, 20], value: (s) => decorCount(s), desc: (n) => `Avoir ${n} décor${n > 1 ? "s" : ""} pour tes créatures` },
   { id: "t_legend", name: "Légendes", emoji: "👑", tiers: [1, 3, 8], value: (s) => cre(s, 4), desc: (n) => `Amener ${n} créature${n > 1 ? "s" : ""} au dernier stade` },
-  ...FAMILIES.map((f) => ({ id: "t_fam_" + f.id, name: f.name, emoji: f.short, tiers: [20, 80, 250, 700], value: (s) => (s.fam[f.id] ? s.fam[f.id].xp : 0), desc: (n) => `Réussir ${n} calculs de ${f.name.toLowerCase()}` })),
+  ...FAMILIES.map((f) => ({ id: "t_fam_" + f.id, name: f.name, emoji: f.short, tiers: [20, 80, 250, 700], value: (s) => (s.fam[f.id] ? s.fam[f.id].xp : 0), desc: (n) => `Réussir ${n} calculs ${de(f.name.toLowerCase())}` })),
 ];
 export const lineById = (id) => LINES.find((l) => l.id === id);
 export const allTrophyIds = () => LINES.flatMap((l) => l.tiers.map((_, i) => `${l.id}:${i + 1}`));

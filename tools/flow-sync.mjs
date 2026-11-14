@@ -57,6 +57,36 @@ await phone.page.goto(phone.page.url().split("#")[0] + "#/reglages"); await phon
 await phone.page.locator("text=Synchroniser maintenant").click(); await phone.page.waitForSelector("text=Tout est à jour", { timeout: 4000 });
 assert.equal(await trophies(phone.page), nTro, "le téléphone a aussi tout");
 await phone.page.screenshot({ path: `${out}/sync-reglages.png` });
+// v0.14.1 : double dépense — les deux appareils achètent en même temps avec les mêmes étoiles : rien n'est retiré, solde 0, explication
+const syncNow = (p) => p.evaluate(async () => { const { runSync } = await import("./js/syncer.js"); await runSync(); });
+await syncNow(phone.page); await syncNow(imac.page); await syncNow(phone.page); // les deux appareils et la copie en ligne sont identiques
+// solde exactement 20 ⭐ partout (le compteur d'étoiles fusionne au maximum : on le règle aussi dans la copie en ligne)
+const V = await phone.page.evaluate(async () => { const { store } = await import("./js/store.js"); const shop = await import("./js/shop.js"); return store.state.c.stars - (shop.balance(store.state) - 20); });
+for (const p of [phone.page, imac.page]) await p.evaluate(async (v) => { const { store } = await import("./js/store.js"); store.update((s) => { s.c.stars = v; }); }, V);
+{ const d = docs.get(ID), o = JSON.parse(d.data); o.c.stars = V; d.data = JSON.stringify(o); }
+const prep = await phone.page.evaluate(async () => {
+  const { store } = await import("./js/store.js"); const shop = await import("./js/shop.js"); const { DECOR } = await import("./js/decor.js");
+  const free = DECOR.filter((d) => d.price > 0 && !shop.hasDecor(store.state, d.id)).sort((a, b) => b.price - a.price);
+  const a = free.find((d) => d.price <= 20 && d.price > 10), b = free.find((d) => d !== a && d.price <= 20 && d.price > 20 - a.price);
+  return { a: a.id, b: b.id };
+});
+const bal = (p) => p.evaluate(async () => { const { store } = await import("./js/store.js"); const shop = await import("./js/shop.js"); return shop.balance(store.state); });
+assert.equal(await bal(phone.page), 20); assert.equal(await bal(imac.page), 20, "même solde sur les deux appareils");
+const buy = (p, id) => p.evaluate(async (id) => { const { store } = await import("./js/store.js"); const shop = await import("./js/shop.js"); let r; store.update((s) => { r = shop.buyDecor(s, id, "2026-11-14"); }); return r.ok; }, id);
+assert.ok(await buy(phone.page, prep.a)); assert.ok(await buy(imac.page, prep.b), "chacun peut acheter avec ses 20 ⭐");
+await phone.page.evaluate(async () => { const { runSync } = await import("./js/syncer.js"); await runSync(); });
+await imac.page.goto(imac.page.url().split("#")[0] + "#/boutique"); await imac.page.waitForSelector(".items"); await imac.page.locator(".news-banner:not(.out) .nb-x").click().catch(() => {});
+await imac.page.evaluate(async () => { const { runSync } = await import("./js/syncer.js"); await runSync(); });
+await imac.page.waitForSelector(".news-banner:not(.out)", { timeout: 4000 });
+assert.match(await imac.page.locator(".news-banner:not(.out)").innerText(), /Tes deux appareils ont fait des achats en même temps : ton solde repart de 0, tu gardes tout ce que tu as acheté\./);
+await imac.page.screenshot({ path: `${out}/sync-double-depense.png` });
+const owned = await imac.page.evaluate(() => JSON.parse(localStorage.getItem("ccm2:state")).decor.owned);
+assert.ok(owned[prep.a] && owned[prep.b], "les deux achats restent");
+assert.equal(await bal(imac.page), 0, "solde 0, jamais négatif");
+await imac.page.locator(".news-banner:not(.out) .nb-x").click(); await imac.page.waitForTimeout(400);
+await imac.page.evaluate(async () => { const { runSync } = await import("./js/syncer.js"); await runSync(); });
+await imac.page.waitForTimeout(300);
+assert.equal(await imac.page.locator(".news-banner:not(.out)").count(), 0, "expliqué une seule fois");
 console.log("appels Firestore :", calls.join(" "));
 const errors = [...phone.errors, ...imac.errors];
 console.log(errors.length ? "ERREURS : " + errors.join("\n") : "synchro entre deux appareils OK, pas d'erreur JS");

@@ -71,6 +71,25 @@ await page.screenshot({ path: `${out}/flow-5-near.png` });
 await page.locator(".near .btn", { hasText: "Continuer" }).click(); await page.waitForSelector(".keypad");
 assert.match(await page.locator(".q-fam").innerText(), /Additions/, "Continuer relance une série de la même famille");
 await tap(".icon-btn"); await page.waitForSelector(".home-hero");
+// 5. v0.14.1 : calculs à revoir visibles — pastille « 4 » sur l'onglet Exercices, carte en haut de l'écran, série « à revoir »
+assert.equal(await page.locator(".tab-badge").count(), 0, "pas de pastille sans calcul à revoir");
+const tabFont = await page.locator(".tab-b").first().evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+assert.ok(tabFont >= 12.5, "libellés des onglets ≈ .8rem : " + tabFont);
+await page.evaluate(async () => {
+  const { store } = await import("./js/store.js"); const { generate } = await import("./js/generator.js"); const { toKey, addDays } = await import("./js/dates.js");
+  store.update((s) => { let n = 0; for (let i = 0; i < 40 && n < 4; i++) { const p = generate("sub", 1); if (s.review[p.key]) continue; s.review[p.key] = { k: p.k, p: p.p, box: 0, due: addDays(toKey(), -1), miss: 1, done: false }; n++; } });
+  location.hash = "#/exercices";
+});
+await page.waitForSelector(".review-card");
+assert.equal(await page.locator(".tab-badge").innerText(), "4");
+assert.match(await page.locator(".tab-b", { hasText: "Exercices" }).getAttribute("aria-label"), /4 calculs à revoir/);
+assert.match(await page.locator(".review-card h2").innerText(), /Calculs à revoir \(4\)/);
+await page.screenshot({ path: `${out}/flow-6-a-revoir.png` });
+await page.locator(".review-card .btn").click(); await page.waitForSelector(".q-tag");
+assert.match(await page.locator(".q-tag").innerText(), /Un calcul à revoir/);
+assert.match(await page.locator(".q-fam").innerText(), /Soustractions/);
+assert.equal(await page.locator(".pill").first().innerText(), "1 / 4", "une série faite seulement des 4 calculs à revoir");
+await tap(".icon-btn"); await page.waitForSelector(".fam-grid");
 console.log(errors.length ? "ERREURS : " + errors.join("\n") : "parcours OK, pas d'erreur JS");
 await browser.close(); srv.close();
 if (errors.length) process.exit(1);

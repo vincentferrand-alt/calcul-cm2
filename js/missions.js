@@ -3,6 +3,7 @@ import { FAMILIES, famById, shuffle } from "./generator.js";
 import { FICHES } from "./learn.js";
 import { dueReviews } from "./progress.js";
 import { themeFor } from "./daily.js";
+import { de } from "./fr.js";
 
 export const SLOTS = 3;
 const R = (r, a, b) => a + Math.floor(r() * (b - a + 1));
@@ -12,7 +13,7 @@ const MODES = { qcm: "avec les 4 choix", input: "en tapant ta réponse", dictee:
 // Chaque modèle : make(s, r, date) -> { params, target } ou null s'il n'est pas pertinent maintenant ; text(m) -> phrase.
 export const TEMPLATES = {
   fam: { make: (s, r) => ({ params: { fam: pick(r, FAMILIES).id }, target: R(r, 8, 14) }),
-    text: (m) => `Réussis ${m.target} calculs de ${famById(m.params.fam).name.toLowerCase()}`, icon: "🎯" },
+    text: (m) => `Réussis ${m.target} calculs ${de(famById(m.params.fam).name.toLowerCase())}`, icon: "🎯" },
   run: { make: (s, r) => ({ params: {}, target: R(r, 5, 8) }), text: (m) => `Réussis ${m.target} calculs d'affilée`, icon: "🔥" },
   today: { make: (s, r) => ({ params: {}, target: pick(r, [15, 20, 25]) }), text: (m) => `Réussis ${m.target} calculs aujourd'hui`, icon: "🌟" },
   mode: { make: (s, r) => ({ params: { mode: pick(r, ["qcm", "input"]) }, target: 1 }), text: (m) => `Termine une série ${MODES[m.params.mode]}`, icon: "🎮" },
