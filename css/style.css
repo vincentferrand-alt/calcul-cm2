@@ -127,9 +127,8 @@ body::before { /* étoiles discrètes */
 }
 .toast button { font: inherit; font-weight: 800; border: 0; background: var(--sun); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
-}
+/* « réduire les animations » (réglage du téléphone ou de l'appli : voir js/motion.js) */
+html.calm *, html.calm *::before, html.calm *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
 
 /* ===== Exercices : réglages et familles ===== */
 .seg { display: flex; gap: 8px; margin-top: 6px; }
@@ -300,7 +299,8 @@ body::before { /* étoiles discrètes */
 .spark { transform-box: fill-box; transform-origin: center; animation: twinkle2 1.6s ease-in-out infinite alternate; }
 @keyframes twinkle2 { from { opacity: .35; transform: scale(.7) } to { opacity: 1; transform: scale(1.15) } }
 .aura { animation: twinkle2 2.4s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
-@media (prefers-reduced-motion: reduce) { .spark, .aura, .creature-new { animation: none } }
+/* « réduire les animations » (réglage du téléphone ou de l'appli : voir js/motion.js) */
+html.calm .spark, html.calm .aura, html.calm .creature-new { animation: none }
 .confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 60; }
 .confetti i { position: absolute; top: -14px; width: 9px; height: 14px; border-radius: 2px; animation: fall linear forwards; }
 @keyframes fall { to { top: 105%; margin-left: 30px; opacity: .9 } }
@@ -312,7 +312,8 @@ body::before { /* étoiles discrètes */
 .nudge-btn { border: 0; border-radius: 999px; padding: 10px 18px; font: inherit; font-weight: 900; font-size: 1rem; color: #7a4a00; background: var(--sun); box-shadow: 0 4px 0 #d9a300; cursor: pointer; animation: pop-in .35s ease-out, nudge-pulse 1.8s ease-in-out .4s infinite; }
 .nudge-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #d9a300; }
 @keyframes nudge-pulse { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.06) } }
-@media (prefers-reduced-motion: reduce) { .nudge-btn { animation: none } }
+/* « réduire les animations » (réglage du téléphone ou de l'appli : voir js/motion.js) */
+html.calm .nudge-btn { animation: none }
 
 /* v0.8 — dictée, réglages, compagnon */
 .btn.small { font-size: .95rem; padding: 8px 12px; min-height: 40px; width: auto; margin: 0; }
@@ -375,7 +376,8 @@ body::before { /* étoiles discrètes */
 @keyframes splash-pop { from { transform: scale(.3) translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes splash-twinkle { 0%, 100% { opacity: .15; transform: scale(.7); } 50% { opacity: .9; transform: scale(1.3); } }
 @keyframes pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .splash, .splash-art, .splash-tap, .splash-stars i { animation: none; } }
+/* « réduire les animations » (réglage du téléphone ou de l'appli : voir js/motion.js) */
+html.calm .splash, html.calm .splash-art, html.calm .splash-tap, html.calm .splash-stars i { animation: none; }
 
 /* ===== v0.11 — la scène (fond + météo + effets + petits animaux + créature) ===== */
 .scene { position: relative; overflow: hidden; border-radius: 22px; isolation: isolate; width: 100%; aspect-ratio: 16 / 11; --ch: 70%; --cb: 6%;
@@ -467,7 +469,10 @@ body::before { /* étoiles discrètes */
 .pt-blink { transform-origin: 50% 35%; transform-box: fill-box; animation: sc-blink 4.2s ease-in-out infinite; }
 @keyframes sc-blink { 0%, 92%, 100% { transform: scaleY(1) } 95% { transform: scaleY(.1) } }
 /* confort : animations arrêtées si demandé, en pause en arrière-plan */
-@media (prefers-reduced-motion: reduce) { .scene *, .scene *::before { animation: none !important; } .fx-bolt { opacity: .85; } .sc-shoot { display: none; } }
+/* « réduire les animations » (réglage du téléphone ou de l'appli : voir js/motion.js) */
+html.calm .scene *, html.calm .scene *::before { animation: none !important; }
+html.calm .fx-bolt { opacity: .85; }
+html.calm .sc-shoot { display: none; }
 .app-hidden .scene *, .app-hidden .scene *::before { animation-play-state: paused !important; }
 
 /* v0.11 — accueil, ouverture, boutique de décors, album */
@@ -517,28 +522,29 @@ body::before { /* étoiles discrètes */
 .evo-halo { border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--glow) 55%, transparent), transparent); animation: evo-halo 3s ease-out both; }
 .evo-old .creature-art, .evo-new .creature-art { width: 100%; height: 100%; }
 .evo-old .creature-art > svg, .evo-new .creature-art > svg { width: 100%; height: 100%; }
-.evo-old { animation: evo-charge 1.25s ease-in both, evo-fade-out .5s ease 1.25s both; }
-.evo-new { opacity: 0; animation: evo-grow 1.1s cubic-bezier(.3, 1.4, .5, 1) 1.35s both; }
+.evo-old { animation: evo-charge 1.25s ease-in both, evo-fade-out 1.5s ease-in-out 1.25s both; }
+.evo-new { opacity: 0; animation: evo-grow 1.9s ease-out 1.3s both; }
 .evo-flash { inset: -30% !important; border-radius: 50%; background: radial-gradient(closest-side, #fff, rgba(255, 255, 255, .85) 40%, transparent); opacity: 0; animation: evo-flash 1s ease-out 1.1s both; }
 .evo-parts { pointer-events: none; }
 .evo-p { position: absolute; left: 50%; top: 52%; width: 12px; height: 12px; margin: -6px; border-radius: 50%; opacity: 0; box-shadow: 0 0 8px 2px rgba(255, 255, 255, .5); animation: evo-burst 1.3s cubic-bezier(.15, .7, .3, 1) both; }
-.evo-text { opacity: 0; animation: pop-in .4s ease-out 2.1s both; max-width: 22em; }
+.evo-text { opacity: 0; animation: pop-in .4s ease-out 3s both; max-width: 22em; }
 .evo-title { font-size: 1.7rem; font-weight: 900; }
 .evo-form { font-size: 1.15rem; font-weight: 900; color: var(--sun); margin-top: 2px; }
 .evo-story { margin: 6px 0 12px; font-weight: 700; color: #dff3ff; line-height: 1.35; }
 .evo-btn { width: auto; min-width: 180px; }
 @keyframes evo-charge { 0% { transform: scale(1); filter: brightness(1) } 70% { transform: scale(1.04) rotate(-2deg); filter: brightness(1.8) } 100% { transform: scale(1.07) rotate(2deg); filter: brightness(3) } }
 @keyframes evo-fade-out { to { opacity: 0 } }
-@keyframes evo-grow { 0% { opacity: 0; transform: scale(.82); filter: brightness(2.6) } 45% { opacity: 1 } 70% { transform: scale(1.1); filter: brightness(1.2) } 100% { opacity: 1; transform: scale(1); filter: brightness(1) } }
+@keyframes evo-grow { 0% { opacity: 0; transform: scale(.85); filter: brightness(2.6) } 60% { opacity: 1 } 78% { transform: scale(1.1); filter: brightness(1.2) } 100% { opacity: 1; transform: scale(1); filter: brightness(1) } }
 @keyframes evo-flash { 0% { opacity: 0; transform: scale(.3) } 25% { opacity: 1; transform: scale(1) } 100% { opacity: 0; transform: scale(1.4) } }
 @keyframes evo-burst { 0% { opacity: 1; transform: translate(0, 0) scale(.4) } 70% { opacity: 1 } 100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1.1) } }
 @keyframes evo-halo { 0% { transform: scale(.6); opacity: .2 } 40% { transform: scale(1.15); opacity: 1 } 100% { transform: scale(1); opacity: .7 } }
 /* « réduire les animations » : un simple fondu */
-.evo.calm .evo-old { animation: evo-fade-out .6s ease .2s both; }
-.evo.calm .evo-new { animation: splash-in .6s ease .4s both; }
+.evo.calm .evo-old { animation: evo-fade-out 1.4s ease-in-out .3s both; }
+.evo.calm .evo-new { animation: splash-in 1.4s ease-in-out .5s both; }
 .evo.calm .evo-flash, .evo.calm .evo-halo { display: none; }
-.evo.calm .evo-text { animation: splash-in .4s ease .6s both; }
-@media (prefers-reduced-motion: reduce) { .evo, .evo * { animation-duration: .6s !important; } }
+.evo.calm .evo-text { animation: splash-in .5s ease 1.6s both; }
+/* « réduire les animations » (réglage du téléphone ou de l'appli : voir js/motion.js) */
+html.calm .evo, html.calm .evo * { animation-duration: 1.2s !important; }
 .pet-replay { margin-top: 4px; font: inherit; font-weight: 800; font-size: .8rem; padding: 6px 10px; border-radius: 99px; border: 2px solid #d5e2f5; background: #eef6ff; color: var(--ink); cursor: pointer; }
 
 /* v0.12 — énigme du soir */
@@ -565,3 +571,9 @@ body::before { /* étoiles discrètes */
 @keyframes sc-zzz { 0% { transform: translate(0, 10px) scale(.7); opacity: 0 } 30% { opacity: 1 } 100% { transform: translate(18px, -24px) scale(1.15); opacity: 0 } }
 .sc-sleep { display: none; }
 .scene.sleepy .sc-sleep { display: block; }
+
+/* v0.12.1 — animations coupées par le téléphone : explication et bouton pour les rallumer */
+.motion-note { grid-column: 1 / -1; background: #fff7dc; color: #5b3b00; border: 2px solid var(--sun); border-radius: 16px; padding: 10px 12px; font-weight: 800; font-size: .9rem; line-height: 1.35; display: flex; flex-direction: column; gap: 8px; }
+.motion-note .btn { width: auto; align-self: center; }
+.pet-grow { margin-top: 4px; font: inherit; font-weight: 900; font-size: .85rem; padding: 8px 12px; border-radius: 99px; border: 0; background: var(--fam); color: var(--fam-ink, #fff); cursor: pointer; box-shadow: 0 3px 0 rgba(0, 0, 0, .2); }
+.pet-grow:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0, 0, 0, .2); }

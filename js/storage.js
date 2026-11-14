@@ -47,7 +47,7 @@ export function saveState(state, ls = ls0(), day = toKey()) {
 export const loadProfile = (ls = ls0()) => readJSON(ls, PROFILE);
 export const saveProfile = (p, ls = ls0()) => { try { ls.setItem(PROFILE, JSON.stringify(p)); return true; } catch { return false; } };
 
-export const DEFAULT_SETTINGS = { muted: false, rate: 0.9, readAloud: false, answer: "qcm", companion: null };
+export const DEFAULT_SETTINGS = { muted: false, rate: 0.9, readAloud: false, answer: "qcm", companion: null, motion: "auto" };
 export const loadSettings = (ls = ls0()) => ({ ...DEFAULT_SETTINGS, ...(readJSON(ls, SETTINGS) || {}) });
 export const saveSettings = (s, ls = ls0()) => { try { ls.setItem(SETTINGS, JSON.stringify(s)); } catch { /* ignore */ } };
 

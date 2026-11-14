@@ -8,6 +8,7 @@ import { scenePick, setPick } from "../shop.js";
 import { creatureArt } from "./art.js";
 import { sceneEl } from "./scene.js";
 import { playEvolution } from "./evolve.js";
+import { session } from "./play.js";
 
 export { creatureArt };
 
@@ -36,9 +37,15 @@ function albumBody(go, redraw) {
     const shown = Math.max(st, 0), pick = shown ? scenePick(s, c.id) : null;
     const art = shown ? sceneEl({ id: c.id, stage: pick.st, xp, pick, variant: "album", lite: true }) : creatureArt(c.id, 0, xp, "al");
     if (!shown) art.classList.add("egg");
+    // Ce qui fait grandir : les bonnes réponses dans SA famille de calcul, dans n'importe quel mode (défi du jour, exercices, dictée, fiches).
+    const n = pi.remaining, br = `${n} bonne${n > 1 ? "s" : ""} réponse${n > 1 ? "s" : ""}`, fam = f.name.toLowerCase();
     const line = shown >= 4 ? "Stade maximum atteint, bravo ! 🌟"
-      : shown === 0 ? `Encore ${pi.remaining} bonne${pi.remaining > 1 ? "s" : ""} réponse${pi.remaining > 1 ? "s" : ""} en ${f.name.toLowerCase()} pour faire éclore l'œuf`
-      : `Encore ${pi.remaining} bonne${pi.remaining > 1 ? "s" : ""} réponse${pi.remaining > 1 ? "s" : ""} pour devenir : ${c.forms[shown].toLowerCase()}`;
+      : shown === 0 ? `Encore ${br} en ${fam} pour faire éclore l'œuf`
+      : `Encore ${br} en ${fam} pour devenir : ${c.forms[shown].toLowerCase()}`;
+    const grow = shown >= 4 ? null : h("button", { class: "pet-grow", type: "button", onclick: () => {
+      session.opts = { families: [c.fam], count: store.settings.count || 10, mode: store.settings.answer === "qcm" ? "qcm" : "input", back: "album" };
+      go("jouer", true);
+    } }, `🎯 ${shown ? "Faire grandir " + c.name : "Faire éclore"} : ${fam}`);
     // Les points des stades : un appui sur un stade débloqué choisit la forme affichée (partout dans l'appli).
     const dots = [1, 2, 3, 4].map((n) => h("button", { class: "dot" + (n <= shown ? " on" : "") + (pick && n === pick.st ? " sel" : ""), type: "button", disabled: n > shown,
       "aria-label": n <= shown ? `Afficher : ${c.forms[n - 1]}` : `Stade ${n} pas encore atteint`,
@@ -49,7 +56,7 @@ function albumBody(go, redraw) {
       h("div", { class: "pet-fam" }, shown ? c.forms[pick.st - 1] : f.name),
       h("div", { class: "pet-dots" }, dots),
       shown >= 4 ? null : h("div", { class: "bar small" }, h("div", { class: "bar-fill", style: { width: pi.pct + "%" } })),
-      h("div", { class: "pet-line" }, line),
+      h("div", { class: "pet-line" }, line), grow,
       shown ? h("div", { class: "pet-desc" }, c.story[pick.st - 1]) : null,
       shown ? h("button", { class: "pet-replay", type: "button", "aria-label": `Revoir l'évolution : ${c.forms[pick.st - 1]}`, onclick: () => playEvolution(c.id, pick.st - 1, pick.st) }, "▶ Revoir l'évolution") : null,
       shown ? h("button", { class: "pet-pick" + (store.settings.companion === c.id ? " on" : ""), type: "button", onclick: () => { store.set("companion", store.settings.companion === c.id ? null : c.id); redraw(); } },
@@ -57,6 +64,6 @@ function albumBody(go, redraw) {
   });
   return h("div", {}, topbar("Mes créatures", () => go("")),
     h("div", { class: "screen-body" },
-      h("div", { class: "card center" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Chaque bonne réponse fait grandir la créature de sa famille de calculs. Choisis ton compagnon : il t'accompagne sur l'accueil ! Touche les points pour choisir sa forme.")),
+      h("div", { class: "card center" }, h("div", { class: "big-num" }, `🥚 ${nb} / ${CREATURES.length}`), h("p", {}, "Chaque créature grandit avec les bonnes réponses de SA famille de calculs (le dragon avec les additions, le chat avec les soustractions…), dans n'importe quel mode. Touche les points pour choisir sa forme.")),
       h("div", { class: "pets" }, cards)));
 }

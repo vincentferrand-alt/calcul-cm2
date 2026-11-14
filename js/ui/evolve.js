@@ -1,12 +1,13 @@
 // Transformation animée d'un stade à l'autre (éclosion / évolution), jouée dans l'appli (aucune vidéo) :
-// l'ancienne forme se charge de lumière, flash, fondu enchaîné vers la nouvelle forme avec un léger grossissement,
+// l'ancienne forme se charge de lumière, flash, long fondu enchaîné (~1,5 s, v0.12.1) vers la nouvelle forme avec un léger grossissement,
 // particules aux couleurs de la créature, son synthétisé. Si « réduire les animations » est demandé : simple fondu.
 import { h } from "../dom.js";
 import { sfx } from "../audio.js";
 import { creatureById } from "../creatures.js";
 import { creatureArt } from "./art.js";
+import { isCalm } from "../motion.js";
 
-const reduced = () => globalThis.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reduced = isCalm;
 
 export function playEvolution(id, from, to) {
   return new Promise((resolve) => {
@@ -32,7 +33,7 @@ export function playEvolution(id, from, to) {
     document.body.append(box);
     sfx.level();
     const t1 = setTimeout(() => sfx.hatch(), calm ? 300 : 1250);
-    const t2 = setTimeout(() => btn.focus(), calm ? 700 : 2300);
+    const t2 = setTimeout(() => btn.focus(), calm ? 1700 : 3100);
   });
 }
 

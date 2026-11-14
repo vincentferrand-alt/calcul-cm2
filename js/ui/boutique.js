@@ -13,6 +13,8 @@ import { sceneEl } from "./scene.js";
 import { topbar } from "./common.js";
 import { toast, confetti } from "./notify.js";
 import { checkTrophies, trophyLabel } from "../trophies.js";
+import { isCalm, applyMotion } from "../motion.js";
+import { famById } from "../generator.js";
 
 const TABS = [...KINDS, { id: "st", name: "Forme", emoji: "🐣" }];
 
@@ -55,6 +57,12 @@ export function boutiqueScreen({ go }) {
 
   function itemCards(s, pick, bal) {
     const out = [];
+    if (tab !== "bg" && isCalm()) { // décors animés achetés… mais animations coupées par l'appareil : on explique et on propose de les rallumer
+      out.push(h("div", { class: "motion-note" }, h("span", {}, store.settings.motion === "off"
+        ? "🐢 Les animations sont réduites dans les Réglages : la météo, les effets et les animaux restent immobiles."
+        : "🐢 Ton téléphone demande de réduire les animations (souvent le mode économie d'énergie) : la météo, les effets et les animaux restent immobiles."),
+        h("button", { class: "btn small green", type: "button", onclick: () => { store.set("motion", "on"); applyMotion("on"); sfx.tap(); draw(); } }, "✨ Les faire bouger quand même")));
+    }
     if (tab !== "bg") { // « rien » : enlever la météo / l'effet / les animaux
       const on = !pick[tab];
       const ic = h("div", { class: "item-ic" }); ic.append(svgEl(noneIcon()));
@@ -87,7 +95,7 @@ export function boutiqueScreen({ go }) {
       const ic = h("div", { class: "item-ic" + (ok ? "" : " locked") });
       if (ok) ic.append(creatureArt(who, n, 0, "stc")); else ic.append(h("span", { style: { fontSize: "2rem" } }, "🔒"));
       return h("div", { class: "item" + (on ? " on" : "") }, ic, h("div", { class: "item-name" }, ok ? c.forms[n - 1] : "Forme mystère"),
-        !ok ? h("span", { class: "item-note", style: { color: "#5b6b8a" } }, `Encore ${STAGE_XP[n] - xp} bonnes réponses`)
+        !ok ? h("span", { class: "item-note", style: { color: "#5b6b8a", fontSize: ".8rem" } }, `Encore ${STAGE_XP[n] - xp} bonnes réponses en ${famById(c.fam).name.toLowerCase()}`)
           : on ? h("span", { class: "item-note" }, "✓ Affichée") : h("button", { class: "btn small light", type: "button", onclick: () => apply("st", n) }, "Afficher"));
     });
   }

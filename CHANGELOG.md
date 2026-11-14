@@ -2,6 +2,12 @@
 
 Règle : une entrée par version publiée. Les choix « raisonnables » pris sans poser de question sont notés ici.
 
+## 0.12.1 — Retours d'essai : évolution plus douce, « où gagner les bonnes réponses », animations
+- Transformation : fondu enchaîné plus long (l'ancienne forme s'efface en 1,5 s pendant que la nouvelle apparaît en 1,9 s) ; texte et bouton arrivent ensuite. En mode animations réduites : fondu de 1,4 s au lieu de 0,6 s.
+- Album : la ligne de progression dit maintenant dans quelle famille gagner les bonnes réponses (« Encore 18 bonnes réponses en additions pour devenir : jeune dragon ») ; n'importe quel mode compte (défi du jour, exercices, dictée, fiches). Nouveau bouton « 🎯 Faire grandir Braise : additions » qui lance directement une série de cette famille (retour à l'album). Même précision dans l'onglet « Forme » de la boutique.
+- Animations : l'appli suivait le réglage « réduire les animations » du téléphone, souvent activé par le mode économie d'énergie sur Samsung, ce qui figeait la météo, les effets et les animaux achetés. Nouveau réglage « ✨ Animations » : Automatique (suit le téléphone) / Toujours / Réduites. Dans la boutique, si les animations sont coupées, un message l'explique avec un bouton « Les faire bouger quand même ».
+- Choix : le réglage Animations est propre à chaque appareil (comme les sons), il n'est pas synchronisé.
+
 ## 0.12.0 — Créatures manga, transformation animée, énigme du soir
 - Les 8 créatures sont désormais les 32 images manga (4 stades chacune), partout : accueil, ouverture, album, boutique, scène, fin de série. L'œuf reste en SVG ; l'ancien dessin SVG prend le relais si une image manque (testé en coupant une image).
 - Détourage : fond vert uni → transparence (seuil sur le « vert en trop » avec tolérance, retrait du bruit JPEG, léger lissage du bord, désmélange de la couleur du fond et anti-débordement vert sur les contours ; lueurs, flammes et volutes du stade 4 conservées en semi-transparence). Recadrage identique (carré, créature centrée, posée sur la même ligne de sol), WebP 512 × 512 avec transparence dans assets/creatures/, pré-cachés pour le hors-ligne. Planches de contrôle sur fond sombre et clair vérifiées : aucune image écartée. Outils : tools/detour.py et tools/planche-creatures.py.

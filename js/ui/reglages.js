@@ -10,6 +10,7 @@ import { syncConfigured } from "../sync.js";
 import { exportData, importData } from "../state.js";
 import { toKey } from "../dates.js";
 import { toast } from "./notify.js";
+import { applyMotion, systemReduced } from "../motion.js";
 
 const RATES = [[0.75, "🐢 Lente"], [0.9, "Normale"], [1.1, "🐇 Rapide"]];
 
@@ -60,6 +61,12 @@ export function reglagesScreen({ go }) {
           seg("readAloud", [[false, "Non"], [true, "Oui"]]),
           speechSupported() ? h("button", { class: "btn light", type: "button", onclick: () => { sfx.tap(); speak("Quarante-sept plus trente-huit", { rate: s.rate }); } }, "🔊 Tester la voix") : null,
           voiceNote ? h("p", { class: "small" }, voiceNote) : null),
+        h("div", { class: "card" }, h("h2", {}, "✨ Animations"),
+          h("div", { class: "seg" }, [["auto", "Automatique"], ["on", "Toujours"], ["off", "Réduites"]].map(([val, label]) =>
+            h("button", { class: "seg-b" + ((s.motion || "auto") === val ? " on" : ""), type: "button", onclick: () => { store.set("motion", val); applyMotion(val); sfx.tap(); draw(); } }, label))),
+          h("p", { class: "small" }, systemReduced()
+            ? "Ton appareil demande de réduire les animations (souvent le mode économie d'énergie). En « Automatique », la neige, les feuilles et les effets restent immobiles : choisis « Toujours » pour les voir bouger."
+            : "En « Automatique », l'appli suit le réglage de ton appareil. « Réduites » arrête les animations (décors, évolutions).")),
         h("div", { class: "card" }, h("h2", {}, "✍️ Façon de répondre"),
           seg("answer", [["qcm", "4 choix"], ["input", "Je tape"]])),
         syncBox,

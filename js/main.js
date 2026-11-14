@@ -18,6 +18,9 @@ import { refreshState } from "./game.js";
 import { toKey } from "./dates.js";
 import { toast } from "./ui/notify.js";
 import { trophyLabel } from "./trophies.js";
+import { applyMotion } from "./motion.js";
+
+applyMotion(store.settings.motion);
 
 const app = document.getElementById("app");
 
